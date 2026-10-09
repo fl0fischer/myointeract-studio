@@ -1298,7 +1298,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       if (!info) {
         $("conn-status").textContent = window.claude
           ? "Pages on claude.ai cannot reach a server on your computer. Continue on your machine below."
-          : `No Studio server answered at ${url}. Start it with the command above; the page stays in demo mode until then. Safari does not let websites reach your computer: continue on your machine below.`;
+          : `No Studio server answered at ${url}. Start it with the command above; the page stays in demo mode until then. In Safari, start it with "myo_studio serve --https", open the https address once to trust its certificate, and connect to it here; or continue on your machine below.`;
         return;
       }
       if (info.pairing) {
