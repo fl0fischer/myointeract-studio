@@ -354,8 +354,10 @@ export class StudioScene extends EventTarget {
       if (!down || Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) > 4 || this.gizmo.dragging || !this.editable) return;
       this._raycaster.setFromCamera(ndc(ev), this.camera);
       const pick = [...this.targetGroup.children, ...(this.screen ? [this.screen] : [])];
-      const hit = this._raycaster.intersectObjects(pick, true).find((h) => h.object.userData.target != null || h.object === this.screen);
-      if (hit) this.select(hit.object === this.screen ? "screen" : hit.object.userData.target);
+      // The ray hits the screen's image plane, a child of the screen frame.
+      const onScreen = (o) => !!this.screen && (o === this.screen || o.parent === this.screen);
+      const hit = this._raycaster.intersectObjects(pick, true).find((h) => h.object.userData.target != null || onScreen(h.object));
+      if (hit) this.select(onScreen(hit.object) ? "screen" : hit.object.userData.target);
       else if (this.selected != null) this.select(null);
     });
     el.addEventListener("dblclick", (ev) => {
