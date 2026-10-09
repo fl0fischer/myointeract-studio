@@ -69,7 +69,7 @@ export class StudioScene extends EventTarget {
     this._theme();
     new ResizeObserver(() => this._resize()).observe(container);
     this._resize();
-    const loop = () => { requestAnimationFrame(loop); if (!document.hidden) { this.controls.update(); this.renderer.render(this.scene, this.camera); } };
+    const loop = () => { requestAnimationFrame(loop); if (!document.hidden) { this.controls.update(); this._updateMuscles(); this.renderer.render(this.scene, this.camera); } };
     loop();
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     mq.addEventListener("change", () => this._theme());
@@ -158,8 +158,11 @@ export class StudioScene extends EventTarget {
       mesh.quaternion.copy(MJ_QUAT(g.quat));
       if (g.type === "capsule" || g.type === "cylinder") mesh.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2));
       mesh.userData.body = true;
+      mesh.userData.volume = !!g.volume;
+      if (g.volume) mesh.visible = this.showSkin !== false;
       this.bodies[g.body].add(mesh);
     }
+    this._buildMuscles(sc.muscles || []);
     this.origin.fromArray(sc.origin);
     this.grid.position.set(0, 0, 0);
     this._buildReach(sc.reach);
@@ -181,6 +184,50 @@ export class StudioScene extends EventTarget {
   }
 
   setReachVisible(on) { this.showReach = on; if (this._reach) this._reach.visible = on; }
+
+  // ------------------------------------------------------------------ muscles
+  // Every muscle is drawn site to site as thin cylinders; the sites ride on their bodies, so the paths
+  // follow the pose (also in the live view). One instanced mesh holds all segments.
+  _buildMuscles(muscles) {
+    if (this._muscles) { this.world.remove(this._muscles); this._muscles.geometry.dispose(); this._muscles = null; }
+    this._segments = [];
+    for (const m of muscles) {
+      for (let k = 1; k < m.points.length; k++) this._segments.push([m.points[k - 1], m.points[k], m.radius]);
+    }
+    if (!this._segments.length) return;
+    const geo = new THREE.CylinderGeometry(1, 1, 1, 8, 1, true);  // unit cylinder along y, scaled per segment
+    const mat = new THREE.MeshStandardMaterial({ color: css("--scene-muscle", "#c4473d"), roughness: 0.55 });
+    this._muscles = new THREE.InstancedMesh(geo, mat, this._segments.length);
+    this._muscles.frustumCulled = false;
+    this._muscles.visible = this.showMuscles !== false;
+    this.world.add(this._muscles);
+    this._updateMuscles(true);
+  }
+
+  setMusclesVisible(on) { this.showMuscles = on; if (this._muscles) this._muscles.visible = on; }
+
+  // The skin: the body volumes around the bones (primitive geoms, e.g. the MoBL arm's capsules).
+  setSkinVisible(on) {
+    this.showSkin = on;
+    for (const b of this.bodies) b.traverse((o) => { if (o.userData.volume) o.visible = on; });
+  }
+  get hasSkin() { return (this.sceneInfo?.geoms || []).some((g) => g.volume); }
+
+  _updateMuscles(force = false) {
+    if (!this._muscles || (!this._muscles.visible && !force)) return;
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), dir = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+    const q = new THREE.Quaternion(), m = new THREE.Matrix4(), scale = new THREE.Vector3();
+    const at = (p, out) => { const body = this.bodies[p[0]]; return out.set(p[1], p[2], p[3]).applyQuaternion(body.quaternion).add(body.position); };
+    this._segments.forEach(([p0, p1, r], i) => {
+      at(p0, a); at(p1, b);
+      dir.subVectors(b, a);
+      const len = dir.length();
+      q.setFromUnitVectors(up, len > 1e-9 ? dir.divideScalar(len) : up);
+      m.compose(a.add(b).multiplyScalar(0.5), q, scale.set(r, len, r));
+      this._muscles.setMatrixAt(i, m);
+    });
+    this._muscles.instanceMatrix.needsUpdate = true;
+  }
 
   // ------------------------------------------------------------------ cameras
   _toThree(v) { this.world.updateMatrixWorld(); return this.world.localToWorld(v.clone()); }

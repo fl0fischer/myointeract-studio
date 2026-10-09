@@ -144,7 +144,12 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .target { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 12px; }
 .target-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .swatch { width: 14px; height: 14px; border-radius: 4px; display: inline-block; vertical-align: -2px; margin-right: 6px; }
+.name-edit { border: 1px solid transparent; background: transparent; color: var(--muted); font-size: 0.85rem; width: 12ch; padding: 2px 4px; border-radius: 4px; }
+.name-edit:hover, .name-edit:focus { border-color: var(--line); color: inherit; background: var(--bg); outline: none; }
 .range2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bound { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.bound > span { color: var(--muted); font-size: 0.78rem; }
+.bound input { flex: 1; min-width: 0; }
 .target { cursor: pointer; }
 .target.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .screen-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
@@ -243,7 +248,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   <div class="gap"></div>
   <aside class="summary" id="summary" aria-label="Configuration summary">
     <div class="panel">
-      <div class="group-title"><h3>Your setup</h3><span class="chips"><span class="muted mono" id="preset-name">untitled</span><button class="chip" type="button" id="reset-setup" title="Back to the default setup (the browser keeps your setup otherwise)">Reset</button><button class="chip" type="button" id="summary-toggle" aria-expanded="true">Hide</button></span></div>
+      <div class="group-title"><h3>Your setup</h3><span class="chips"><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"><button class="chip" type="button" id="reset-setup" title="Back to the default setup (the browser keeps your setup otherwise)">Reset</button><button class="chip" type="button" id="summary-toggle" aria-expanded="true">Hide</button></span></div>
       <div class="chips" id="reset-confirm" hidden><span class="muted">Reset every setting to the defaults? Runs and presets stay.</span><button class="chip" type="button" id="reset-yes">Reset</button><button class="chip" type="button" id="reset-no">Cancel</button></div>
       <dl class="kv" id="summary-kv"></dl>
     </div>
@@ -290,21 +295,17 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 (function () {
   /* ---------------------------------------------------------------- options (from ui.py) */
   const MODELS = [
-    { id: "MoBL_Arms_Index", name: "MoBL arm, index finger", note: "Shoulder, elbow and wrist with a pointing finger; the default for pointing.", tag: "default" },
-    { id: "MoBL_Arms_Index_v2.2", name: "MoBL arm v2.2", note: "Torso mass matched to MyoArm, ligament tendons at the shoulder.", tag: "newer" },
-    { id: "MoBL_Arms_Index_v2.1", name: "MoBL arm v2.1", note: "Index-finger arm with revised shoulder and elbow muscle paths.", tag: "newer" },
-    { id: "MoBL_Arms_Hand", name: "MoBL arm, full hand", note: "Adds hand and finger joints for button pressing.", tag: "hand" },
-    { id: "MoBL_Arms_Hand_v2.1", name: "MoBL arm v2.1, full hand", note: "The v2.1 arm with hand and finger joints.", tag: "hand" },
-    { id: "MyoArm_nohand", name: "MyoArm, no hand", note: "MyoSuite arm with detailed shoulder musculature.", tag: "MyoSuite" },
-    { id: "MyoArm", name: "MyoArm", note: "MyoSuite arm and hand, 63 muscles.", tag: "MyoSuite" },
-    { id: "MyoArm_v2", name: "MyoArm v2", note: "Updated MyoArm geometry and muscle paths.", tag: "MyoSuite" },
+    { id: "MoBL_Arms_Index", name: "MoBL arm (index finger)", note: "Shoulder, elbow and wrist with a pointing finger; the default for pointing.", tag: "default" },
+    { id: "MoBL_Arms_Hand", name: "MoBL arm (full hand)", note: "Adds hand and finger joints for button pressing.", tag: "hand" },
+    { id: "MyoArm_nohand", name: "MyoArm (no hand)", note: "MyoSuite arm with detailed shoulder musculature (myo_sim 0.2.3).", tag: "MyoSuite" },
+    { id: "MyoArm", name: "MyoArm", note: "MyoSuite arm and hand, 63 muscles (myo_sim 0.2.3).", tag: "MyoSuite" },
   ];
   const RESETS = [
-    ["epsilon_uniform", "Near the rest pose, small random offsets (default)"],
-    ["zero", "Exactly the rest pose"],
-    ["range_uniform", "Anywhere in the joint ranges"],
-    ["initpose001", "A fixed, natural start pose"],
-    ["initpose001_epsilon_uniform", "Natural start pose with small offsets"],
+    ["epsilon_uniform", "Rest pose with small random offsets (default)"],
+    ["zero", "Rest pose (fixed)"],
+    ["range_uniform", "Anywhere in the joint ranges (random)"],
+    ["initpose001", "Ready-to-touch pose (fixed)"],
+    ["initpose001_epsilon_uniform", "Ready-to-touch pose with small random offsets"],
   ];
   const OBS = {
     body: [["qpos", "joint angles"], ["qvel", "joint velocities"], ["qacc", "joint accelerations"], ["ee_pos", "fingertip position"], ["act", "muscle activations"]],
@@ -337,7 +338,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     reward: Object.fromEntries(REWARDS.map((r) => [r[0], r[1]])),
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
-    view: "perspective", showReach: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
+    view: "perspective", showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
   };
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; } catch (e) {}
 
@@ -420,7 +421,15 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const sub = group === "t" ? el.dataset.sub : null;
       const read = () => el.type === "checkbox" ? el.checked : el.type === "number" || el.type === "range" ? parseFloat(el.value) : el.value;
       el.addEventListener("input", () => {
-        if (sub != null) obj[prop][+sub] = read(); else obj[prop] = read();
+        if (sub != null) {
+          obj[prop][+sub] = read();
+          const [lo, hi] = obj[prop];
+          if (lo > hi) {  // a range: the edited bound pushes the other one along (min <= max)
+            obj[prop][+sub === 0 ? 1 : 0] = obj[prop][+sub];
+            const other = root.querySelector(`[data-bind="${el.dataset.bind}"][data-sub="${+sub === 0 ? 1 : 0}"]`);
+            if (other) other.value = obj[prop][+sub];
+          }
+        } else obj[prop] = read();
         if (el.dataset.live) { const o = root.querySelector(`#${el.dataset.live}`); if (o) o.textContent = el.value; }
         if (el.dataset.redraw) syncScene();
         renderSummary();
@@ -438,8 +447,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         <div class="field"><label for="reset_type">Start pose</label><select id="reset_type" data-bind="bm.reset_type">${RESETS.map(([v, l]) => `<option value="${v}" ${S.bm.reset_type === v ? "selected" : ""}>${l}</option>`).join("")}</select><span class="hint">Random start poses make the policy more robust.</span></div>
       </div>
       <div class="grid2">
-        <label class="toggle-row"><input type="checkbox" data-bind="bm.sigdepnoise_enabled" ${S.bm.sigdepnoise_enabled ? "checked" : ""}><span><b>Signal-dependent noise</b><span>Noise grows with the muscle command, as in human motor control. Produces speed-accuracy trade-offs.</span></span></label>
-        <label class="toggle-row"><input type="checkbox" data-bind="bm.constantnoise_enabled" ${S.bm.constantnoise_enabled ? "checked" : ""}><span><b>Constant noise</b><span>A fixed amount of noise on every command.</span></span></label>
+        <label class="toggle-row"><input type="checkbox" data-bind="bm.sigdepnoise_enabled" ${S.bm.sigdepnoise_enabled ? "checked" : ""}><span><b>Signal-dependent motor noise</b><span>Motor noise grows with the muscle command, as in human motor control. Produces speed-accuracy trade-offs.</span></span></label>
+        <label class="toggle-row"><input type="checkbox" data-bind="bm.constantnoise_enabled" ${S.bm.constantnoise_enabled ? "checked" : ""}><span><b>Constant motor noise</b><span>A fixed amount of motor noise on every command.</span></span></label>
         <label class="toggle-row"><input type="checkbox" data-bind="bm.fatigue_enabled" ${S.bm.fatigue_enabled ? "checked" : ""}><span><b>Muscle fatigue</b><span>Muscles tire with use and recover at rest (3-compartment model). Enables the fatigue observations in step 3.</span></span></label>
       </div>`));
     const cards = ws.querySelector("#model-cards");
@@ -458,8 +467,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- 2 task */
   function targetHtml(t, i) {
     const r = (key, label, hint, min, max, step) => `<div class="field"><span class="lab">${label}</span><div class="range2">
-      <input type="number" aria-label="${label} from" min="${min}" max="${max}" step="${step}" value="${t[key][0]}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1">
-      <input type="number" aria-label="${label} to" min="${min}" max="${max}" step="${step}" value="${t[key][1]}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></div><span class="hint">${hint}</span></div>`;
+      <span class="bound"><span>min</span><input type="number" aria-label="${label} minimum" min="${min}" max="${max}" step="${step}" value="${t[key][0]}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1"></span>
+      <span class="bound"><span>max</span><input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${t[key][1]}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></span></div><span class="hint">${hint}</span></div>`;
     return `<div class="target${S.sel === i ? " selected" : ""}" data-target="${i}">
       <div class="target-head"><b><span class="swatch" style="background:${t.color}"></span>Target ${i + 1}</b>
         <span class="chips">${["Sphere", "Button"].map((k) => `<button class="chip" type="button" data-type="${k}" data-i="${i}" aria-pressed="${t.type === k}">${k === "Sphere" ? "Sphere (point at it)" : "Button (press it)"}</button>`).join("")}
@@ -475,7 +484,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function renderTask(ws) {
     ws.append(h(`<div><span class="eyebrow">Step 2 of 7</span><h2>Place the targets</h2></div>
       <p class="why"><b>Why it matters:</b> each episode draws every target from its region, so the policy learns to reach anywhere inside, not one point. Several targets are visited in order. Keep regions inside the arm's reach (the faint sphere around the shoulder) or enable rejection below.</p>
-      <p class="hint">In the 3D view, click a target and drag its arrows to move it; <b>Resize</b> (S) stretches its region instead. Double-click to add a target where you point, Ctrl+C and Ctrl+V copy the selected one, Delete removes it. <b>User's eye</b> shows the task as the simulated user sees it.</p>
+      <p class="hint">In the 3D view, click a target and drag its arrows to move it; <b>Resize</b> (S) stretches its region instead. Double-click to add a target where you point, Ctrl+C and Ctrl+V copy the selected one, Delete removes it. <b>User View</b> shows the task as the simulated user sees it.</p>
       <span class="err" id="sketch-msg" role="status"></span>
       <div id="targets" style="display:grid; gap:12px"></div>
       <div class="chips"><button class="btn" type="button" id="add-target" ${S.targets.length >= 15 ? "disabled" : ""}>Add a target</button></div>
@@ -499,9 +508,15 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       S.targets.push(t);
       S.sel = S.targets.length - 1;
       render();
+      showTarget(S.sel);
     });
     bindInputs(ws);
     bindScreen(ws);
+  }
+  // Scroll the step panel to a target's entry (e.g. one just added in the 3D view).
+  function showTarget(i) {
+    const el = document.querySelector(`.target[data-target="${i}"]`);
+    if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
   function selectTarget(i, fromScene = false) {
     if (S.sel === i) return;
@@ -617,6 +632,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     $("stage-msg").remove();
     window.studioScene = SC;  // for the browser console and UI tests
     SC.setReachVisible(S.showReach);
+    SC.setMusclesVisible(S.showMuscles);
+    SC.setSkinVisible(S.showSkin);
+    SC.addEventListener("model", () => renderSceneBar());  // the Skin toggle depends on the model
     SC.addEventListener("select", (e) => selectTarget(e.detail.i, true));
     SC.addEventListener("change", (e) => {
       delete S.targets[e.detail.i].screenEl;  // moved by hand: no longer pinned to the screen
@@ -631,6 +649,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       S.targets.push(t);
       S.sel = S.targets.length - 1;
       render();
+      showTarget(S.sel);
     });
     SC.addEventListener("screen-change", (e) => {
       Object.assign(S.screen, e.detail);
@@ -690,9 +709,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (!SC) { bar.hidden = true; return; }
     bar.hidden = false;
     const v = S.viewer;
-    const views = [["perspective", "3D"], ["top", "Top"], ["side", "Side"], ["user", "User's eye"]];
+    const views = [["perspective", "3D"], ["top", "Top"], ["side", "Side"], ["user", "User View"]];
     let html = views.map(([k, l]) => `<button class="chip" type="button" data-view="${k}" aria-pressed="${S.view === k}">${l}</button>`).join("");
     html += `<span class="sep"></span><button class="chip" type="button" data-reach aria-pressed="${S.showReach}" title="The reach used by out-of-reach rejection">Reach</button>`;
+    html += `<button class="chip" type="button" data-muscles aria-pressed="${S.showMuscles}" title="Show or hide the muscles and tendons">Muscles</button>`;
+    if (SC.hasSkin) html += `<button class="chip" type="button" data-skin aria-pressed="${S.showSkin}" title="Show or hide the skin (the body volumes around the bones)">Skin</button>`;
     if (S.step === 1 && S.sel != null) {
       const modes = S.sel === "screen" ? [["translate", "Move (M)"], ["rotate", "Rotate (R)"]] : [["translate", "Move (M)"], ["scale", "Resize (S)"]];
       html += `<span class="sep"></span>` + modes.map(([k, l]) => `<button class="chip" type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${l}</button>`).join("");
@@ -707,12 +728,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       html += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">Stop</button>`;
     }
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
-    if (!window.claude) html += `<span class="sep"></span><button class="chip" type="button" data-export="glb" title="The scene as glTF, for Blender, Unity, Figma plug-ins and web pages">glTF</button>`;
+    if (!window.claude) html += `<span class="sep"></span><button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
     if (S.backend) html += `<button class="chip" type="button" data-export="mjcf" title="The task as a MuJoCo model with its meshes (zip), e.g. for MuJoCo's Unity plug-in">MuJoCo</button>`;
     if (S.sceneError) html += `<span class="live-pill err">${S.sceneError}</span>`;
     bar.innerHTML = html;
     bar.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => { S.view = b.dataset.view; SC.setView(S.view); renderSceneBar(); }));
     bar.querySelector("[data-reach]").addEventListener("click", () => { S.showReach = !S.showReach; SC.setReachVisible(S.showReach); renderSceneBar(); });
+    bar.querySelector("[data-muscles]").addEventListener("click", () => { S.showMuscles = !S.showMuscles; SC.setMusclesVisible(S.showMuscles); renderSceneBar(); });
+    bar.querySelector("[data-skin]")?.addEventListener("click", () => { S.showSkin = !S.showSkin; SC.setSkinVisible(S.showSkin); renderSceneBar(); });
     bar.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
     bar.querySelectorAll("[data-live]").forEach((b) => b.addEventListener("click", () => {
       if (b.dataset.live === "stop") { S.viewer = null; S.viewerClosed = true; closeLive(); api("/api/viewer", { method: "DELETE" }).catch(() => {}); }
@@ -1140,6 +1163,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   }
   function fromPreset(p) {
     if (p.bm) Object.assign(S.bm, p.bm);
+    if (!MODELS.some((m) => m.id === S.bm.bm_model)) S.bm.bm_model = MODELS[0].id;  // a body model Studio no longer offers
     if (p.task && p.task.max_duration) S.task.max_duration = p.task.max_duration;
     if (p.task && "reject_oor" in p.task) S.task.reject_unreachable = !!p.task.reject_oor;
     if (p.rl) {
@@ -1183,7 +1207,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       ["Budget", fmt(S.rl.steps) + " steps · " + S.rl.envs + " envs"],
     ];
     $("summary-kv").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
-    $("preset-name").textContent = S.preset + (S.imported ? " · from your link" : "");
+    if (document.activeElement !== $("preset-name")) $("preset-name").value = S.preset;
+    $("preset-name").title = S.imported ? "From your link · click to rename" : "Click to rename this setup";
     if (S.importError) $("preset-msg").textContent = S.importError;
     $("cfg-json").textContent = JSON.stringify(toPreset(), null, 1).slice(0, 4000);
     saveDraft();
@@ -1324,7 +1349,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   });
   $("import-cfg").addEventListener("change", (ev) => {
     const f = ev.target.files[0]; if (!f) return;
-    f.text().then((txt) => { try { fromPreset(JSON.parse(txt)); S.preset = f.name.replace(/\.json$/, ""); render(); } catch (e) { $("preset-name").textContent = "could not read " + f.name; } });
+    f.text().then((txt) => { try { fromPreset(JSON.parse(txt)); S.preset = f.name.replace(/\.json$/, ""); render(); } catch (e) { $("preset-msg").textContent = "Could not read " + f.name; } });
   });
   $("hero-preset").addEventListener("click", () => { S.preset = "pointing"; S.step = 1; render(); document.getElementById("studio").scrollIntoView(); });
   function renderPresetList() {
@@ -1340,6 +1365,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (!name) return;
     try { await api("/api/presets", { method: "POST", body: { name, preset: toPreset() } }); S.preset = name; S.presets = await api("/api/presets"); renderPresetList(); $("preset-msg").textContent = "Saved."; renderSummary(); } catch (e) { $("preset-msg").textContent = e.message; }
   });
+  // The setup name is edited in place: letters, digits, - and _ (as presets on the backend are named).
+  $("preset-name").addEventListener("change", () => {
+    S.preset = $("preset-name").value.trim().replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "untitled";
+    renderSummary();
+  });
+  $("preset-name").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === "Escape") $("preset-name").blur(); });
   const DEFAULT_SETUP = setupPayload();  // before any import or saved draft changes the state
   function resetSetup() {
     const d = JSON.parse(DEFAULT_SETUP);
