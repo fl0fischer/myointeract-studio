@@ -1293,12 +1293,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     $("conn-go").onclick = async () => {
       const url = ($("backend-url").value || $("backend-url").placeholder).replace(/\/$/, "");
       const code = $("pair-code").value.trim();
-      $("conn-status").textContent = "Checking " + url + " …";
+      $("conn-status").textContent = `Checking ${url} … If your browser asks whether this site may access apps or devices on your computer (local network), choose Allow.`;
       const info = await probeBackend(url, code);
       if (!info) {
         $("conn-status").textContent = window.claude
           ? "Pages on claude.ai cannot reach a server on your computer. Continue on your machine below."
-          : `No Studio server answered at ${url}. Start it with the command above; the page stays in demo mode until then. In Safari, start it with "myo_studio serve --https", open the https address once to trust its certificate, and connect to it here; or continue on your machine below.`;
+          : `No Studio server answered at ${url} (${probeError || "no answer"}). Check that myo_studio serve runs and that this address opens in a new tab (it shows {"ok": true, ...}). If your browser blocked access to apps on this device, allow it in the site settings (local network access) and try again. `
+            + (isSafari ? `Safari only reaches a server started with "myo_studio serve --https": open its https address once to trust the certificate, then connect to it here. ` : "")
+            + "Or continue on your machine below.";
         return;
       }
       if (info.pairing) {
@@ -1313,13 +1315,20 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     dlg.showModal();
   }
 
-  async function probeBackend(url, code) {
+  // Browsers may first ask whether this site may reach apps on this device (local network access);
+  // the request waits for that answer, so allow up to a minute. The last error is kept for the message.
+  let probeError = "";
+  async function probeBackend(url, code, timeoutMs = 60000) {
+    probeError = "";
     try {
-      const ctl = new AbortController(); setTimeout(() => ctl.abort(), 4000);
+      const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), timeoutMs);
       const r = await fetch(url + "/api/health", { signal: ctl.signal, headers: code ? { "X-Studio-Token": code } : {} });
+      clearTimeout(timer);
+      if (!r.ok) probeError = `HTTP ${r.status}`;
       return r.ok ? await r.json() : null;
-    } catch (e) { return null; }
+    } catch (e) { probeError = e.name === "AbortError" ? "no answer within a minute" : e.message || String(e); return null; }
   }
+  const isSafari = /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
   function connectTo(url, code, label) {
     S.token = code || null;
     try { localStorage.setItem(pairKey(url), code || ""); localStorage.setItem("studio-last-backend", url); } catch (e) {}
