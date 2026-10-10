@@ -1,0 +1,267 @@
+{
+ "name": "ar",
+ "title": "AR menu",
+ "summary": {
+  "model": "myoarm_nohand",
+  "targets": 8,
+  "fatigue": false,
+  "vision": false
+ },
+ "training_steps": 21995520,
+ "evaluation": {
+  "checkpoint": "model_final.onnx",
+  "episodes": 1024,
+  "vision": false,
+  "success_rate": 0.8837890625,
+  "time_to_success_s": 3.6403865814208984,
+  "mean_excitation": 0.38361096382141113,
+  "final_mf": null
+ },
+ "replay": {
+  "file": "replay.bin",
+  "floats": 479,
+  "frames": 300,
+  "hello": {
+   "type": "hello",
+   "model": "MyoArm_nohand",
+   "bodies": [
+    "world",
+    "mocap_base",
+    "Full Body",
+    "sacrum",
+    "lumbar5",
+    "Abdomen",
+    "lumbar4",
+    "lumbar3",
+    "lumbar2",
+    "lumbar1",
+    "thorax",
+    "head_attach",
+    "neck",
+    "head",
+    "Arm_attachment",
+    "chest_r",
+    "cervical_spine",
+    "myoarm_r_root",
+    "clavicle_r",
+    "clavphant_r",
+    "scapula_r",
+    "scapphant_r",
+    "humphant_r",
+    "humphant1_r",
+    "humerus_r",
+    "ulna_r",
+    "radius_r",
+    "lunate_r",
+    "scaphoid_r",
+    "pisiform_r",
+    "triquetrum_r",
+    "capitate_r",
+    "trapezium_r",
+    "firstmc_r",
+    "proximal_thumb_r",
+    "distal_thumb_r",
+    "trapezoid_r",
+    "hamate_r",
+    "secondmc_r",
+    "2proxph_r",
+    "midph2_r",
+    "distph2_r",
+    "thirdmc_r",
+    "3proxph_r",
+    "midph3_r",
+    "distph3_r",
+    "fourthmc_r",
+    "4proxph_r",
+    "midph4_r",
+    "distph4_r",
+    "fifthmc_r",
+    "5proxph_r",
+    "midph5_r",
+    "distph5_r",
+    "fixed-eye",
+    "side_camera",
+    "head_on_camera",
+    "body_target_0",
+    "body_target_1",
+    "body_target_2",
+    "body_target_3",
+    "body_target_4",
+    "body_target_5",
+    "body_target_6",
+    "body_target_7"
+   ],
+   "targets": [
+    {
+     "rgba": [
+      0.8,
+      0.1,
+      0.1,
+      1.0
+     ],
+     "radius": 0.06,
+     "shape": "sphere",
+     "size": [
+      0.06,
+      0.06,
+      0.06
+     ],
+     "quat": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "rgba": [
+      0.085,
+      0.0,
+      0.344,
+      1.0
+     ],
+     "radius": 0.025,
+     "shape": "box",
+     "size": [
+      0.025,
+      0.025,
+      0.01
+     ],
+     "quat": [
+      0.92388,
+      0.0,
+      -0.382683,
+      0.0
+     ]
+    },
+    {
+     "rgba": [
+      0.1,
+      0.1,
+      0.8,
+      1.0
+     ],
+     "radius": 0.06,
+     "shape": "sphere",
+     "size": [
+      0.06,
+      0.06,
+      0.06
+     ],
+     "quat": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "rgba": [
+      0.007,
+      0.511,
+      0.037,
+      1.0
+     ],
+     "radius": 0.025,
+     "shape": "box",
+     "size": [
+      0.025,
+      0.025,
+      0.01
+     ],
+     "quat": [
+      0.92388,
+      0.0,
+      -0.382683,
+      0.0
+     ]
+    },
+    {
+     "rgba": [
+      0.4,
+      0.4,
+      0.4,
+      1.0
+     ],
+     "radius": 0.06,
+     "shape": "sphere",
+     "size": [
+      0.06,
+      0.06,
+      0.06
+     ],
+     "quat": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "rgba": [
+      0.51,
+      0.008,
+      0.008,
+      1.0
+     ],
+     "radius": 0.025,
+     "shape": "box",
+     "size": [
+      0.025,
+      0.025,
+      0.01
+     ],
+     "quat": [
+      0.92388,
+      0.0,
+      -0.382683,
+      0.0
+     ]
+    },
+    {
+     "rgba": [
+      0.0,
+      0.988,
+      0.959,
+      1.0
+     ],
+     "radius": 0.1,
+     "shape": "sphere",
+     "size": [
+      0.1,
+      0.1,
+      0.1
+     ],
+     "quat": [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "rgba": [
+      0.415,
+      0.415,
+      0.415,
+      1.0
+     ],
+     "radius": 0.0125,
+     "shape": "box",
+     "size": [
+      0.0125,
+      0.0125,
+      0.01
+     ],
+     "quat": [
+      0.92388,
+      0.0,
+      -0.382683,
+      0.0
+     ]
+    }
+   ],
+   "ctrl_dt": 0.05
+  }
+ }
+}
