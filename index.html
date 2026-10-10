@@ -233,7 +233,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 </header>
 
 <section class="facts" aria-label="Highlights">
-  <div class="fact"><b>4 arm models</b><span>MoBL arm with index finger or full hand, MyoArm (myo_sim 0.2.3) with or without hand.</span></div>
+  <div class="fact"><b>4 arm models</b><span>MyoArm (myo_sim 0.2.3) with or without hand, MoBL arm with index finger or full hand.</span></div>
   <div class="fact"><b>Up to 15 targets</b><span>Spheres sampled from regions in reach, or buttons that must be pressed with force.</span></div>
   <div class="fact"><b>Fatigue and motor noise</b><span>3-compartment muscle fatigue and signal-dependent noise, switchable per task.</span></div>
   <div class="fact"><b>~50 000 steps / s</b><span>Pointing with 4096 parallel environments on one RTX 5090 (mjlab, MuJoCo Warp).</span></div>
@@ -295,10 +295,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 (function () {
   /* ---------------------------------------------------------------- options (from ui.py) */
   const MODELS = [
-    { id: "MoBL_Arms_Index", name: "MoBL arm (index finger)", note: "Shoulder, elbow and wrist with a pointing finger; the default for pointing.", tag: "default" },
-    { id: "MoBL_Arms_Hand", name: "MoBL arm (full hand)", note: "Adds hand and finger joints for button pressing.", tag: "hand" },
-    { id: "MyoArm_nohand", name: "MyoArm (no hand)", note: "MyoSuite arm with detailed shoulder musculature (myo_sim 0.2.3).", tag: "MyoSuite" },
-    { id: "MyoArm", name: "MyoArm", note: "MyoSuite arm and hand, 63 muscles (myo_sim 0.2.3).", tag: "MyoSuite" },
+    { id: "MyoArm_nohand", name: "MyoArm (no hand)", note: "MyoSuite arm with detailed shoulder musculature (myo_sim 0.2.3); the default for pointing.", tag: "default" },
+    { id: "MyoArm", name: "MyoArm", note: "MyoSuite arm and hand, 63 muscles (myo_sim 0.2.3).", tag: "hand" },
+    { id: "MoBL_Arms_Index", name: "MoBL arm (index finger)", note: "Shoulder, elbow and wrist with a pointing finger.", tag: "MoBL" },
+    { id: "MoBL_Arms_Hand", name: "MoBL arm (full hand)", note: "Adds hand and finger joints for button pressing.", tag: "MoBL · hand" },
   ];
   const RESETS = [
     ["epsilon_uniform", "Rest pose with small random offsets (default)"],
@@ -331,7 +331,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- state */
   const S = {
     step: 0, done: new Set(), preset: "untitled", target: "This machine", backend: null,
-    bm: { bm_model: "MoBL_Arms_Index", ctrl_dt: 0.05, reset_type: "epsilon_uniform", sigdepnoise_enabled: false, constantnoise_enabled: false, fatigue_enabled: false, mj_impl_type: "mjlab" },
+    bm: { bm_model: "MyoArm_nohand", ctrl_dt: 0.05, reset_type: "epsilon_uniform", sigdepnoise_enabled: false, constantnoise_enabled: false, fatigue_enabled: false, mj_impl_type: "mjlab" },
     task: { max_duration: 4, reject_unreachable: true },
     targets: [{ type: "Sphere", x: [0.225, 0.375], y: [-0.036, 0.036], z: [-0.3, -0.3], size: [0.01, 0.03], dwell: 0.25, force: 1, angle: 90, color: COLORS[0] }],
     obs: { qpos: true, qvel: true, qacc: true, ee_pos: true, act: true, MA: false, MR: false, MF: false, rgb: false, depth: false, target_pos: true, target_size: true, phase_progress: true, dwell_fraction: true },
@@ -440,7 +440,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- 1 body */
   function renderBody(ws) {
     ws.append(h(`<div><span class="eyebrow">Step 1 of 7</span><h2>Choose the body</h2></div>
-      <p class="why"><b>Why it matters:</b> the model decides which muscles the agent controls and what it can reach. Start with the MoBL arm for pointing; switch to a model with a hand for buttons or keys.</p>
+      <p class="why"><b>Why it matters:</b> the model decides which muscles the agent controls and what it can reach. Start with the MyoArm without hand for pointing; switch to a model with a hand for buttons or keys.</p>
       <div class="cards" id="model-cards"></div>
       <div class="grid2">
         <div class="field"><label for="ctrl_dt">Control step</label><input id="ctrl_dt" type="number" min="0.01" max="0.2" step="0.01" value="${S.bm.ctrl_dt}" data-bind="bm.ctrl_dt"><span class="hint">Seconds between two muscle commands. 0.05 s (20 Hz) is a good default; smaller is slower to train.</span></div>
