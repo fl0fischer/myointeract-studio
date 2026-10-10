@@ -154,14 +154,13 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .target.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .target { position: relative; }
 .target.off { opacity: 0.55; background: rgba(127, 127, 127, 0.06); }
-.target-tools { position: absolute; top: 4px; right: 6px; display: flex; gap: 2px; }
+/* two blocks of small icons at a card's top right: copy and paste, then order, on/off and remove */
+.target-tools { display: flex; gap: 12px; flex-wrap: nowrap; margin: -6px -6px 0 0; }
+.tool-block { display: flex; gap: 1px; }
 .icon-btn { border: 0; background: none; color: var(--muted, #8a8f98); font-size: 0.95rem; line-height: 1; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; opacity: 0.75; }
 .icon-btn:hover:not(:disabled), .icon-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.18); }
 .icon-btn:disabled { opacity: 0.3; cursor: default; }
-.target-head { padding-right: 84px; }
-/* up, down and Remove stay together: on the others' line when it is wide enough, else on a line of their own */
-.chip-group { display: inline-flex; flex-wrap: nowrap; gap: 8px; }
-.icon-btn.eye { margin-right: 10px; display: inline-grid; place-items: center; }  /* set apart from copy and paste */
+.icon-btn { display: inline-grid; place-items: center; padding: 0; }
 .target [data-row] { border-radius: 8px; outline: 1px solid transparent; outline-offset: 4px; }
 .target [data-row][data-rowsel] { outline-color: var(--accent); background: rgba(127, 127, 127, 0.07); }
 .screen-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
@@ -534,11 +533,15 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <span class="bound"><span>min</span><input type="number" aria-label="${label} minimum" min="${min}" max="${max}" step="${step}" value="${t[key][0]}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1"></span>
       <span class="bound"><span>max</span><input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${t[key][1]}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></span></div><span class="hint">${hint}</span></div>`;
     const num = targetNumber(i);
+    const only = S.targets.length <= 1, lastOn = !t.disabled && liveTargets().length <= 1;
+    const icon = (attr, title, glyph, off = false, cls = "") => `<button class="icon-btn${cls}" type="button" ${attr} title="${title}" aria-label="${title}" ${off ? "disabled" : ""}>${glyph}</button>`;
     return `<div class="target${S.sel === i ? " selected" : ""}${t.disabled ? " off" : ""}" data-target="${i}">
-      <span class="target-tools"><button class="icon-btn eye" type="button" data-toggle="${i}" aria-pressed="${!t.disabled}" title="${t.disabled ? "Switched off: left out of the task, but kept in its place. Click to switch it on" : "Part of the task. Click to switch it off for now"}" aria-label="${t.disabled ? "Switch this target on" : "Switch this target off"}" ${!t.disabled && liveTargets().length <= 1 ? "disabled" : ""}>${t.disabled ? EYE_OFF : EYE}</button><button class="icon-btn" type="button" data-copy="${i}" title="Copy this target's settings (Ctrl+C)" aria-label="Copy this target's settings">&#x29C9;</button><button class="icon-btn" type="button" data-paste="${i}" title="Paste the copied settings into this target (Ctrl+V)" aria-label="Paste the copied settings into this target" ${S.clip ? "" : "disabled"}>&#x2398;</button></span>
       <div class="target-head"><b><span class="swatch" style="background:${t.disabled ? "#9aa0a6" : t.color}"></span>${num ? "Target " + num : "Target (off)"}</b>
-        <span class="chips">${["Sphere", "Button"].map((k) => `<button class="chip" type="button" data-type="${k}" data-i="${i}" aria-pressed="${t.type === k}">${k === "Sphere" ? "Sphere (point at it)" : "Button (press it)"}</button>`).join("")}
-        ${S.targets.length > 1 ? `<span class="chip-group"><button class="chip" type="button" data-move="${i},-1" ${i === 0 ? "disabled" : ""} title="Earlier in the sequence" aria-label="Move target ${i + 1} earlier">&uarr;</button><button class="chip" type="button" data-move="${i},1" ${i === S.targets.length - 1 ? "disabled" : ""} title="Later in the sequence" aria-label="Move target ${i + 1} later">&darr;</button><button class="chip" type="button" data-remove="${i}">Remove</button></span>` : ""}</span></div>
+        <span class="target-tools">
+          <span class="tool-block">${icon(`data-copy="${i}"`, "Copy this target's settings (Ctrl+C)", "&#x29C9;")}${icon(`data-paste="${i}"`, "Paste the copied settings into this target (Ctrl+V)", "&#x2398;", !S.clip)}</span>
+          <span class="tool-block">${icon(`data-move="${i},-1"`, "Earlier in the sequence", "&uarr;", only || i === 0)}${icon(`data-move="${i},1"`, "Later in the sequence", "&darr;", only || i === S.targets.length - 1)}${icon(`data-toggle="${i}" aria-pressed="${!t.disabled}"`, t.disabled ? "Switched off: left out of the task, but kept in its place. Click to switch it on" : "Part of the task. Click to switch it off for now", t.disabled ? EYE_OFF : EYE, lastOn, " eye")}${icon(`data-remove="${i}"`, "Remove this target", "&times;", only || lastOn)}</span>
+        </span></div>
+      <div class="chips">${["Sphere", "Button"].map((k) => `<button class="chip" type="button" data-type="${k}" data-i="${i}" aria-pressed="${t.type === k}">${k === "Sphere" ? "Sphere (point at it)" : "Button (press it)"}</button>`).join("")}</div>
       <div class="grid2">
         ${r("x", "Forward (m)", "Distance in front of the shoulder (x).", -1, 1, 0.005)}
         ${r("y", "Sideways (m)", "Right (–) to left (+) of the shoulder (y).", -1, 1, 0.005)}
