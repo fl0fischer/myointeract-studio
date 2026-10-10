@@ -2,7 +2,7 @@
 // interactive elements and a PNG of it. Mirrors studio/figma.py; the token goes only to api.figma.com.
 
 const FIGMA_API = "https://api.figma.com/v1";
-export const MAX_ELEMENTS = 15;  // Studio's target limit
+export const MAX_ELEMENTS = 200;  // a guard against runaway frames; Studio takes any number of targets
 const INTERACTIVE = /button|btn|key|icon|link|tab|toggle|check|switch|slider|input|field|menu|item/i;
 const LEAF_TYPES = new Set(["INSTANCE", "COMPONENT"]);
 
