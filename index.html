@@ -498,6 +498,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   const targetSettings = (t) => { const c = structuredClone(t); ["color", "screenEl", "disabled", "turned"].forEach((k) => delete c[k]); return c; };
   // Rows that can take each other's values: the three position ranges, or the same setting.
   const rowKind = (key) => (["x", "y", "z"].includes(key) ? "position" : key);
+  function clearRow() {
+    S.row = null;
+    document.querySelectorAll("[data-rowsel]").forEach((o) => o.removeAttribute("data-rowsel"));
+  }
+  // A click anywhere but on a row takes the mark off again (what was copied stays copied).
+  document.addEventListener("pointerdown", (ev) => { if (S.row && !(ev.target.closest && ev.target.closest("[data-row]"))) clearRow(); });
   function copyRow() {
     const t = S.targets[S.row.i];
     S.rowClip = { kind: rowKind(S.row.key), value: structuredClone(t[S.row.key]) };
@@ -1072,7 +1078,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       if (S.clipKind === "row") { if (pasteRow()) ev.preventDefault(); return; }
     }
     if (field) return;
-    if (ev.key === "Escape" && S.row) { S.row = null; document.querySelectorAll("[data-rowsel]").forEach((o) => o.removeAttribute("data-rowsel")); }
+    if (ev.key === "Escape" && S.row) clearRow();
     if (!SC) return;
     if ((ev.key === "Delete" || ev.key === "Backspace") && S.sel != null && !mod) { if (S.sel === "screen") removeScreen(); else removeTarget(S.sel); ev.preventDefault(); }
     else if (mod && key === "c" && typeof S.sel === "number" && !String(getSelection())) {
