@@ -438,7 +438,11 @@ export class StudioScene extends EventTarget {
     this.setEditable(false);
     hello.map = hello.bodies.map((n) => this.bodyByName.get(n) || null);
     hello.targetMeshes = hello.targets.map((t) => {
-      const m = new THREE.Mesh(new THREE.SphereGeometry(Math.max(t.radius, 0.005), 32, 16), new THREE.MeshStandardMaterial({ color: new THREE.Color(t.rgba[0], t.rgba[1], t.rgba[2]), transparent: true, opacity: 0.8 }));
+      // a button is drawn as its box (half extents and orientation from the model), a sphere by its radius
+      const box = t.shape === "box" && t.size;
+      const shape = box ? new THREE.BoxGeometry(2 * t.size[0], 2 * t.size[1], 2 * t.size[2]) : new THREE.SphereGeometry(Math.max(t.radius, 0.005), 32, 16);
+      const m = new THREE.Mesh(shape, new THREE.MeshStandardMaterial({ color: new THREE.Color(t.rgba[0], t.rgba[1], t.rgba[2]), transparent: true, opacity: box ? 0.95 : 0.8 }));
+      if (box && t.quat) m.quaternion.copy(MJ_QUAT(t.quat));
       this.liveGroup.add(m);
       return m;
     });
