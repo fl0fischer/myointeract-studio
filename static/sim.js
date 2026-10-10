@@ -2,6 +2,8 @@
 // small MLP picks the muscle excitations. Mirrors studio/browser.py's Reference step for step.
 
 const sigmoid = (a) => 1 / (1 + Math.exp(-5 * (a - 0.5)));
+// a standard normal draw (Box-Muller)
+const gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
 
 export class TaskSim {
   // base: folder of an example (sim.json, sim_model.xml, sim_policy.bin); mujocoUrl: the vendored module.
@@ -54,6 +56,7 @@ export class TaskSim {
     this.MA = new Float32Array(m.nu);
     this.MF = new Float32Array(m.nu);
     this.MR = new Float32Array(m.nu).fill(1);
+    this.noisy = true;  // motor noise, where the task has it (the parity test switches it off)
     this.current = 0;  // index of the target the policy is on
     this.inside = 0;
     this.steps = 0;
@@ -61,18 +64,22 @@ export class TaskSim {
   }
 
   // A start and targets as training draws them (every axis on its own), or the given ones:
-  // joint offsets (rad) and velocities, per target a world position and a size (3 numbers), and
-  // with fatigue the compartments [MA, MF, MR] (drawn at random if the task was trained that way).
-  reset({ jointOffset, jointVel, positions, sizes, fatigueState } = {}) {
-    const { mj, model: m, data: d, task } = this;
-    const r = task.reset_offset, uni = (lo, hi) => lo + Math.random() * (hi - lo);
-    jointOffset = jointOffset || this.qadr.map(() => uni(-r, r));
-    jointVel = jointVel || this.qadr.map(() => uni(-r, r));
+  // start = { qpos (for the task's start joints), qvel (arm joints), act (optional) }, per target a
+  // world position and a size (3 numbers), and with fatigue the compartments [MA, MF, MR].
+  reset({ start, positions, sizes, fatigueState } = {}) {
+    const { mj, model: m, data: d, task } = this, st = task.start;
+    const uni = (lo, hi) => lo + Math.random() * (hi - lo), eps = (k) => (Array.isArray(st.eps) ? st.eps[k] : st.eps);
+    start = start || {
+      qpos: st.qadr.map((_, k) => st.base[k] + uni(-1, 1) * eps(k)),
+      qvel: st.vadr.map(() => uni(-1, 1) * st.vel),
+      act: st.act ? st.act.base.map((b) => b + uni(-1, 1) * st.act.eps) : null,
+    };
     positions = positions || this.targets.map((t) => task.origin.map((o, k) => o + uni(t.position[0][k], t.position[1][k])));
     sizes = sizes || this.targets.map((t) => [0, 1, 2].map((k) => uni(t.size[0][k], t.size[1][k])));
     mj.mj_resetData(m, d);
-    this.qadr.forEach((a, k) => { d.qpos[a] = Math.min(this.range[k][1], Math.max(this.range[k][0], m.qpos0[a] + jointOffset[k])); });
-    this.vadr.forEach((a, k) => { d.qvel[a] = jointVel[k]; });
+    st.qadr.forEach((a, k) => { d.qpos[a] = Math.min(st.limits[k][1], Math.max(st.limits[k][0], start.qpos[k])); });
+    st.vadr.forEach((a, k) => { d.qvel[a] = start.qvel[k]; });
+    if (start.act) start.act.forEach((v, k) => { d.act[k] = Math.min(1, Math.max(0, v)); });
     this.targets.forEach((t, i) => {
       for (let k = 0; k < 3; k++) { m.body_pos[3 * t.bodyId + k] = positions[i][k]; m.geom_size[3 * t.geomId + k] = sizes[i][k]; }
     });
@@ -149,6 +156,13 @@ export class TaskSim {
     const { mj, model: m, data: d, task } = this;
     const action = this.act(this.observe());
     const excitation = Float32Array.from(action, sigmoid);
+    if (task.noise && this.noisy) {
+      // motor noise as in training: clip(u + signal_dependent * u * n1 + constant * n2, 0, 1)
+      for (let k = 0; k < excitation.length; k++) {
+        const u = excitation[k];
+        excitation[k] = Math.min(1, Math.max(0, u + task.noise.signal_dependent * u * gauss() + task.noise.constant * gauss()));
+      }
+    }
     d.ctrl.set(this.fatigue ? this.fatigueStep(excitation) : excitation);
     for (let k = 0; k < task.substeps; k++) mj.mj_step(m, d);
     const n = this.targets.length, t = this.targets[Math.min(this.current, n - 1)];
