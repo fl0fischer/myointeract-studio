@@ -321,9 +321,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     ["body_contact_penalty", 0, 0, 0.01, 0.0001, "Penalises touching the torso with the arm."],
   ];
   const TARGETS = {
-    "Google Colab": { key: "colab", speed: 9000, note: "Free T4 GPU, about 5x slower than an RTX 5090; sessions end after inactivity. Connecting Studio to Colab is coming soon; until then use the notebook.", cmd: "# coming soon: Studio on Colab\n# for now, open tutorials/myointeract/myoInteract.ipynb in Colab" },
+    "Google Colab": { key: "colab", speed: 9000, note: "Free T4 GPU, about 5x slower than an RTX 5090; sessions end after inactivity. Studio runs inside the Colab session: open the notebook, run its two cells and follow the link it prints.", cmd: "# open in Colab and run the two cells:\n# https://colab.research.google.com/github/fl0fischer/myointeract/blob/main/tutorials/myointeract/studio_colab.ipynb\nfrom myoInteract.studio.colab import launch\nlaunch()  # prints the link that opens Studio" },
     "This machine": { key: "local", speed: 48000, note: "Your own NVIDIA GPU (measured on an RTX 5090).", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages" },
-    "Hugging Face Space": { key: "hf", speed: 0, note: "Configure, preview and try short runs; long runs need GPU hardware on the Space. Studio on a Space is coming soon.", cmd: "# coming soon: Studio on a Hugging Face Space\n# for now, the Gradio Space in hf_space/" },
+    "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Docker Space in your own Hugging Face account, on the hardware you pick there (training needs a GPU). Studio runs inside the Space: create it from the template and open it.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
     "Lab server": { key: "remote", speed: 30000, note: "Any Linux or Windows machine with an NVIDIA GPU, reached through SSH.", cmd: "ssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser  # then open http://localhost:8000" },
   };
   const COLORS = ["#c2412d", "#23708f", "#2b7a4b", "#8f2c6b", "#a8640c", "#5a54b8"];
@@ -339,6 +339,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
     view: "perspective", showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
+    examples: [], exampleSel: null, replay: null,
   };
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; } catch (e) {}
 
@@ -687,13 +688,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     $("stage").classList.toggle("dim", [2, 3, 4].includes(S.step));
     if (liveWanted() && !S.liveSocket) connectLive(S.viewer.key);
     if (!liveWanted() && S.liveSocket) closeLive();
-    const live = liveWanted() && S.live;
-    const model = live && S.live.model ? S.live.model : S.bm.bm_model;
+    const live = (liveWanted() && S.live) || (replayWanted() && S.replay.hello) || null;
+    const model = live && live.model ? live.model : S.bm.bm_model;
+    if (replayWanted() && S.replay.hello && !S.replayTimer) S.replayTimer = setInterval(tickReplay, 1000 * S.replay.hello.ctrl_dt);
     SC.loadModel(model, sceneBase()).then(() => {
       S.sceneError = null;
-      if (live && (sceneKeys.live !== S.live || sceneKeys.liveModel !== SC.sceneInfo)) {
-        SC.setLive(S.live);
-        sceneKeys.live = S.live;
+      if (live && (sceneKeys.live !== live || sceneKeys.liveModel !== SC.sceneInfo)) {
+        SC.setLive(live);
+        sceneKeys.live = live;
         sceneKeys.liveModel = SC.sceneInfo;
       }
     }).catch((e) => { S.sceneError = e.message; renderSceneBar(); });
@@ -727,6 +729,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       html += `<span class="sep"></span><span class="live-pill ${state[0]}" role="status">${state[1]}</span>`;
       html += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">Stop</button>`;
     }
+    if (replayWanted()) html += `<span class="sep"></span><span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…"}</span>`;
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
     if (!window.claude) html += `<span class="sep"></span><button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
     if (S.backend) html += `<button class="chip" type="button" data-export="mjcf" title="The task as a MuJoCo model with its meshes (zip), e.g. for MuJoCo's Unity plug-in">MuJoCo</button>`;
@@ -822,6 +825,35 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       renderSceneBar();
       if (tries < 5) setTimeout(() => { if (S.viewer && S.viewer.key === key && liveWanted() && !S.liveSocket) connectLive(key, tries + 1); }, 2000);
     };
+  }
+  /* ---------------------------------------------------------------- example policies without a backend */
+  // The hosted page ships each example's stored evaluation and a recorded live feed (same frames as
+  // the live view), which the 3D scene replays in a loop.
+  const replayWanted = () => !S.backend && S.step === 6 && !!S.replay;
+  fetch("examples/index.json").then((r) => (r.ok ? r.json() : [])).then((list) => { S.examples = list; if (S.step === 6) render(); }).catch(() => {});
+  async function loadReplay(ex) {
+    if (S.replay && S.replay.name === ex.name) return;
+    clearInterval(S.replayTimer);
+    S.replayTimer = null;
+    const mine = (S.replay = { name: ex.name, title: ex.title, hello: null });
+    try {
+      const r = await fetch(`examples/${ex.name}/${ex.replay.file}`);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const frames = new Float32Array(await r.arrayBuffer());
+      Object.assign(mine, { frames, floats: ex.replay.floats, n: ex.replay.frames, i: 0, hello: { ...ex.replay.hello } });
+    } catch (e) { mine.error = e.message; }
+    if (S.replay === mine) { syncScene(); renderSceneBar(); }
+  }
+  function tickReplay() {
+    const r = S.replay;
+    if (!replayWanted() || !r.hello) { clearInterval(S.replayTimer); S.replayTimer = null; return; }
+    if (SC && sceneKeys.live === r.hello) { SC.applyFrame(r.frames.subarray(r.i * r.floats, (r.i + 1) * r.floats)); r.i = (r.i + 1) % r.n; }
+  }
+  async function openExampleTask(name) {
+    const preset = S.backend ? await api("/api/presets/" + encodeURIComponent(name)) : await (await fetch(`examples/${name}/preset.json`)).json();
+    fromPreset(preset);
+    S.preset = name;
+    go(1);
   }
   function closeLive() {
     const ws = S.liveSocket;
@@ -1034,6 +1066,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- 7 evaluate */
   function renderEvaluate(ws) {
     if (S.backend) return renderEvaluateBackend(ws);
+    if (S.examples.length) return renderEvaluateExamples(ws);
     const has = S.run && S.run.pts.length;
     const last = has ? S.run.pts[S.run.pts.length - 1] : null;
     ws.append(h(`<div><span class="eyebrow">Step 7 of 7</span><h2>Evaluate</h2></div>
@@ -1047,6 +1080,30 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       </div>
       <div class="video-ph">Rollout video of the deterministic policy<br>(rendered by the backend)</div>`));
   }
+  const pct = (v) => (v == null ? "–" : Math.round(v * 100) + "%");
+  const statRow = (res) => `<div class="stat-row">
+        <div class="stat"><b>${res ? pct(res.success_rate) : "–"}</b><span>success (deterministic)</span></div>
+        <div class="stat"><b>${res && res.time_to_success_s != null ? res.time_to_success_s.toFixed(2) + " s" : "–"}</b><span>time to success</span></div>
+        <div class="stat"><b>${res ? res.mean_excitation.toFixed(2) : "–"}</b><span>mean muscle excitation</span></div>
+        <div class="stat"><b>${res ? (res.final_mf == null ? "off" : res.final_mf.toFixed(2)) : "–"}</b><span>final fatigue (MF)</span></div>
+      </div>`;
+  const exampleNote = (ex) => [(MODELS.find((m) => m.id === ex.replay.hello.model) || {}).name, ex.summary && `${ex.summary.targets} target${ex.summary.targets === 1 ? "" : "s"}`, ex.training_steps && `trained for ${Math.round(ex.training_steps / 1e6)} M steps`, `evaluated on ${ex.evaluation.episodes} episodes`].filter(Boolean).join(" · ");
+  function renderEvaluateExamples(ws) {
+    const ex = S.examples.find((e) => e.name === S.exampleSel) || S.examples[0];
+    ws.append(h(`<div><span class="eyebrow">Step 7 of 7</span><h2>Evaluate</h2></div>
+      <p class="why"><b>Why it matters:</b> training curves use exploration noise. Evaluation runs the deterministic policy on fresh episodes and reports what you would publish: success rate, time to target, effort and fatigue.</p>
+      <p class="demo-banner">No backend is connected, so these are example policies, trained and evaluated in advance (one per task example). With a backend the same examples can be loaded, run live and evaluated again, next to your own runs.</p>
+      <div class="grid2">
+        <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${e.name}" ${e === ex ? "selected" : ""}>${e.title}</option>`).join("")}</select>
+          <span class="hint">${exampleNote(ex)}</span></div>
+        <div class="field"><span class="lab">&nbsp;</span><div class="chips"><button class="btn" type="button" id="ex-open">Open this task in the editor</button></div><span class="hint">The 3D view replays a recorded rollout of this policy.</span></div>
+      </div>
+      <p class="err" id="ex-msg" hidden></p>
+      ${statRow(ex.evaluation)}`));
+    ws.querySelector("#ex-sel").addEventListener("change", (e) => { S.exampleSel = e.target.value; render(); });
+    ws.querySelector("#ex-open").addEventListener("click", () => openExampleTask(ex.name).catch((e) => { const m = $("ex-msg"); m.hidden = false; m.textContent = "Could not open the task: " + e.message; }));
+    loadReplay(ex);
+  }
   const ago = (sec) => sec == null ? "" : sec < 90 ? `${sec} s ago` : sec < 5400 ? `${Math.round(sec / 60)} min ago` : sec < 172800 ? `${Math.round(sec / 3600)} h ago` : `${Math.round(sec / 86400)} days ago`;
   const runSummary = (r) => {
     const m = r.summary;
@@ -1057,7 +1114,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   const isLive = (r) => r.status === "running" || r.status === "starting";
   const ckptLabel = (c, r, newest) => {
     const it = c.match(/model_(\d+|final)/);
-    return `${it ? (it[1] === "final" ? "final" : "iteration " + it[1]) : c} · ${ago(r.checkpoint_age_s && r.checkpoint_age_s[c])}${newest ? " · newest" : ""}`;
+    return [it ? (it[1] === "final" ? "final" : "iteration " + it[1]) : c, r.source !== "examples" && ago(r.checkpoint_age_s && r.checkpoint_age_s[c]), newest && r.source !== "examples" && "newest"].filter(Boolean).join(" · ");
   };
   async function loadRuns(force) {
     if (!force && S.runsFetchedAt && Date.now() - S.runsFetchedAt < 3000) return;
@@ -1069,39 +1126,36 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const ev = S.evalJob || {};
     // Training runs are listed at once (their first checkpoint follows); finished ones once evaluable.
     const runs = S.runs.filter((r) => isLive(r) || (r.evaluable && r.checkpoints.length));
-    const live = runs.filter(isLive), studio = runs.filter((r) => !isLive(r) && r.source === "studio"), other = runs.filter((r) => !isLive(r) && r.source !== "studio");
+    const live = runs.filter(isLive), studio = runs.filter((r) => !isLive(r) && r.source === "studio"), other = runs.filter((r) => !isLive(r) && r.source === "logs"), examples = runs.filter((r) => r.source === "examples");
     const sel = ev.run || (live[0] && live[0].id) || (S.run && S.run.id) || (runs[0] && runs[0].id) || "";
     const run = runs.find((r) => r.id === sel) || runs[0];
     const ckpts = run ? run.checkpoints.slice().reverse() : [];
     const following = run && isLive(run);  // a training run: the viewer follows its newest checkpoint by default
     const choices = following ? [FOLLOW, ...ckpts] : ckpts;
     const ckpt = ev.checkpoint && choices.includes(ev.checkpoint) ? ev.checkpoint : choices[0];
-    const res = ev.result;
-    const pct = (v) => (v == null ? "–" : Math.round(v * 100) + "%");
+    // An example shows its stored evaluation until it is evaluated again here.
+    const stored = !!(run && run.example && !ev.busy && !(ev.result && ev.label && ev.label.startsWith(run.id + " ·")));
+    const res = stored ? run.example.evaluation : ev.result;
     const opt = (r) => `<option value="${r.id}" ${run && r.id === run.id ? "selected" : ""}>${r.name}${runSummary(r) ? " · " + runSummary(r) : ""} · ${r.checkpoints.length} checkpoint${r.checkpoints.length === 1 ? "" : "s"}</option>`;
     const group = (label, list) => (list.length ? `<optgroup label="${label}">${list.map(opt).join("")}</optgroup>` : "");
     ws.append(h(`<div><span class="eyebrow">Step 7 of 7</span><h2>Evaluate</h2></div>
       <p class="why"><b>Why it matters:</b> training curves use exploration noise. Evaluation runs the deterministic policy on fresh episodes and reports what you would publish: success rate, time to target, effort and fatigue.</p>
       ${live.length ? `<p class="muted">Training now: <b>${live.map((r) => r.name).join(", ")}</b>. Its newest checkpoint appears here within seconds of being saved; switch to <a href="#" data-go-step="5">Train</a> for the curves.</p>` : ""}
       <div class="grid2">
-        <div class="field"><label for="ev-run">Run</label><select id="ev-run">${runs.length ? group("Training now", live) + group("Started in Studio", studio) + group("Other runs (logs/rsl_rl)", other) : "<option>No runs with checkpoints yet</option>"}</select>
-          <span class="hint">${run ? `${run.status}${run.log_dir ? " · " + run.log_dir.split("/").slice(-2).join("/") : ""}` : ""} · <a href="#" id="ev-refresh">refresh</a></span></div>
+        <div class="field"><label for="ev-run">Run</label><select id="ev-run">${runs.length ? group("Training now", live) + group("Started in Studio", studio) + group("Other runs (logs/rsl_rl)", other) + group("Example policies", examples) : "<option>No runs with checkpoints yet</option>"}</select>
+          <span class="hint">${run && run.example ? `${exampleNote(run.example)} · <a href="#" id="ev-open">open its task in the editor</a>` : run ? `${run.status}${run.log_dir ? " · " + run.log_dir.split("/").slice(-2).join("/") : ""}` : ""} · <a href="#" id="ev-refresh">refresh</a></span></div>
         <div class="field"><label for="ev-ckpt">Checkpoint</label><select id="ev-ckpt" ${choices.length ? "" : "disabled"}>${choices.length ? choices.map((c, i) => `<option value="${c}" ${c === ckpt ? "selected" : ""}>${c === FOLLOW ? "Newest · follows training" : ckptLabel(c, run, c === ckpts[0])}</option>`).join("") : "<option>Waiting for the first checkpoint…</option>"}</select></div>
         <div class="field"><label for="ev-eps">Episodes</label><select id="ev-eps">${[64, 256, 1024].map((n) => `<option ${n === (ev.episodes || 64) ? "selected" : ""}>${n}</option>`).join("")}</select></div>
         <div class="field"><span class="lab">&nbsp;</span><div class="chips"><button class="btn primary" type="button" id="ev-go" ${ckpts.length && !ev.busy ? "" : "disabled"}>${ev.busy ? "Evaluating…" : "Evaluate"}</button></div><span class="hint">Success rate and effort over many episodes; the 3D view plays the policy live (<a href="#" id="ev-viser">or in the viser viewer</a>).</span></div>
       </div>
       ${ev.error ? `<p class="err">${ev.error}</p>` : ""}
-      ${res && ev.label ? `<p class="muted">Result for ${ev.label}</p>` : ""}
-      <div class="stat-row">
-        <div class="stat"><b>${res ? pct(res.success_rate) : "–"}</b><span>success (deterministic)</span></div>
-        <div class="stat"><b>${res && res.time_to_success_s != null ? res.time_to_success_s.toFixed(2) + " s" : "–"}</b><span>time to success</span></div>
-        <div class="stat"><b>${res ? res.mean_excitation.toFixed(2) : "–"}</b><span>mean muscle excitation</span></div>
-        <div class="stat"><b>${res ? (res.final_mf == null ? "off" : res.final_mf.toFixed(2)) : "–"}</b><span>final fatigue (MF)</span></div>
-      </div>
+      ${stored ? `<p class="muted">Stored result of this example; Evaluate runs it again on this machine.</p>` : res && ev.label ? `<p class="muted">Result for ${ev.label}</p>` : ""}
+      ${statRow(res)}
       ${res && res.video ? `<video class="media" src="${S.backend}/api/jobs/${ev.id}/files/${res.video}" controls autoplay muted loop playsinline></video>` : ""}`));
     const runSel = ws.querySelector("#ev-run"), ckSel = ws.querySelector("#ev-ckpt");
     runSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: null }; S.viewerClosed = false; render(); });
     ckSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: ckSel.value }; });
+    if (ws.querySelector("#ev-open")) ws.querySelector("#ev-open").addEventListener("click", (e) => { e.preventDefault(); openExampleTask(run.example.name).catch((err) => { S.evalJob = { ...ev, error: err.message }; render(); }); });
     ws.querySelector("#ev-refresh").addEventListener("click", (e) => { e.preventDefault(); loadRuns(true); });
     ws.querySelectorAll("[data-go-step]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); go(+a.dataset.goStep); }));
     ckSel.addEventListener("change", () => { S.viewerClosed = false; showRunInViewer(run, ckSel.value); });
@@ -1217,10 +1271,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (t.speed) {
       const sec = S.rl.steps / (t.speed * Math.min(1, S.rl.envs / 4096) ** 0.5) + 60;
       $("est-time").textContent = sec < 3600 ? `≈ ${Math.round(sec / 60)} min` : `≈ ${(sec / 3600).toFixed(1)} h`;
-      $("est-note").textContent = `Rough estimate from measured throughput (${fmt(t.speed)} steps/s at 4096 envs), plus a minute of start-up.`;
+      $("est-note").textContent = `Rough estimate from ${t.key === "hf" ? "the throughput of a T4 Space" : "measured throughput"} (${fmt(t.speed)} steps/s at 4096 envs), plus a minute of start-up.`;
     } else {
       $("est-time").textContent = "short runs";
-      $("est-note").textContent = "Free GPU time on Spaces is a few minutes per day; train longer runs elsewhere.";
+      $("est-note").textContent = "No throughput is known for this backend.";
     }
   }
 
