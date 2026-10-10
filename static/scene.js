@@ -527,9 +527,10 @@ function label(text, color) {
   ctx.font = "600 34px system-ui, sans-serif";
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillText(text, 32, 34);
-  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false }));
-  sprite.scale.set(0.035, 0.035, 1);
-  sprite.position.set(0, 0, 0.06);
+  // The target's place in the sequence: small and see-through, so it does not hide a screen behind it.
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false, transparent: true, opacity: 0.55 }));
+  sprite.scale.set(0.022, 0.022, 1);
+  sprite.position.set(0, 0, 0.03);
   sprite.renderOrder = 10;
   return sprite;
 }

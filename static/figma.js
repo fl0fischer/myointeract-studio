@@ -16,25 +16,41 @@ export function parseFigmaUrl(url) {
   return [match[1], node.replace(/-/g, ":")];
 }
 
-// Frame size and its interactive elements, in pixels relative to the frame's top-left corner.
-// Elements are component instances and nodes named like controls; a picked element's children are
-// not searched. Without any, the frame's direct children are used.
+const painted = (n) => [...(n.fills || []), ...(n.strokes || [])].some((p) => p.visible !== false && (p.opacity ?? 1) > 0);
+
+// Frame size and its clickable elements, in pixels relative to the frame's top-left corner. An
+// element is the outermost node that is clickable as a whole: one with a prototype interaction, a
+// component instance, a node named like a control, or a small container with its own background (a
+// chip, a pill, a call-to-action), so a button counts with its full area and not as the icon inside
+// it. Elements are cut to the frame (what the image shows); those mostly outside it are dropped.
 export function frameElements(node, limit = MAX_ELEMENTS) {
-  const box = node.absoluteBoundingBox;
-  const rel = (n) => { const b = n.absoluteBoundingBox; return { name: n.name || "", x: b.x - box.x, y: b.y - box.y, w: b.width, h: b.height }; };
+  const box = node.absoluteBoundingBox, W = box.width, H = box.height;
+  const rel = (n) => {
+    const b = n.absoluteBoundingBox;
+    const x0 = Math.max(b.x - box.x, 0), y0 = Math.max(b.y - box.y, 0);
+    const x1 = Math.min(b.x - box.x + b.width, W), y1 = Math.min(b.y - box.y + b.height, H);
+    if (x1 <= x0 || y1 <= y0 || (x1 - x0) * (y1 - y0) < 0.5 * b.width * b.height) return null;  // scrolled out of the frame
+    return { name: n.name || "", x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  };
   const usable = (n) => { const b = n.absoluteBoundingBox; return n.visible !== false && !!b && b.width > 0 && b.height > 0; };
+  const control = (n) => {
+    if ((n.interactions && n.interactions.length) || (n.reactions && n.reactions.length)) return true;
+    if (LEAF_TYPES.has(n.type) || INTERACTIVE.test(n.name || "")) return true;
+    const b = n.absoluteBoundingBox, small = b.width <= 0.9 * W && b.height <= 0.25 * H;
+    return !!(n.children && n.children.length) && small && (painted(n) || !!n.cornerRadius);
+  };
   let picked = [];
   const walk = (n) => {
     for (const child of n.children || []) {
       if (!usable(child)) continue;
-      if (LEAF_TYPES.has(child.type) || INTERACTIVE.test(child.name || "")) picked.push(rel(child));
+      if (control(child)) { const e = rel(child); if (e) picked.push(e); }
       else walk(child);
     }
   };
   walk(node);
-  if (!picked.length) picked = (node.children || []).filter(usable).map(rel);
+  if (!picked.length) picked = (node.children || []).filter(usable).map(rel).filter(Boolean);
   picked = picked.map((e, i) => [e, i]).sort(([a, i], [b, j]) => Math.round(a.y) - Math.round(b.y) || a.x - b.x || i - j).map(([e]) => e);
-  return { name: node.name || "frame", width: box.width, height: box.height, elements: picked.slice(0, limit), more: Math.max(0, picked.length - limit) };
+  return { name: node.name || "frame", width: W, height: H, elements: picked.slice(0, limit), more: Math.max(0, picked.length - limit) };
 }
 
 async function get(url, token) {
@@ -54,7 +70,8 @@ export async function fetchFrame(url, token) {
   const entry = (nodes.nodes || {})[nodeId];
   if (!entry || !entry.document) throw new Error("Figma does not know this frame.");
   const frame = frameElements(entry.document);
-  const images = await (await get(`${FIGMA_API}/images/${key}?ids=${ids}&format=png&scale=1`, token)).json();
+  // use_absolute_bounds: the image is exactly the frame's box (no overflow, no shadow margin), so pixels and elements agree
+  const images = await (await get(`${FIGMA_API}/images/${key}?ids=${ids}&format=png&scale=2&use_absolute_bounds=true`, token)).json();
   const imageUrl = (images.images || {})[nodeId];
   if (!imageUrl) throw new Error("Figma could not render this frame as an image.");
   let blob;
