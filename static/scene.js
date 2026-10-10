@@ -275,7 +275,9 @@ export class StudioScene extends EventTarget {
 
   _buildTarget(t, i) {
     const grp = new THREE.Group();
-    const color = new THREE.Color(t.color);
+    // A target that is switched off is drawn grey and without its number.
+    const color = new THREE.Color(t.disabled ? "#9aa0a6" : t.color);
+    const number = t.disabled ? 0 : this.targetData.slice(0, i + 1).filter((o) => !o.disabled).length;
     const lo = (r) => Math.min(...r), hi = (r) => Math.max(...r), mid = (r) => (lo(r) + hi(r)) / 2;
     grp.position.set(mid(t.x), mid(t.y), mid(t.z));
     const ext = [t.x, t.y, t.z].map((r) => hi(r) - lo(r));
@@ -299,7 +301,8 @@ export class StudioScene extends EventTarget {
     }
     marker.userData.target = i;
     grp.add(marker);
-    grp.add(label(String(i + 1), t.color));
+    if (number) grp.add(label(String(number), t.color));
+    else marker.traverse((o) => { if (o.material) { o.material.transparent = true; o.material.opacity = Math.min(o.material.opacity, 0.3); } });
     grp.userData = { i, region, marker, ext };
     this.targetGroup.add(grp);
     return grp;

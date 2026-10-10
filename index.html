@@ -152,6 +152,15 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .bound input { flex: 1; min-width: 0; }
 .target { cursor: pointer; }
 .target.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.target { position: relative; }
+.target.off { opacity: 0.55; background: rgba(127, 127, 127, 0.06); }
+.target-tools { position: absolute; top: 4px; right: 6px; display: flex; gap: 2px; }
+.icon-btn { border: 0; background: none; color: var(--muted, #8a8f98); font-size: 0.95rem; line-height: 1; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; opacity: 0.75; }
+.icon-btn:hover:not(:disabled), .icon-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.18); }
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+.target-head { padding-right: 46px; }
+.target [data-row] { border-radius: 8px; outline: 1px solid transparent; outline-offset: 4px; }
+.target [data-row][data-rowsel] { outline-color: var(--accent); background: rgba(127, 127, 127, 0.07); }
 .screen-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
 .screen-box summary { cursor: pointer; }
 input[type="password"] { font: inherit; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
@@ -348,7 +357,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     reward: Object.fromEntries(REWARDS.map((r) => [r[0], r[1]])),
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
-    view: "perspective", stepOpen: true, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
+    view: "perspective", stepOpen: true, row: null, rowClip: null, clipKind: null, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
     examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live",
   };
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
@@ -479,26 +488,58 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   }
 
   /* ---------------------------------------------------------------- 2 task */
+  // Targets that are switched on, in order: the task. A target's number is its place among them.
+  const liveTargets = () => S.targets.filter((t) => !t.disabled);
+  const targetNumber = (i) => (S.targets[i].disabled ? 0 : S.targets.slice(0, i + 1).filter((t) => !t.disabled).length);
+  // What a copy carries from one target to another: everything but its identity in the list.
+  const targetSettings = (t) => { const c = structuredClone(t); ["color", "screenEl", "disabled", "turned"].forEach((k) => delete c[k]); return c; };
+  // Rows that can take each other's values: the three position ranges, or the same setting.
+  const rowKind = (key) => (["x", "y", "z"].includes(key) ? "position" : key);
+  function copyRow() {
+    const t = S.targets[S.row.i];
+    S.rowClip = { kind: rowKind(S.row.key), value: structuredClone(t[S.row.key]) };
+    S.clipKind = "row";
+  }
+  function pasteRow() {
+    const t = S.targets[S.row.i];
+    if (!S.rowClip || S.rowClip.kind !== rowKind(S.row.key) || !(S.row.key in t)) return false;
+    t[S.row.key] = structuredClone(S.rowClip.value);
+    if (rowKind(S.row.key) === "position") delete t.screenEl;  // moved by hand: no longer pinned to the screen
+    render();
+    return true;
+  }
+  function copyTarget(i) { S.clip = targetSettings(S.targets[i]); S.clipKind = "target"; }
+  function pasteInto(i) {
+    if (!S.clip) return;
+    const keep = S.targets[i];
+    S.targets[i] = { ...S.clip, color: keep.color, ...(keep.disabled ? { disabled: true } : {}) };
+    S.sel = i;
+    render();
+  }
   function targetHtml(t, i) {
-    const r = (key, label, hint, min, max, step) => `<div class="field"><span class="lab">${label}</span><div class="range2">
+    const row = (key) => `data-row="${i}.${key}"${S.row && S.row.i === i && S.row.key === key ? ' data-rowsel="1"' : ""}`;
+    const r = (key, label, hint, min, max, step) => `<div class="field" ${row(key)}><span class="lab">${label}</span><div class="range2">
       <span class="bound"><span>min</span><input type="number" aria-label="${label} minimum" min="${min}" max="${max}" step="${step}" value="${t[key][0]}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1"></span>
       <span class="bound"><span>max</span><input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${t[key][1]}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></span></div><span class="hint">${hint}</span></div>`;
-    return `<div class="target${S.sel === i ? " selected" : ""}" data-target="${i}">
-      <div class="target-head"><b><span class="swatch" style="background:${t.color}"></span>Target ${i + 1}</b>
+    const num = targetNumber(i);
+    return `<div class="target${S.sel === i ? " selected" : ""}${t.disabled ? " off" : ""}" data-target="${i}">
+      <span class="target-tools"><button class="icon-btn" type="button" data-copy="${i}" title="Copy this target's settings (Ctrl+C)" aria-label="Copy this target's settings">&#x29C9;</button><button class="icon-btn" type="button" data-paste="${i}" title="Paste the copied settings into this target (Ctrl+V)" aria-label="Paste the copied settings into this target" ${S.clip ? "" : "disabled"}>&#x2398;</button></span>
+      <div class="target-head"><b><span class="swatch" style="background:${t.disabled ? "#9aa0a6" : t.color}"></span>${num ? "Target " + num : "Target (off)"}</b>
         <span class="chips">${["Sphere", "Button"].map((k) => `<button class="chip" type="button" data-type="${k}" data-i="${i}" aria-pressed="${t.type === k}">${k === "Sphere" ? "Sphere (point at it)" : "Button (press it)"}</button>`).join("")}
+        <button class="chip" type="button" data-toggle="${i}" aria-pressed="${!t.disabled}" title="${t.disabled ? "Left out of the task; it keeps its place in the list" : "Part of the task. Switch off to leave it out for now"}" ${!t.disabled && liveTargets().length <= 1 ? "disabled" : ""}>${t.disabled ? "Off" : "On"}</button>
         ${S.targets.length > 1 ? `<button class="chip" type="button" data-move="${i},-1" ${i === 0 ? "disabled" : ""} title="Earlier in the sequence" aria-label="Move target ${i + 1} earlier">&uarr;</button><button class="chip" type="button" data-move="${i},1" ${i === S.targets.length - 1 ? "disabled" : ""} title="Later in the sequence" aria-label="Move target ${i + 1} later">&darr;</button><button class="chip" type="button" data-remove="${i}">Remove</button>` : ""}</span></div>
       <div class="grid2">
         ${r("x", "Forward (m)", "Distance in front of the shoulder (x).", -1, 1, 0.005)}
         ${r("y", "Sideways (m)", "Right (–) to left (+) of the shoulder (y).", -1, 1, 0.005)}
         ${r("z", "Vertical (m)", "Below (–) or above (+) the shoulder (z).", -1, 1, 0.005)}
-        ${t.type === "Sphere" ? r("size", "Radius (m)", "Each episode draws a size from this range.", 0.005, 0.2, 0.005) + `<div class="field"><label>Dwell time (s)</label><input type="number" min="0" max="2" step="0.05" value="${t.dwell}" data-bind="t.${i}.dwell"><span class="hint">How long the fingertip must stay inside to count as a hit.</span></div>`
-          : `<div class="field"><label>Minimum force (N)</label><input type="number" min="0" max="20" step="0.5" value="${t.force}" data-bind="t.${i}.force"><span class="hint">How hard the button must be pressed.</span></div><div class="field"><label>Angle (°)</label><input type="number" min="0" max="180" step="5" value="${t.angle}" data-bind="t.${i}.angle"><span class="hint">Tilt of the button surface.</span></div>`}
+        ${t.type === "Sphere" ? r("size", "Radius (m)", "Each episode draws a size from this range.", 0.005, 0.2, 0.005) + `<div class="field" ${row("dwell")}><label>Dwell time (s)</label><input type="number" min="0" max="2" step="0.05" value="${t.dwell}" data-bind="t.${i}.dwell"><span class="hint">How long the fingertip must stay inside to count as a hit.</span></div>`
+          : `<div class="field" ${row("force")}><label>Minimum force (N)</label><input type="number" min="0" max="20" step="0.5" value="${t.force}" data-bind="t.${i}.force"><span class="hint">How hard the button must be pressed.</span></div><div class="field" ${row("angle")}><label>Angle (°)</label><input type="number" min="0" max="180" step="5" value="${t.angle}" data-bind="t.${i}.angle"><span class="hint">Tilt of the button surface.</span></div>`}
       </div></div>`;
   }
   function renderTask(ws) {
     ws.append(h(`<div><span class="eyebrow">Step 2 of 7</span><h2>Place the targets</h2></div>
       <p class="why"><b>Why it matters:</b> each episode draws every target from its region, so the policy learns to reach anywhere inside, not one point. Several targets are visited in order. Keep regions inside the arm's reach (the faint sphere around the shoulder) or enable rejection below.</p>
-      <p class="hint">In the 3D view, click a target and drag its arrows to move it; <b>Resize</b> (S) stretches its region instead. Double-click to add a target where you point, Ctrl+C and Ctrl+V copy the selected one, Delete removes it. <b>User View</b> shows the task as the simulated user sees it.</p>
+      <p class="hint">In the 3D view, click a target and drag its arrows to move it; <b>Resize</b> (S) stretches its region instead. Double-click to add a target where you point, Delete removes the selected one. Ctrl+C copies the selected target; Ctrl+V over the 3D view adds a copy there, elsewhere it pastes the settings into the selected target. Click a row below to copy and paste just that row. <b>User View</b> shows the task as the simulated user sees it.</p>
       <span class="err" id="sketch-msg" role="status"></span>
       <div id="targets" style="display:grid; gap:12px"></div>
       <div class="chips"><button class="btn" type="button" id="add-target">Add a target</button></div>
@@ -511,14 +552,38 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     S.targets.forEach((t, i) => box.append(h(targetHtml(t, i))));
     box.querySelectorAll("[data-type]").forEach((b) => b.addEventListener("click", () => { S.targets[+b.dataset.i].type = b.dataset.type; render(); }));
     box.querySelectorAll("[data-remove]").forEach((b) => b.addEventListener("click", () => removeTarget(+b.dataset.remove)));
-    // Targets are visited in the order listed: the arrows swap a target with its neighbour.
-    box.querySelectorAll("[data-move]").forEach((b) => b.addEventListener("click", () => {
+    // Targets are visited in the order listed: the arrows swap a target with its neighbour, and
+    // the moved target stays the selected one.
+    box.querySelectorAll("[data-move]").forEach((b) => b.addEventListener("click", (ev) => {
+      ev.stopPropagation();
       const [i, d] = b.dataset.move.split(",").map(Number), j = i + d;
       if (j < 0 || j >= S.targets.length) return;
       [S.targets[i], S.targets[j]] = [S.targets[j], S.targets[i]];
-      if (S.sel === i) S.sel = j; else if (S.sel === j) S.sel = i;
+      S.sel = j;
+      S.row = null;
+      render();
+      showTarget(j);
+    }));
+    box.querySelectorAll("[data-toggle]").forEach((b) => b.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      const t = S.targets[+b.dataset.toggle];
+      if (!t.disabled && liveTargets().length <= 1) return;  // the task needs at least one target
+      if (t.disabled) delete t.disabled; else t.disabled = true;
       render();
     }));
+    box.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", (ev) => { ev.stopPropagation(); copyTarget(+b.dataset.copy); S.sel = +b.dataset.copy; render(); }));
+    box.querySelectorAll("[data-paste]").forEach((b) => b.addEventListener("click", (ev) => { ev.stopPropagation(); pasteInto(+b.dataset.paste); }));
+    // A click (or focus) in a row marks it, for Ctrl+C and Ctrl+V between rows of the same kind.
+    box.querySelectorAll("[data-row]").forEach((el) => {
+      const mark = () => {
+        const [i, key] = el.dataset.row.split(".");
+        S.row = { i: +i, key };
+        box.querySelectorAll("[data-rowsel]").forEach((o) => o.removeAttribute("data-rowsel"));
+        el.setAttribute("data-rowsel", "1");
+      };
+      el.addEventListener("click", mark);
+      el.addEventListener("focusin", mark);
+    });
     box.querySelectorAll(".target").forEach((el, i) => {
       el.addEventListener("focusin", () => selectTarget(i));
       el.addEventListener("click", () => selectTarget(i));
@@ -904,7 +969,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   const simWanted = () => !!S.sim && S.step === S.sim.step;
   // The example whose policy fits the setup in the editor: same body, one sphere target, no fatigue.
   // (Buttons sit at fixed places in their examples, so only sphere tasks are offered for free exploration.)
-  const simExample = () => (S.targets.length === 1 && S.targets[0].type === "Sphere" && !S.bm.fatigue_enabled && S.examples.find((e) => e.sim && e.replay.hello.model === S.bm.bm_model && e.summary && e.summary.targets === 1 && e.sim_kind === "sphere")) || null;
+  const simExample = () => (liveTargets().length === 1 && liveTargets()[0].type === "Sphere" && !S.bm.fatigue_enabled && S.examples.find((e) => e.sim && e.replay.hello.model === S.bm.bm_model && e.summary && e.summary.targets === 1 && e.sim_kind === "sphere")) || null;
   function stopSim() {
     if (!S.sim) return;
     clearInterval(S.sim.timer);
@@ -928,7 +993,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   }
   // Evaluate: targets as the example was trained. Task step: the ranges set in the editor (shoulder frame).
   function simReset(sim) {
-    const { engine } = sim, t = S.targets[0], uni = (r) => r[0] + Math.random() * (r[1] - r[0]);
+    const { engine } = sim, t = liveTargets()[0], uni = (r) => r[0] + Math.random() * (r[1] - r[0]);
     if (sim.step === 1) engine.reset({ positions: [[uni(t.x), uni(t.y), uni(t.z)].map((v, k) => v + engine.task.origin[k])], sizes: [[uni(t.size), uni(t.size), uni(t.size)]] });
     else engine.reset();
     sim.radii = engine.targets.map((g) => engine.model.geom_size[3 * g.geomId]);
@@ -990,25 +1055,35 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     renderSummary();
   }
   // Scene shortcuts on the page, so they work whether or not the scene has focus,
-  // but never while typing in a field.
+  // but never while typing in a field (except copy and paste of a marked row).
   document.addEventListener("keydown", (ev) => {
-    if (S.step !== 1 || !SC) return;
-    if (ev.target.closest && ev.target.closest("input, select, textarea, [contenteditable]")) return;
+    if (S.step !== 1) return;
     const mod = ev.ctrlKey || ev.metaKey;
     const key = ev.key.toLowerCase();
+    const field = ev.target.closest && ev.target.closest("input, select, textarea, [contenteditable]");
+    const typed = field && field.selectionStart != null && field.selectionStart !== field.selectionEnd;  // text marked in a field: the browser's own copy
+    if (mod && S.row && S.targets[S.row.i] && (key === "c" || key === "v") && !typed && (!field || field.closest("[data-row]"))) {
+      if (key === "c") { copyRow(); ev.preventDefault(); return; }
+      if (S.clipKind === "row") { if (pasteRow()) ev.preventDefault(); return; }
+    }
+    if (field) return;
+    if (ev.key === "Escape" && S.row) { S.row = null; document.querySelectorAll("[data-rowsel]").forEach((o) => o.removeAttribute("data-rowsel")); }
+    if (!SC) return;
     if ((ev.key === "Delete" || ev.key === "Backspace") && S.sel != null && !mod) { if (S.sel === "screen") removeScreen(); else removeTarget(S.sel); ev.preventDefault(); }
     else if (mod && key === "c" && typeof S.sel === "number" && !String(getSelection())) {
-      S.clip = structuredClone(S.targets[S.sel]);
-      delete S.clip.screenEl;
+      copyTarget(S.sel);
+      renderTargetTools();
       if (navigator.clipboard) navigator.clipboard.writeText(JSON.stringify(S.clip)).catch(() => {});  // also as JSON, for other tools; optional
       ev.preventDefault();
     }
-    else if (mod && key === "v" && S.clip) { pasteTarget(SC.hover); ev.preventDefault(); }
+    // over the 3D view a copy is added under the pointer; elsewhere the settings go into the selected target
+    else if (mod && key === "v" && S.clip) { if (SC.hover || typeof S.sel !== "number") pasteTarget(SC.hover); else pasteInto(S.sel); ev.preventDefault(); }
     else if (!mod && key === "m") setMode("translate");
     else if (!mod && key === "s" && typeof S.sel === "number") setMode("scale");
     else if (!mod && key === "r" && (S.sel === "screen" || (typeof S.sel === "number" && S.targets[S.sel].type === "Button"))) setMode("rotate");
     else if (ev.key === "Escape" && S.sel != null) { selectTarget(null); }
   });
+  function renderTargetTools() { document.querySelectorAll("[data-paste]").forEach((b) => { b.disabled = !S.clip; }); }
   function pasteTarget(hover) {
     const t = { ...structuredClone(S.clip), color: COLORS[S.targets.length % COLORS.length] };
     const shift = (key, d) => { t[key] = t[key].map((a) => clampM(a + d)); };
@@ -1021,13 +1096,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     render();
   }
   function removeTarget(i) {
-    if (S.targets.length <= 1) {  // the task needs at least one target
+    if (S.targets.length <= 1 || (!S.targets[i].disabled && liveTargets().length <= 1)) {  // the task needs at least one target that is on
       const hint = document.getElementById("sketch-msg");
-      if (hint) { hint.textContent = "A task needs at least one target, so the last one cannot be removed."; setTimeout(() => { hint.textContent = ""; }, 3000); }
+      if (hint) { hint.textContent = "A task needs at least one target that is switched on, so this one cannot be removed."; setTimeout(() => { hint.textContent = ""; }, 3000); }
       return;
     }
     S.targets.splice(i, 1);
     S.sel = null;
+    S.row = null;
     render();
   }
 
@@ -1109,7 +1185,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function startRun() {
     if (S.run && S.run.active) return;
     const total = S.rl.steps;
-    S.run = { active: true, t: 0, pts: [], log: [`[demo] configuration accepted · ${MODELS.find((m) => m.id === S.bm.bm_model).name} · ${S.targets.length} target(s) · ${S.rl.envs} envs`] };
+    S.run = { active: true, t: 0, pts: [], log: [`[demo] configuration accepted · ${MODELS.find((m) => m.id === S.bm.bm_model).name} · ${liveTargets().length} target(s) · ${S.rl.envs} envs`] };
     render();
     const tick = () => {
       if (!S.run.active) return;
@@ -1323,8 +1399,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- summary + config */
   function toPreset() {
     const tgt = {};
-    for (let i = 0; i < Math.max(10, S.targets.length); i++) {
-      const t = S.targets[i] || S.targets[0];
+    const on = liveTargets();
+    for (let i = 0; i < Math.max(10, on.length); i++) {
+      const t = on[i] || on[0];
       const rgb = hexToRgba(t.color);
       tgt[`target_${i + 1}`] = {
         radio: t.type === "Button" ? "Box" : "Sphere",
@@ -1334,7 +1411,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     }
     return {
       rl: { "Number of Total Training Steps": S.rl.steps, "Checkpoint Interval (in Number of Training Iterations)": S.rl.ckpt, "Number of Parallel Environments": S.rl.envs, "Unroll Length": S.rl.unroll, "Number of Minibatches": S.rl.minibatches, "Number of Epochs Per Update": S.rl.epochs, "Target Initial Seed": S.rl.seed },
-      num_targets: S.targets.length,
+      num_targets: on.length,
       ...tgt,
       bm: { ...S.bm },
       task: { max_duration: S.task.max_duration, reject_oor: S.task.reject_unreachable },
@@ -1388,7 +1465,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       ["Body", m ? m.name : S.bm.bm_model], ["Control step", S.bm.ctrl_dt + " s"],
       ["Noise", [S.bm.sigdepnoise_enabled && "signal-dep.", S.bm.constantnoise_enabled && "constant"].filter(Boolean).join(", ") || "none"],
       ["Fatigue", S.bm.fatigue_enabled ? "on" : "off"],
-      ["Targets", S.targets.map((t) => t.type).join(", ")], ["Episode", S.task.max_duration + " s"],
+      ["Targets", liveTargets().map((t) => t.type).join(", ")], ["Episode", S.task.max_duration + " s"],
       ["Observations", obsOn.length + " signals"], ["Reward", rw.join(", ") || "none"],
       ["Budget", fmt(S.rl.steps) + " steps · " + S.rl.envs + " envs"],
     ];
@@ -1436,8 +1513,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   // The screen (its image included) is kept with the draft; if it does not fit the browser's storage, the setup alone is.
   function saveDraft() {
     const draft = JSON.parse(setupPayload());
-    try { localStorage.setItem("studio-draft", JSON.stringify({ ...draft, screen: S.screen, pinned: S.targets.map((t) => (t.screenEl ?? null)) })); }
-    catch (e) { try { localStorage.setItem("studio-draft", JSON.stringify(draft)); } catch (e2) {} }
+    try { localStorage.setItem("studio-draft", JSON.stringify({ ...draft, screen: S.screen, targets: S.targets })); }
+    catch (e) { try { localStorage.setItem("studio-draft", JSON.stringify({ ...draft, targets: S.targets })); } catch (e2) {} }
   }
   function restoreDraft() {
     try {
@@ -1446,10 +1523,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const data = JSON.parse(raw);
       fromPreset(data.preset);
       S.preset = data.name || "untitled";
-      if (data.screen) {
-        S.screen = data.screen;
-        (data.pinned || []).forEach((k, i) => { if (k != null && S.targets[i]) S.targets[i].screenEl = k; });
-      }
+      // the list as it was edited: targets that are switched off and those pinned to a screen included
+      if (Array.isArray(data.targets) && data.targets.length && data.targets.filter((t) => !t.disabled).length === S.targets.length) S.targets = data.targets;
+      if (data.screen) S.screen = data.screen; else S.targets.forEach((t) => delete t.screenEl);
     } catch (e) {}
   }
   function openConnect() {
