@@ -159,6 +159,7 @@ input[type="password"] { font: inherit; padding: 8px 10px; border-radius: 9px; b
 
 /* summary */
 .summary { display: grid; gap: 12px; align-content: start; }
+.overlay.clear #workspace, .overlay.clear #summary { display: none; }  /* only the steps and the scene bar stay over the 3D view */
 .summary.closed > .panel:not(:first-child), .summary.closed #summary-kv { display: none; }
 .summary .panel { padding: 18px; gap: 12px; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 0.92rem; }
@@ -338,10 +339,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     reward: Object.fromEntries(REWARDS.map((r) => [r[0], r[1]])),
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
-    view: "perspective", showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
+    view: "perspective", panels: true, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
     examples: [], exampleSel: null, replay: null,
   };
-  try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; } catch (e) {}
+  try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.panels = localStorage.getItem("studio-panels") !== "0"; } catch (e) {}
 
   const STEPS = [
     ["Body", renderBody], ["Task", renderTask], ["Sensing", renderSensing], ["Reward", renderReward],
@@ -671,7 +672,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (!SC) return;
     const stage = $("stage").getBoundingClientRect();
     if (getComputedStyle($("workspace").parentElement).position !== "absolute") { SC.setFocus(null); return; }
-    const left = $("workspace").getBoundingClientRect().right - stage.left;
+    const left = (S.panels ? $("workspace") : $("stepper")).getBoundingClientRect().right - stage.left;
     const sum = $("summary").getBoundingClientRect();
     const right = (sum.width ? sum.left : stage.right) - stage.left;
     const span = right - left > 200 ? [left, right] : null;
@@ -682,9 +683,13 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     bar.style.maxWidth = span ? `${span[1] - span[0] - 16}px` : "";
   }
   window.addEventListener("resize", sceneFocus);
+  function applyPanels() {
+    $("workspace").parentElement.classList.toggle("clear", !S.panels);
+    sceneFocus();
+  }
   function syncScene() {
     if (!SC) return;
-    sceneFocus();
+    applyPanels();  // only with a 3D view: its bar holds the switch back
     $("stage").classList.toggle("dim", [2, 3, 4].includes(S.step));
     if (liveWanted() && !S.liveSocket) connectLive(S.viewer.key);
     if (!liveWanted() && S.liveSocket) closeLive();
@@ -713,7 +718,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const v = S.viewer;
     const views = [["perspective", "3D"], ["top", "Top"], ["side", "Side"], ["user", "User View"]];
     let html = views.map(([k, l]) => `<button class="chip" type="button" data-view="${k}" aria-pressed="${S.view === k}">${l}</button>`).join("");
-    html += `<span class="sep"></span><button class="chip" type="button" data-reach aria-pressed="${S.showReach}" title="The reach used by out-of-reach rejection">Reach</button>`;
+    html += `<span class="sep"></span><button class="chip" type="button" data-panels aria-pressed="${S.panels}" title="Show or hide the step panel and the summary, for a clear view of the scene">Panels</button>`;
+    html += `<button class="chip" type="button" data-reach aria-pressed="${S.showReach}" title="The reach used by out-of-reach rejection">Reach</button>`;
     html += `<button class="chip" type="button" data-muscles aria-pressed="${S.showMuscles}" title="Show or hide the muscles and tendons">Muscles</button>`;
     if (SC.hasSkin) html += `<button class="chip" type="button" data-skin aria-pressed="${S.showSkin}" title="Show or hide the skin (the body volumes around the bones)">Skin</button>`;
     if (S.step === 1 && S.sel != null) {
@@ -744,6 +750,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       if (b.dataset.live === "stop") { S.viewer = null; S.viewerClosed = true; closeLive(); api("/api/viewer", { method: "DELETE" }).catch(() => {}); }
       else { S.viewer = null; S.viewerClosed = false; }
       render();
+    }));
+    bar.querySelectorAll("[data-panels]").forEach((b) => b.addEventListener("click", () => {
+      S.panels = !S.panels;
+      try { localStorage.setItem("studio-panels", S.panels ? "1" : "0"); } catch (e) {}
+      applyPanels();
+      renderSceneBar();
     }));
     bar.querySelectorAll("[data-export]").forEach((b) => b.addEventListener("click", () => exportScene(b.dataset.export, b)));
   }
