@@ -548,7 +548,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <div style="display:grid; gap:12px; margin-top:12px">
         <p class="hint">Place a user interface in the scene. From a Figma frame, its buttons and other controls can become targets that stay on the screen when you move it.</p>
         <div class="field"><label for="figma-url">Figma frame link</label><input type="url" id="figma-url" placeholder="https://www.figma.com/design/…?node-id=…" value="${(S.figma && S.figma.url) || ""}"><span class="hint">In Figma, select the frame and use "Copy link to selection".</span></div>
-        <div class="field"><label for="figma-token">Personal access token</label><input type="password" id="figma-token" autocomplete="off" placeholder="figd_…"><span class="hint">Sent only to Figma (api.figma.com), for this import; it is not stored.</span></div>
+        <div class="field"><label for="figma-token">Personal access token</label><input type="password" id="figma-token" autocomplete="off" placeholder="figd_…" value="${figmaToken()}">
+          <label class="hint" style="display:flex; gap:6px; align-items:center"><input type="checkbox" id="figma-remember" ${figmaRemembered() ? "checked" : ""}> Remember the token in this browser</label>
+          <span class="hint">Sent only to Figma (api.figma.com). Unticked, it is kept until this tab closes; ticked, it stays in this browser's storage for this site, readable by anyone using this browser profile. Use a read-only token.</span></div>
         <div class="chips"><button class="btn" type="button" id="figma-go">Import from Figma</button></div>
         <div class="chips"><label class="chip" for="screen-file" style="cursor:pointer">Or use an image</label><input type="file" id="screen-file" accept="image/png,image/jpeg,image/webp" hidden></div>
         ${sc ? `<div class="field"><label for="screen-width">Screen width (m)</label><input type="number" id="screen-width" min="0.05" max="2" step="0.01" value="${sc.widthM}"><span class="hint">${sc.name || "Screen"} · ${Math.round(sc.width)} × ${Math.round(sc.height)} px. Click the screen in the 3D view to move it (M) or rotate it (R).</span></div>
@@ -558,13 +560,25 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         <p class="hint">The screen is a visual aid for placing targets. It is not part of the training configuration, so a vision policy does not see it yet.</p>
       </div></details>`;
   }
+  // The Figma token: for this tab only, or (opt-in) kept in this browser's storage. It never leaves for anywhere but Figma.
+  const figmaRemembered = () => { try { return !!localStorage.getItem("studio-figma-token"); } catch (e) { return false; } };
+  const figmaToken = () => { try { return localStorage.getItem("studio-figma-token") || sessionStorage.getItem("studio-figma-token") || ""; } catch (e) { return ""; } };
+  function keepFigmaToken(token, remember) {
+    try {
+      sessionStorage.setItem("studio-figma-token", token);
+      if (remember) localStorage.setItem("studio-figma-token", token); else localStorage.removeItem("studio-figma-token");
+    } catch (e) {}
+  }
   function bindScreen(ws) {
     const msg = ws.querySelector("#screen-msg");
     const figma = ws.querySelector("#figma-go");
+    const remember = ws.querySelector("#figma-remember");
+    if (remember) remember.addEventListener("change", () => { if (!remember.checked) { try { localStorage.removeItem("studio-figma-token"); } catch (e) {} } });
     if (figma) figma.addEventListener("click", async () => {
       const url = ws.querySelector("#figma-url").value.trim(), token = ws.querySelector("#figma-token").value.trim();
       S.figma = { url };
       if (!url || !token) { msg.textContent = "Paste the frame link and a personal access token first."; return; }
+      keepFigmaToken(token, ws.querySelector("#figma-remember").checked);
       msg.textContent = "Asking Figma for the frame…";
       try {
         // The page asks Figma itself; if the browser cannot (blocked request), a connected backend does.
@@ -609,12 +623,21 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     S.sel = null;
     render();
   }
+  const BUTTON_ON_SCREEN_M = 0.004;  // thickness of a button made from a screen element
+  let quatToEuler = null;            // from scene.js, once it is loaded
+  // A button made from a screen element: the element's size, flat on the screen, facing as the screen does.
+  function screenButton(el) {
+    const { pos, w, h, quat } = SC.screenElement(el, BUTTON_ON_SCREEN_M / 2);
+    const mm = (v) => Math.round(Math.max(0.005, v) * 1000) / 1000;
+    return { x: [pos[0], pos[0]], y: [pos[1], pos[1]], z: [pos[2], pos[2]], bw: mm(w), bh: mm(h), bt: BUTTON_ON_SCREEN_M, quat };
+  }
   function screenTargets(type) {
     if (!SC || !SC.screen) return;
     S.targets = S.screen.elements.slice(0, 15).map((el, k) => {
       const { pos, half } = SC.screenElement(el);
       const r = Math.round(Math.min(0.2, Math.max(0.005, half)) * 1000) / 1000;
-      return { type, x: [pos[0], pos[0]], y: [pos[1], pos[1]], z: [pos[2], pos[2]], size: [r, r], dwell: 0.25, force: 1, angle: 90, color: COLORS[k % COLORS.length], screenEl: k };
+      const base = { type, x: [pos[0], pos[0]], y: [pos[1], pos[1]], z: [pos[2], pos[2]], size: [r, r], dwell: 0.25, force: 1, angle: 90, color: COLORS[k % COLORS.length], screenEl: k };
+      return type === "Button" ? { ...base, ...screenButton(el) } : base;
     });
     S.sel = null;
     render();
@@ -625,6 +648,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     S.targets.forEach((t) => {
       const el = t.screenEl != null && S.screen.elements[t.screenEl];
       if (!el) return;
+      if (t.type === "Button") { const keep = t.turned ? { quat: t.quat } : {}; Object.assign(t, screenButton(el), keep); return; }
       const { pos } = SC.screenElement(el);
       t.x = [pos[0], pos[0]]; t.y = [pos[1], pos[1]]; t.z = [pos[2], pos[2]];
     });
@@ -657,6 +681,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       sceneKeys.targets = JSON.stringify(S.targets);
       syncTargetInputs(e.detail.i);
     });
+    SC.addEventListener("rotate", (e) => {  // a button turned by hand keeps that orientation when the screen moves
+      S.targets[e.detail.i].turned = true;
+      sceneKeys.targets = JSON.stringify(S.targets);
+      saveDraft();
+    });
     SC.addEventListener("add", (e) => {
       if (S.targets.length >= 15) return;
       const p = e.detail.pos, last = S.targets[S.targets.length - 1];
@@ -671,12 +700,13 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       Object.assign(S.screen, e.detail);
       sceneKeys.screen = screenKey();
       followScreen();
+      saveDraft();
     });
     syncScene();
     renderSceneBar();
   }
   // Loaded as a module from the main script, so a host that blocks it shows why instead of hanging.
-  import("./static/scene.js").then((m) => { window.StudioScene = m.StudioScene; initScene(); }).catch((e) => {
+  import("./static/scene.js").then((m) => { window.StudioScene = m.StudioScene; quatToEuler = m.quatToEuler; initScene(); }).catch((e) => {
     const msg = $("stage-msg");
     if (msg) msg.textContent = `The 3D view could not load (${e.message}). Everything else works; edit targets with the numbers.`;
   });
@@ -742,7 +772,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     html += `<button class="chip" type="button" data-muscles aria-pressed="${S.showMuscles}" title="Show or hide the muscles and tendons">Muscles</button>`;
     if (SC.hasSkin) html += `<button class="chip" type="button" data-skin aria-pressed="${S.showSkin}" title="Show or hide the skin (the body volumes around the bones)">Skin</button>`;
     if (S.step === 1 && S.sel != null) {
-      const modes = S.sel === "screen" ? [["translate", "Move (M)"], ["rotate", "Rotate (R)"]] : [["translate", "Move (M)"], ["scale", "Resize (S)"]];
+      const button = typeof S.sel === "number" && S.targets[S.sel] && S.targets[S.sel].type === "Button";
+      const modes = S.sel === "screen" ? [["translate", "Move (M)"], ["rotate", "Rotate (R)"]] : [["translate", "Move (M)"], ["scale", "Resize (S)"], ...(button ? [["rotate", "Rotate (R)"]] : [])];
       html += `<span class="sep"></span>` + modes.map(([k, l]) => `<button class="chip" type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${l}</button>`).join("");
     }
     if (v && LIVE_STEPS.includes(S.step)) {
@@ -968,7 +999,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     else if (mod && key === "v" && S.clip) { pasteTarget(SC.hover); ev.preventDefault(); }
     else if (!mod && key === "m") setMode("translate");
     else if (!mod && key === "s" && typeof S.sel === "number") setMode("scale");
-    else if (!mod && key === "r" && S.sel === "screen") setMode("rotate");
+    else if (!mod && key === "r" && (S.sel === "screen" || (typeof S.sel === "number" && S.targets[S.sel].type === "Button"))) setMode("rotate");
     else if (ev.key === "Escape" && S.sel != null) { selectTarget(null); }
   });
   function pasteTarget(hover) {
@@ -1291,7 +1322,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const rgb = hexToRgba(t.color);
       tgt[`target_${i + 1}`] = {
         radio: t.type === "Button" ? "Box" : "Sphere",
-        box: { box_position_x: [...t.x], box_position_y: [...t.y], box_position_z: [...t.z], box_size_x: [0.05, 0.05], box_size_y: [0.05, 0.05], min_touch_force: t.force, orientation_angle: t.angle, rgb },
+        box: { box_position_x: [...t.x], box_position_y: [...t.y], box_position_z: [...t.z], box_size_x: [t.bw || 0.05, t.bw || 0.05], box_size_y: [t.bh || 0.05, t.bh || 0.05], min_touch_force: t.force, orientation_angle: t.angle, ...(t.quat && quatToEuler ? { euler: quatToEuler(t.quat), quat: t.quat } : {}), ...(t.bt ? { box_thickness: t.bt } : {}), rgb },
         sphere: { x_range: [...t.x], y_range: [...t.y], z_range: [...t.z], size_range: [...t.size], dwell_duration: t.dwell, rgb },
       };
     }
@@ -1333,6 +1364,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         type: isBox ? "Button" : "Sphere",
         x: isBox ? bx.box_position_x : sp.x_range, y: isBox ? bx.box_position_y : sp.y_range, z: isBox ? bx.box_position_z : sp.z_range,
         size: sp.size_range || [0.01, 0.03], dwell: sp.dwell_duration ?? 0.25, force: bx.min_touch_force ?? 1, angle: bx.orientation_angle ?? 90,
+        ...(isBox && bx.box_size_x && bx.box_size_x[0] !== 0.05 ? { bw: bx.box_size_x[0] } : {}), ...(isBox && bx.box_size_y && bx.box_size_y[0] !== 0.05 ? { bh: bx.box_size_y[0] } : {}),
+        ...(isBox && bx.box_thickness ? { bt: bx.box_thickness } : {}), ...(isBox && bx.quat ? { quat: bx.quat } : {}),
         color: rgbaToHex((isBox ? bx.rgb : sp.rgb) || "") || COLORS[i % COLORS.length],
       });
     }
@@ -1394,7 +1427,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     history.replaceState(null, "", location.pathname + location.search);
     return true;
   }
-  function saveDraft() { try { localStorage.setItem("studio-draft", setupPayload()); } catch (e) {} }
+  // The screen (its image included) is kept with the draft; if it does not fit the browser's storage, the setup alone is.
+  function saveDraft() {
+    const draft = JSON.parse(setupPayload());
+    try { localStorage.setItem("studio-draft", JSON.stringify({ ...draft, screen: S.screen, pinned: S.targets.map((t) => (t.screenEl ?? null)) })); }
+    catch (e) { try { localStorage.setItem("studio-draft", JSON.stringify(draft)); } catch (e2) {} }
+  }
   function restoreDraft() {
     try {
       const raw = localStorage.getItem("studio-draft");
@@ -1402,6 +1440,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const data = JSON.parse(raw);
       fromPreset(data.preset);
       S.preset = data.name || "untitled";
+      if (data.screen) {
+        S.screen = data.screen;
+        (data.pinned || []).forEach((k, i) => { if (k != null && S.targets[i]) S.targets[i].screenEl = k; });
+      }
     } catch (e) {}
   }
   function openConnect() {

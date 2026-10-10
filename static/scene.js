@@ -7,6 +7,11 @@ import * as THREE from "./vendor/three/three.module.min.js";
 import { OrbitControls } from "./vendor/three/addons/OrbitControls.js";
 import { TransformControls } from "./vendor/three/addons/TransformControls.js";
 
+// Orientation of a button: its own (three order x, y, z, w) or, from the tilt angle alone, MuJoCo's
+// euler [0, -angle, 0] (90 degrees: upright, facing the user).
+export const buttonQuat = (t) => (t.quat ? new THREE.Quaternion().fromArray(t.quat) : new THREE.Quaternion().setFromEuler(new THREE.Euler(0, (-(t.angle ?? 90) * Math.PI) / 180, 0, "XYZ")));
+// MuJoCo euler (x, y, z in radians, its default sequence) of a three quaternion.
+export const quatToEuler = (q) => { const e = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().fromArray(q), "XYZ"); return [e.x, e.y, e.z].map((v) => Math.round(v * 1e5) / 1e5); };
 const MJ_QUAT = (q) => new THREE.Quaternion(q[1], q[2], q[3], q[0]); // MuJoCo w, x, y, z -> three
 const STEP = 0.005; // 5 mm grid of the target ranges
 const snap = (v) => Math.round(v / STEP) * STEP;
@@ -262,7 +267,8 @@ export class StudioScene extends EventTarget {
   // ------------------------------------------------------------------ targets (relative to the shoulder)
   setTargets(targets, selected) {
     this.targetData = targets;
-    while (this.targetGroup.children.length) this.targetGroup.remove(this.targetGroup.children[0]);
+    // Only the targets are rebuilt: a screen shares their group and stays until it is removed.
+    (this.targets || []).forEach((g) => this.targetGroup.remove(g));
     this.targets = targets.map((t, i) => this._buildTarget(t, i));
     this.select(selected ?? null, true);
   }
@@ -282,7 +288,9 @@ export class StudioScene extends EventTarget {
     grp.add(region);
     let marker;
     if (t.type === "Button") {
-      marker = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.012), new THREE.MeshStandardMaterial({ color, roughness: 0.5 }));
+      // width, height and thickness (m); the thin axis is the button's normal
+      marker = new THREE.Mesh(new THREE.BoxGeometry(t.bw || 0.05, t.bh || 0.05, t.bt || 0.02), new THREE.MeshStandardMaterial({ color, roughness: 0.5 }));
+      marker.quaternion.copy(buttonQuat(t));
     } else {
       const r = Math.max(...t.size);
       marker = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 16), new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.55, roughness: 0.4 }));
@@ -310,6 +318,8 @@ export class StudioScene extends EventTarget {
     const g = this.targets[i];
     // The handles act on the whole target group: translate moves the region, scale resizes it.
     g.scale.set(1, 1, 1);
+    // Rotate turns a button itself (its marker), not the region its centre is drawn from.
+    if (this.mode === "rotate" && this.targetData[i].type === "Button") { this.gizmo.attach(g.userData.marker); this.gizmo.setMode("rotate"); return; }
     this.gizmo.attach(g);
     this.gizmo.setMode(this.mode === "scale" ? "scale" : "translate");
   }
@@ -317,13 +327,19 @@ export class StudioScene extends EventTarget {
   setMode(mode) {
     this.mode = mode;
     if (this.selected === "screen") this.gizmo.setMode(mode === "rotate" ? "rotate" : "translate");
-    else if (this.selected != null) this.gizmo.setMode(mode === "scale" ? "scale" : "translate");
+    else if (this.selected != null) this._attachTarget(this.selected);
   }
 
   _onGizmo() {
     const obj = this.gizmo.object;
     if (!obj) return;
     if (obj === this.screen) { this._emit("screen-change", this.screenPose()); return; }
+    if (obj.userData.target != null && obj.parent && obj.parent.userData.marker === obj) {  // a button turned by hand
+      const k = obj.userData.target;
+      this.targetData[k].quat = obj.quaternion.toArray().map((v) => Math.round(v * 1e5) / 1e5);
+      this._emit("rotate", { i: k });
+      return;
+    }
     const { i } = obj.userData;
     const ext = obj.userData.ext0 || obj.userData.ext;
     const t = this.targetData[i];
@@ -389,7 +405,11 @@ export class StudioScene extends EventTarget {
   // Move the target groups to their current ranges (no rebuild: a drag on the screen keeps going).
   moveTargets() {
     const mid = (r) => (Math.min(...r) + Math.max(...r)) / 2;
-    this.targets.forEach((g, i) => { const t = this.targetData[i]; g.position.set(mid(t.x), mid(t.y), mid(t.z)); });
+    this.targets.forEach((g, i) => {
+      const t = this.targetData[i];
+      g.position.set(mid(t.x), mid(t.y), mid(t.z));
+      if (t.type === "Button") g.userData.marker.quaternion.copy(buttonQuat(t));
+    });
   }
 
   // ------------------------------------------------------------------ screen (e.g. a Figma frame)
@@ -416,13 +436,17 @@ export class StudioScene extends EventTarget {
     return { pos: this.screen.position.toArray().map((v) => Math.round(v * 1000) / 1000), quat: this.screen.quaternion.toArray() };
   }
 
-  // Shoulder-relative centre of a screen element (pixel box) and its half size in metres.
-  screenElement(el) {
+  // Shoulder-relative centre of a screen element (pixel box), its half size, width and height in
+  // metres and the screen's orientation there (x along the screen's width, z its normal towards the
+  // user). ``lift`` moves the centre off the screen along the normal (a button lying on it).
+  screenElement(el, lift = 0) {
     const s = this.screen.userData;
     const m = s.widthM / s.width;
     const u = (el.x + el.w / 2 - s.width / 2) * m, v = (s.height / 2 - (el.y + el.h / 2)) * m;
-    const p = new THREE.Vector3(u, v, 0).applyQuaternion(s.plane.quaternion).applyQuaternion(this.screen.quaternion).add(this.screen.position);
-    return { pos: p.toArray().map((x) => Math.round(x * 1000) / 1000), half: (Math.min(el.w, el.h) / 2) * m };
+    const quat = this.screen.quaternion.clone().multiply(s.plane.quaternion);
+    const p = new THREE.Vector3(u, v, lift).applyQuaternion(quat).add(this.screen.position);
+    return { pos: p.toArray().map((x) => Math.round(x * 1000) / 1000), half: (Math.min(el.w, el.h) / 2) * m,
+      w: el.w * m, h: el.h * m, quat: quat.toArray().map((x) => Math.round(x * 1e5) / 1e5) };
   }
 
   // ------------------------------------------------------------------ live feed
