@@ -167,7 +167,9 @@ input[type="password"] { font: inherit; padding: 8px 10px; border-radius: 9px; b
 .min-btn { border: 0; background: none; color: var(--muted, #8a8f98); font: inherit; font-size: 1.3rem; line-height: 1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
 .min-btn:hover, .min-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.15); }
 #workspace { position: relative; }
-#workspace > .min-btn { position: absolute; top: 10px; right: 10px; z-index: 1; }
+#workspace > .min-btn, #summary-toggle { position: absolute; top: 10px; right: 10px; z-index: 1; }
+.summary .panel:first-child { position: relative; }
+.summary .panel:first-child .group-title { padding-right: 24px; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 0.92rem; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
@@ -256,7 +258,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   <div class="gap"></div>
   <aside class="summary" id="summary" aria-label="Configuration summary">
     <div class="panel">
-      <div class="group-title"><h3>Your setup</h3><span class="chips"><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"><button class="chip" type="button" id="reset-setup" title="Back to the default setup (the browser keeps your setup otherwise)">Reset</button><button class="min-btn" type="button" id="summary-toggle" aria-expanded="true" aria-label="Minimise the summary" title="Minimise">&ndash;</button></span></div>
+      <button class="min-btn" type="button" id="summary-toggle" aria-expanded="true" aria-label="Minimise the summary" title="Minimise">&ndash;</button><div class="group-title"><h3>Your setup</h3><span class="chips"><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"><button class="chip" type="button" id="reset-setup" title="Back to the default setup (the browser keeps your setup otherwise)">Reset configuration</button></span></div>
       <div class="chips" id="reset-confirm" hidden><span class="muted">Reset every setting to the defaults? Runs and presets stay.</span><button class="chip" type="button" id="reset-yes">Reset</button><button class="chip" type="button" id="reset-no">Cancel</button></div>
       <dl class="kv" id="summary-kv"></dl>
     </div>
