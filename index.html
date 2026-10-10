@@ -4,52 +4,53 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MyoInteract Studio</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%238c2233'/%3E%3Cpath d='M8 23 L14 13 L21 16' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='8' cy='23' r='2.4' fill='%23fff'/%3E%3Ccircle cx='14' cy='13' r='2.4' fill='%23fff'/%3E%3Ccircle cx='25' cy='9' r='3.2' fill='none' stroke='%23f0b08a' stroke-width='2.2'/%3E%3Ccircle cx='25' cy='9' r='0.9' fill='%23f0b08a'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d48a00'/%3E%3Cpath d='M8 23 L14 13 L21 16' fill='none' stroke='%2314161b' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='8' cy='23' r='2.4' fill='%2314161b'/%3E%3Ccircle cx='14' cy='13' r='2.4' fill='%2314161b'/%3E%3Ccircle cx='25' cy='9' r='3.2' fill='none' stroke='%23ffffff' stroke-width='2.2'/%3E%3Ccircle cx='25' cy='9' r='0.9' fill='%23ffffff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: product landing on top, then a three-column studio (steps · step workspace · live summary). */
 :root {
-  --bg: #f6f3ee;
-  --surface: #fffdfa;
-  --ink: #221a18;
-  --muted: #6d615c;
-  --line: #e4dcd2;
-  --tint: #efe9e0;
-  --accent: #8c2233;
-  --accent-ink: #ffffff;
-  --signal: #2c6076;
+  --bg: #f4f4f1;
+  --surface: #ffffff;
+  --ink: #14161b;
+  --muted: #5e6168;
+  --line: #dddcd6;
+  --tint: #ecebe5;
+  --accent: #d48a00;
+  --accent-ink: #14161b;
+  --signal: #177a86;
   --ok: #2b7a4b;
-  --warn: #a8640c;
-  --hero-a: #2a1719;
-  --hero-b: #3a2224;
-  --hero-ink: #f7efe8;
-  --hero-muted: #d3c5bc;
-  --hero-hi: #f0b08a;
-  --hero-line: #5d4042;
-  --scene-bg: #ebe5db;
-  --scene-grid: #d2c8ba;
-  --scene-reach: #9a8d7e;
-  --glass: rgba(255, 253, 250, 0.84);
-  --scene-dim: rgba(246, 243, 238, 0.5);
+  --warn: #9a5a0a;
+  --hero-a: #14161b;
+  --hero-b: #23211c;
+  --hero-ink: #f4f2ec;
+  --hero-muted: #c9c6bd;
+  --hero-hi: #f2b33d;
+  --hero-line: #3f3d37;
+  --logo-target: #ffffff;
+  --scene-bg: #e6e5df;
+  --scene-grid: #c9c7be;
+  --scene-reach: #8a8880;
+  --glass: rgba(255, 255, 255, 0.84);
+  --scene-dim: rgba(244, 244, 241, 0.5);
   --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
   --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14100f; --surface: #1d1716; --ink: #f1e9e2; --muted: #a89a92; --line: #342a28; --tint: #261e1c;
-    --accent: #e0707e; --accent-ink: #1e0c0f; --signal: #6fb2cc; --ok: #6cc58f; --warn: #e2a74c;
-    --hero-a: #1a0f10; --hero-b: #251617; --hero-ink: #f7efe8; --hero-muted: #cdbfb6; --hero-hi: #f0b08a; --hero-line: #4a3234;
-    --scene-bg: #171211; --scene-grid: #3a2f2c; --scene-reach: #a39489; --glass: rgba(29, 23, 22, 0.84); --scene-dim: rgba(20, 16, 15, 0.5);
+    --bg: #101114; --surface: #191a1f; --ink: #eeeeea; --muted: #a0a2a8; --line: #2c2d33; --tint: #212228;
+    --accent: #f0aa2e; --accent-ink: #14161b; --signal: #5cc0cb; --ok: #6cc58f; --warn: #e2a74c;
+    --hero-a: #0c0d10; --hero-b: #1a1814; --hero-ink: #f4f2ec; --hero-muted: #c4c1b8; --hero-hi: #f2b33d; --hero-line: #3a3832; --logo-target: #ffffff;
+    --scene-bg: #131417; --scene-grid: #2f3037; --scene-reach: #96979c; --glass: rgba(25, 26, 31, 0.84); --scene-dim: rgba(16, 17, 20, 0.5);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #14100f; --surface: #1d1716; --ink: #f1e9e2; --muted: #a89a92; --line: #342a28; --tint: #261e1c;
-    --accent: #e0707e; --accent-ink: #1e0c0f; --signal: #6fb2cc; --ok: #6cc58f; --warn: #e2a74c;
-    --hero-a: #1a0f10; --hero-b: #251617; --hero-ink: #f7efe8; --hero-muted: #cdbfb6; --hero-hi: #f0b08a; --hero-line: #4a3234;
-    --scene-bg: #171211; --scene-grid: #3a2f2c; --scene-reach: #a39489; --glass: rgba(29, 23, 22, 0.84); --scene-dim: rgba(20, 16, 15, 0.5);
+  --bg: #101114; --surface: #191a1f; --ink: #eeeeea; --muted: #a0a2a8; --line: #2c2d33; --tint: #212228;
+    --accent: #f0aa2e; --accent-ink: #14161b; --signal: #5cc0cb; --ok: #6cc58f; --warn: #e2a74c;
+    --hero-a: #0c0d10; --hero-b: #1a1814; --hero-ink: #f4f2ec; --hero-muted: #c4c1b8; --hero-hi: #f2b33d; --hero-line: #3a3832; --logo-target: #ffffff;
+    --scene-bg: #131417; --scene-grid: #2f3037; --scene-reach: #96979c; --glass: rgba(25, 26, 31, 0.84); --scene-dim: rgba(16, 17, 20, 0.5);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -90,7 +91,7 @@ p { margin: 0; }
 .steps-strip { display: grid; gap: 12px; }
 .strip-item { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
 .strip-item b { font-family: var(--font-display); }
-.strip-num { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-family: var(--font-mono); background: rgba(240, 176, 138, 0.16); color: var(--hero-hi); }
+.strip-num { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-family: var(--font-mono); background: rgba(242, 179, 61, 0.16); color: var(--hero-hi); }
 .strip-item span { color: var(--hero-muted); font-size: 0.93rem; }
 .facts { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
 .fact b { font-family: var(--font-display); font-size: 1.05rem; display: block; }
@@ -230,7 +231,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
 <nav class="nav" aria-label="Main">
   <div class="nav-in">
-    <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 23 L14 13 L21 16" fill="none" stroke="var(--accent-ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="23" r="2.4" fill="var(--accent-ink)"/><circle cx="14" cy="13" r="2.4" fill="var(--accent-ink)"/><circle cx="25" cy="9" r="3.2" fill="none" stroke="var(--logo-target, #f0b08a)" stroke-width="2.2"/><circle cx="25" cy="9" r="0.9" fill="var(--logo-target, #f0b08a)"/></svg>MyoInteract Studio</span>
+    <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 23 L14 13 L21 16" fill="none" stroke="var(--accent-ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="23" r="2.4" fill="var(--accent-ink)"/><circle cx="14" cy="13" r="2.4" fill="var(--accent-ink)"/><circle cx="25" cy="9" r="3.2" fill="none" stroke="var(--logo-target, #ffffff)" stroke-width="2.2"/><circle cx="25" cy="9" r="0.9" fill="var(--logo-target, #ffffff)"/></svg>MyoInteract Studio</span>
     <a class="link" href="#studio">Studio</a>
     <a class="link" href="https://github.com/fl0fischer/myointeract">GitHub</a>
     <span class="spacer"></span>
@@ -353,7 +354,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Docker Space in your own Hugging Face account, on the hardware you pick there (training needs a GPU). Studio runs inside the Space: create it from the template and open it.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
     "Lab server": { key: "remote", speed: 30000, note: "Any Linux or Windows machine with an NVIDIA GPU, reached through SSH.", cmd: "ssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser  # then open http://localhost:8000" },
   };
-  const COLORS = ["#a3293d", "#2c6076", "#2b7a4b", "#7a4a8c", "#a8640c", "#56606e"];
+  const COLORS = ["#c97f00", "#177a86", "#2b7a4b", "#7a4a8c", "#b0413a", "#56606e"];
 
   /* ---------------------------------------------------------------- state */
   const S = {

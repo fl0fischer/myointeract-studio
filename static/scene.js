@@ -84,7 +84,7 @@ export class StudioScene extends EventTarget {
   _emit(type, detail) { this.dispatchEvent(new CustomEvent(type, { detail })); }
 
   _theme() {
-    this.scene.background = new THREE.Color(css("--scene-bg", "#ebe5db"));
+    this.scene.background = new THREE.Color(css("--scene-bg", "#e6e5df"));
     const line = new THREE.Color(css("--scene-grid", "#c9ceda"));
     this.grid.material.color = line;
     this.grid.material.opacity = 0.6;
@@ -183,7 +183,7 @@ export class StudioScene extends EventTarget {
     this._reach = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: css("--scene-reach", "#8a90a6"), transparent: true, opacity: 0.18 }));
     this._reach.position.copy(this.origin);
     this._reach.visible = this.showReach !== false;
-    this._shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), new THREE.MeshBasicMaterial({ color: css("--accent", "#8c2233") }));
+    this._shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), new THREE.MeshBasicMaterial({ color: css("--accent", "#d48a00") }));
     this._shoulder.position.copy(this.origin);
     this.world.add(this._reach, this._shoulder);
   }
