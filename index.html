@@ -287,7 +287,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       </div>
       <input type="file" id="import-cfg" accept="application/json" hidden>
       <pre class="code" id="cfg-json"></pre>
-      <span class="muted" style="font-size:0.82rem">Same format as the presets in <span class="mono">myo_config/gradio_tasks/</span>, so it loads in the Gradio UI too.</span>
+      <span class="muted" style="font-size:0.82rem" id="cfg-note">Same format as the presets in <span class="mono">myo_config/gradio_tasks/</span>, so it loads in the Gradio UI too.</span>
+      <p class="demo-banner" id="cfg-warn" role="status" hidden></p>
     </div>
   </aside>
   </div>
@@ -1177,6 +1178,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       ${connected ? `<p class="muted">Backend: <span class="mono">${S.backend}</span></p>` : `<p class="demo-banner">Demo mode: no backend is connected, so this run is simulated. Use "Connect compute" to train for real, or start <span class="mono">myo_studio serve</span> and <a href="${handoffUrl()}" target="_blank" rel="noopener">continue on your machine with this setup</a>.</p>`}
       <div class="chips"><button class="btn primary" type="button" id="start-run">${S.run && S.run.active ? "Running…" : "Start training"}</button><button class="btn" type="button" id="stop-run" ${S.run && S.run.active ? "" : "disabled"}>Stop</button>${S.run && S.run.id ? `<span class="muted mono" style="font-size:0.82rem">${S.run.id} · ${S.run.status || ""}</span>` : ""}</div>
       ${S.run && S.run.error ? `<p class="err">${S.run.error}</p>` : ""}
+      ${gradioWarning() ? `<p class="demo-banner" id="run-warn">${gradioWarning()}</p>` : ""}
       <div class="stat-row">
         <div class="stat"><b id="st-steps">0</b><span>steps</span></div>
         <div class="stat"><b id="st-success">–</b><span>success rate</span></div>
@@ -1471,7 +1473,15 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function hexToRgba(hex) { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},1)`; }
   function rgbaToHex(s) { const m = s.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/); if (!m) return null; return "#" + [m[1], m[2], m[3]].map((v) => Math.round(+v).toString(16).padStart(2, "0")).join(""); }
 
+  // The Gradio task builder takes at most 15 targets; Studio and the command line take any number.
+  const GRADIO_MAX_TARGETS = 15;
+  const gradioWarning = () => (liveTargets().length > GRADIO_MAX_TARGETS
+    ? `This setup has ${liveTargets().length} targets. The Gradio task builder takes at most ${GRADIO_MAX_TARGETS}, so the configuration and its checkpoints will not open there; Studio and the command line take any number.` : "");
   function renderSummary() {
+    const warn = gradioWarning();
+    $("cfg-warn").hidden = !warn;
+    $("cfg-warn").textContent = warn;
+    $("cfg-note").hidden = !!warn;
     const m = MODELS.find((x) => x.id === S.bm.bm_model);
     const obsOn = Object.entries(S.obs).filter(([, v]) => v).map(([k]) => k);
     const rw = Object.entries(S.reward).filter(([, v]) => v > 0).map(([k, v]) => `${k} ${v}`);
@@ -1625,7 +1635,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- wire up */
   $("connect-btn").addEventListener("click", openConnect);
   $("handoff-copy").addEventListener("click", (ev) => {
-    navigator.clipboard.writeText(JSON.stringify(toPreset(), null, 2)).then(() => { ev.target.textContent = "Copied"; setTimeout(() => (ev.target.textContent = "Copy setup"), 1500); }).catch(() => { $("conn-status").textContent = "Copying is blocked here: use Copy next to Configuration instead."; });
+    navigator.clipboard.writeText(JSON.stringify(toPreset(), null, 2)).then(() => { ev.target.textContent = gradioWarning() ? "Copied (not for the Gradio UI)" : "Copied"; setTimeout(() => (ev.target.textContent = "Copy setup"), gradioWarning() ? 4000 : 1500); }).catch(() => { $("conn-status").textContent = "Copying is blocked here: use Copy next to Configuration instead."; });
   });
   $("summary-toggle").addEventListener("click", (ev) => {
     const closed = $("summary").classList.toggle("closed");
@@ -1638,7 +1648,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   try { if (localStorage.getItem("studio-summary-closed")) $("summary-toggle").click(); } catch (e) {}
   $("copy-cfg").addEventListener("click", (ev) => {
     const text = JSON.stringify(toPreset(), null, 2);
-    navigator.clipboard.writeText(text).then(() => { ev.target.textContent = "Copied"; setTimeout(() => (ev.target.textContent = "Copy"), 1500); }).catch(() => {
+    navigator.clipboard.writeText(text).then(() => { ev.target.textContent = gradioWarning() ? "Copied (not for the Gradio UI)" : "Copied"; setTimeout(() => (ev.target.textContent = "Copy"), gradioWarning() ? 4000 : 1500); }).catch(() => {
       const r = document.createRange(); r.selectNodeContents($("cfg-json")); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
     });
   });
@@ -1658,7 +1668,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   $("preset-save").addEventListener("click", async () => {
     const name = prompt("Save this setup as (letters, digits, - and _):", S.preset === "untitled" ? "" : S.preset);
     if (!name) return;
-    try { await api("/api/presets", { method: "POST", body: { name, preset: toPreset() } }); S.preset = name; S.presets = await api("/api/presets"); renderPresetList(); $("preset-msg").textContent = "Saved."; renderSummary(); } catch (e) { $("preset-msg").textContent = e.message; }
+    try { await api("/api/presets", { method: "POST", body: { name, preset: toPreset() } }); S.preset = name; S.presets = await api("/api/presets"); renderPresetList(); $("preset-msg").textContent = gradioWarning() ? "Saved. " + gradioWarning() : "Saved."; renderSummary(); } catch (e) { $("preset-msg").textContent = e.message; }
   });
   // The setup name is edited in place: letters, digits, - and _ (as presets on the backend are named).
   $("preset-name").addEventListener("change", () => {
