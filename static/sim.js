@@ -49,6 +49,11 @@ export class TaskSim {
       return layer;
     });
     this.obs = new Float32Array(n);
+    // muscle fatigue (3CC-r): active, fatigued and resting share per muscle; fresh muscles without it
+    this.fatigue = this.task.fatigue || null;
+    this.MA = new Float32Array(m.nu);
+    this.MF = new Float32Array(m.nu);
+    this.MR = new Float32Array(m.nu).fill(1);
     this.current = 0;  // index of the target the policy is on
     this.inside = 0;
     this.steps = 0;
@@ -56,8 +61,9 @@ export class TaskSim {
   }
 
   // A start and targets as training draws them (every axis on its own), or the given ones:
-  // joint offsets (rad) and velocities, and per target a world position and a size (3 numbers).
-  reset({ jointOffset, jointVel, positions, sizes } = {}) {
+  // joint offsets (rad) and velocities, per target a world position and a size (3 numbers), and
+  // with fatigue the compartments [MA, MF, MR] (drawn at random if the task was trained that way).
+  reset({ jointOffset, jointVel, positions, sizes, fatigueState } = {}) {
     const { mj, model: m, data: d, task } = this;
     const r = task.reset_offset, uni = (lo, hi) => lo + Math.random() * (hi - lo);
     jointOffset = jointOffset || this.qadr.map(() => uni(-r, r));
@@ -71,29 +77,55 @@ export class TaskSim {
       for (let k = 0; k < 3; k++) { m.body_pos[3 * t.bodyId + k] = positions[i][k]; m.geom_size[3 * t.geomId + k] = sizes[i][k]; }
     });
     mj.mj_forward(m, d);
+    if (fatigueState) { this.MA.set(fatigueState[0]); this.MF.set(fatigueState[1]); this.MR.set(fatigueState[2]); }
+    else if (this.fatigue && this.fatigue.reset === "random") {
+      // a non-fatigued share nf, of which a share ap is active
+      for (let k = 0; k < m.nu; k++) { const nf = Math.random(), ap = Math.random(); this.MA[k] = nf * ap; this.MF[k] = 1 - nf; this.MR[k] = nf * (1 - ap); }
+    } else { this.MA.fill(0); this.MF.fill(0); this.MR.fill(1); }
     this.current = 0;
     this.inside = 0;
     this.steps = 0;
   }
 
+  // One control step of the fatigue model (myosuite's TorchFatigueState.step): the excitation the
+  // policy asks for goes in, the active share MA comes out and is what the muscles receive.
+  fatigueStep(excitation) {
+    const f = this.fatigue, dt = this.task.ctrl_dt, { MA, MF, MR } = this;
+    for (let k = 0; k < MA.length; k++) {
+      const ma = MA[k], mf = MF[k], mr = MR[k], e = Math.fround(excitation[k]), F = f.F[k];
+      const ld = -Math.expm1(-dt / (f.tauact[k] * (0.5 + 1.5 * ma))) / dt;
+      const lr = -Math.expm1((-(0.5 + 1.5 * ma) / f.taudeact[k]) * dt) / dt;
+      const rr = e <= f.rest_threshold ? f.r[k] * f.R[k] : f.R[k];
+      let c = ma < e ? ld * Math.min(e - ma, mr) : lr * (e - ma);
+      c = Math.min(Math.max(c, Math.max(-ma / dt + F * ma, (mr - 1) / dt + rr * mf)), Math.min((1 - ma) / dt + F * ma, mr / dt + rr * mf));
+      MA[k] = ma + (c - F * ma) * dt;
+      MF[k] = mf + (F * ma - rr * mf) * dt;
+      MR[k] = mr + (-c + rr * mf) * dt;
+    }
+    return MA;
+  }
+
+  get meanFatigue() { let s = 0; for (const v of this.MF) s += v; return s / this.MF.length; }
+
+  // The policy's observation, term by term in the order the training environment uses.
   observe() {
     const { model: m, data: d, obs } = this;
-    let at = 0;
-    const nj = this.qadr.length;
-    for (let k = 0; k < nj; k++) {
-      const [lo, hi] = this.range[k];
-      obs[k] = ((d.qpos[this.qadr[k]] - lo) / (hi - lo) - 0.5) * 2;
-      obs[nj + k] = d.qvel[this.vadr[k]];
-      obs[2 * nj + k] = d.qacc[this.vadr[k]];
-    }
-    at = 3 * nj;
-    for (let k = 0; k < m.na; k++) obs[at++] = (d.act[k] - 0.5) * 2;
-    for (let k = 0; k < 3; k++) obs[at++] = d.site_xpos[3 * this.site + k];
     const n = this.targets.length, t = this.targets[Math.min(this.current, n - 1)];
-    for (let k = 0; k < 3; k++) obs[at++] = d.xipos[3 * t.bodyId + k];
-    for (let k = 0; k < 3; k++) obs[at++] = m.geom_size[3 * t.geomId + k];
-    obs[at++] = -1 + 2 * this.current / n;
-    obs[at++] = -1 + 2 * (t.dwell_steps > 0 ? this.inside / Math.max(t.dwell_steps, 1) : 0);
+    let at = 0;
+    const put = (v) => { obs[at++] = v; };
+    for (const term of this.task.obs_terms) {
+      if (term === "qpos") this.qadr.forEach((a, k) => { const [lo, hi] = this.range[k]; put(((d.qpos[a] - lo) / (hi - lo) - 0.5) * 2); });
+      else if (term === "qvel") this.vadr.forEach((a) => put(d.qvel[a]));
+      else if (term === "qacc") this.vadr.forEach((a) => put(d.qacc[a]));
+      else if (term === "act") for (let k = 0; k < m.na; k++) put((d.act[k] - 0.5) * 2);
+      else if (term === "ee_pos") for (let k = 0; k < 3; k++) put(d.site_xpos[3 * this.site + k]);
+      else if (term === "MA" || term === "MF" || term === "MR") this[term].forEach(put);
+      else if (term === "target_pos") for (let k = 0; k < 3; k++) put(d.xipos[3 * t.bodyId + k]);
+      else if (term === "target_size") for (let k = 0; k < 3; k++) put(m.geom_size[3 * t.geomId + k]);
+      else if (term === "phase_progress") put(-1 + 2 * this.current / n);
+      else if (term === "dwell_fraction") put(-1 + 2 * (t.dwell_steps > 0 ? this.inside / Math.max(t.dwell_steps, 1) : 0));
+      else throw new Error(`unknown observation term ${term}`);
+    }
     return obs;
   }
 
@@ -116,7 +148,8 @@ export class TaskSim {
   step() {
     const { mj, model: m, data: d, task } = this;
     const action = this.act(this.observe());
-    for (let k = 0; k < m.nu; k++) d.ctrl[k] = sigmoid(action[k]);
+    const excitation = Float32Array.from(action, sigmoid);
+    d.ctrl.set(this.fatigue ? this.fatigueStep(excitation) : excitation);
     for (let k = 0; k < task.substeps; k++) mj.mj_step(m, d);
     const n = this.targets.length, t = this.targets[Math.min(this.current, n - 1)];
     let dist = 0;

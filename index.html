@@ -990,7 +990,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   const simWanted = () => !!S.sim && S.step === S.sim.step;
   // The example whose policy fits the setup in the editor: same body, one sphere target, no fatigue.
   // (Buttons sit at fixed places in their examples, so only sphere tasks are offered for free exploration.)
-  const simExample = () => (liveTargets().length === 1 && liveTargets()[0].type === "Sphere" && !S.bm.fatigue_enabled && S.examples.find((e) => e.sim && e.replay.hello.model === S.bm.bm_model && e.summary && e.summary.targets === 1 && e.sim_kind === "sphere")) || null;
+  const simExample = () => (liveTargets().length === 1 && liveTargets()[0].type === "Sphere" && S.examples.find((e) => e.sim && e.replay.hello.model === S.bm.bm_model && e.summary && e.summary.targets === 1 && e.sim_kind === "sphere" && !!e.summary.fatigue === !!S.bm.fatigue_enabled)) || null;
   function stopSim() {
     if (!S.sim) return;
     clearInterval(S.sim.timer);
@@ -1019,6 +1019,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     else engine.reset();
     sim.radii = engine.targets.map((g) => engine.model.geom_size[3 * g.geomId]);
   }
+  // "3 of 3 episodes solved in this session", with the muscles' mean fatigue for tasks that model it
+  const simStats = (sim) => `${sim.wins} of ${sim.episodes} episodes solved in this session` + (sim.engine && sim.engine.fatigue ? ` · mean fatigue ${sim.engine.meanFatigue.toFixed(2)} at the end of the last one` : "");
   function simTick(sim) {
     if (S.sim !== sim || !simWanted() || !SC || sceneKeys.live !== sim.hello) return;
     if (sim.wait > 0) { if (--sim.wait === 0) simReset(sim); else return; }
@@ -1031,7 +1033,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       sim.wait = 8;  // hold the final pose for a moment
       renderSceneBar();
       const stat = $("sim-stats");
-      if (stat) stat.textContent = `${sim.wins} of ${sim.episodes} episodes solved in this session`;
+      if (stat) stat.textContent = simStats(sim);
     }
   }
   fetch("examples/index.json").then((r) => (r.ok ? r.json() : [])).then((list) => { S.examples = list; if (S.step === 6) render(); }).catch(() => {});
@@ -1316,7 +1318,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       </div>
       <p class="err" id="ex-msg" hidden></p>
       ${statRow(ex.evaluation)}
-      ${ex.sim && S.evalMode === "live" ? `<p class="muted">The policy runs in this page: MuJoCo simulates the muscles, and every episode starts from a new pose with targets drawn as in training. <span id="sim-stats">${S.sim ? `${S.sim.wins} of ${S.sim.episodes} episodes solved in this session` : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">(reset)</a></p><p class="muted">In the Task step, "Play example policy" runs it on the target ranges you set there, also outside what it was trained on.</p>` : ""}`));
+      ${ex.sim && S.evalMode === "live" ? `<p class="muted">The policy runs in this page: MuJoCo simulates the muscles${ex.summary && ex.summary.fatigue ? " and their fatigue (every episode starts from a random fatigue state, as in training)" : ""}, and every episode starts from a new pose with targets drawn as in training. <span id="sim-stats">${S.sim ? simStats(S.sim) : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">(reset)</a></p><p class="muted">In the Task step, "Play example policy" runs it on the target ranges you set there, also outside what it was trained on.</p>` : ""}`));
     if (ws.querySelector("#sim-reset")) ws.querySelector("#sim-reset").addEventListener("click", (e) => {
       e.preventDefault();
       const sim = S.sim;
