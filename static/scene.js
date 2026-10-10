@@ -183,7 +183,7 @@ export class StudioScene extends EventTarget {
     this._reach = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: css("--scene-reach", "#8a90a6"), transparent: true, opacity: 0.18 }));
     this._reach.position.copy(this.origin);
     this._reach.visible = this.showReach !== false;
-    this._shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), new THREE.MeshBasicMaterial({ color: css("--accent", "#d48a00") }));
+    this._shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.012, 16, 12), new THREE.MeshBasicMaterial({ color: css("--accent", "#d9432a") }));
     this._shoulder.position.copy(this.origin);
     this.world.add(this._reach, this._shoulder);
   }
