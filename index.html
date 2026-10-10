@@ -369,6 +369,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     view: "perspective", stepOpen: true, row: null, rowClip: null, clipKind: null, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
     examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live",
   };
+  const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl });
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
 
   const STEPS = [
@@ -1447,6 +1448,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     };
   }
   function fromPreset(p) {
+    // A preset is a whole setup: what it does not mention goes back to the defaults, not to whatever
+    // was set before. Without "reject_oor" a preset means no rejection of out-of-reach targets.
+    for (const k of Object.keys(DEFAULTS)) S[k] = structuredClone(DEFAULTS[k]);
+    S.task.reject_unreachable = false;
     if (p.bm) Object.assign(S.bm, p.bm);
     if (!MODELS.some((m) => m.id === S.bm.bm_model)) S.bm.bm_model = MODELS[0].id;  // a body model Studio no longer offers
     if (p.task && p.task.max_duration) S.task.max_duration = p.task.max_duration;
@@ -1664,7 +1669,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const f = ev.target.files[0]; if (!f) return;
     f.text().then((txt) => { try { fromPreset(JSON.parse(txt)); S.preset = f.name.replace(/\.json$/, ""); render(); } catch (e) { $("preset-msg").textContent = "Could not read " + f.name; } });
   });
-  $("hero-preset").addEventListener("click", () => { S.preset = "pointing"; S.step = 1; render(); document.getElementById("studio").scrollIntoView(); });
+  // Loads the pointing task example (its preset: body, target, sensing, reward, budget) and opens the Task step.
+  $("hero-preset").addEventListener("click", async (ev) => {
+    const label = ev.target.textContent;
+    ev.target.disabled = true;
+    try { await openExampleTask("pointing"); }
+    catch (e) { ev.target.textContent = "The pointing example could not load"; setTimeout(() => { ev.target.textContent = label; }, 4000); }
+    ev.target.disabled = false;
+  });
   function renderPresetList() {
     $("preset-row").hidden = !S.backend;
     $("preset-select").innerHTML = S.presets.map((p) => `<option value="${p.name}">${p.name}${p.source === "user" ? " (yours)" : ""}</option>`).join("");
