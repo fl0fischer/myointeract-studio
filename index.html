@@ -158,7 +158,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .icon-btn { border: 0; background: none; color: var(--muted, #8a8f98); font-size: 0.95rem; line-height: 1; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; opacity: 0.75; }
 .icon-btn:hover:not(:disabled), .icon-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.18); }
 .icon-btn:disabled { opacity: 0.3; cursor: default; }
-.target-head { padding-right: 46px; }
+.target-head { padding-right: 84px; }
+.icon-btn.eye { margin-right: 10px; display: inline-grid; place-items: center; }  /* set apart from copy and paste */
 .target [data-row] { border-radius: 8px; outline: 1px solid transparent; outline-offset: 4px; }
 .target [data-row][data-rowsel] { outline-color: var(--accent); background: rgba(127, 127, 127, 0.07); }
 .screen-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
@@ -516,6 +517,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     S.sel = i;
     render();
   }
+  // "Part of the task" / "switched off" icons of a target card.
+  const EYE = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const EYE_OFF = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 5.2A9.6 9.6 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.1 3.9M6.5 6.6A17.300 17.300 0 0 0 2 12s3.600 7 10 7a9.500 9.500 0 0 0 5-1.400M9.900 9.900a3 3 0 0 0 4.200 4.200"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`;
   function targetHtml(t, i) {
     const row = (key) => `data-row="${i}.${key}"${S.row && S.row.i === i && S.row.key === key ? ' data-rowsel="1"' : ""}`;
     const r = (key, label, hint, min, max, step) => `<div class="field" ${row(key)}><span class="lab">${label}</span><div class="range2">
@@ -523,10 +527,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <span class="bound"><span>max</span><input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${t[key][1]}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></span></div><span class="hint">${hint}</span></div>`;
     const num = targetNumber(i);
     return `<div class="target${S.sel === i ? " selected" : ""}${t.disabled ? " off" : ""}" data-target="${i}">
-      <span class="target-tools"><button class="icon-btn" type="button" data-copy="${i}" title="Copy this target's settings (Ctrl+C)" aria-label="Copy this target's settings">&#x29C9;</button><button class="icon-btn" type="button" data-paste="${i}" title="Paste the copied settings into this target (Ctrl+V)" aria-label="Paste the copied settings into this target" ${S.clip ? "" : "disabled"}>&#x2398;</button></span>
+      <span class="target-tools"><button class="icon-btn eye" type="button" data-toggle="${i}" aria-pressed="${!t.disabled}" title="${t.disabled ? "Switched off: left out of the task, but kept in its place. Click to switch it on" : "Part of the task. Click to switch it off for now"}" aria-label="${t.disabled ? "Switch this target on" : "Switch this target off"}" ${!t.disabled && liveTargets().length <= 1 ? "disabled" : ""}>${t.disabled ? EYE_OFF : EYE}</button><button class="icon-btn" type="button" data-copy="${i}" title="Copy this target's settings (Ctrl+C)" aria-label="Copy this target's settings">&#x29C9;</button><button class="icon-btn" type="button" data-paste="${i}" title="Paste the copied settings into this target (Ctrl+V)" aria-label="Paste the copied settings into this target" ${S.clip ? "" : "disabled"}>&#x2398;</button></span>
       <div class="target-head"><b><span class="swatch" style="background:${t.disabled ? "#9aa0a6" : t.color}"></span>${num ? "Target " + num : "Target (off)"}</b>
         <span class="chips">${["Sphere", "Button"].map((k) => `<button class="chip" type="button" data-type="${k}" data-i="${i}" aria-pressed="${t.type === k}">${k === "Sphere" ? "Sphere (point at it)" : "Button (press it)"}</button>`).join("")}
-        <button class="chip" type="button" data-toggle="${i}" aria-pressed="${!t.disabled}" title="${t.disabled ? "Left out of the task; it keeps its place in the list" : "Part of the task. Switch off to leave it out for now"}" ${!t.disabled && liveTargets().length <= 1 ? "disabled" : ""}>${t.disabled ? "Off" : "On"}</button>
         ${S.targets.length > 1 ? `<button class="chip" type="button" data-move="${i},-1" ${i === 0 ? "disabled" : ""} title="Earlier in the sequence" aria-label="Move target ${i + 1} earlier">&uarr;</button><button class="chip" type="button" data-move="${i},1" ${i === S.targets.length - 1 ? "disabled" : ""} title="Later in the sequence" aria-label="Move target ${i + 1} later">&darr;</button><button class="chip" type="button" data-remove="${i}">Remove</button>` : ""}</span></div>
       <div class="grid2">
         ${r("x", "Forward (m)", "Distance in front of the shoulder (x).", -1, 1, 0.005)}
