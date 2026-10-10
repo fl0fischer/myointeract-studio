@@ -347,7 +347,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
     view: "perspective", panels: true, stepOpen: true, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
-    examples: [], exampleSel: null, replay: null,
+    examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live",
   };
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.panels = localStorage.getItem("studio-panels") !== "0"; S.stepOpen = localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
 
@@ -709,7 +709,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     $("stage").classList.toggle("dim", [2, 3, 4].includes(S.step));
     if (liveWanted() && !S.liveSocket) connectLive(S.viewer.key);
     if (!liveWanted() && S.liveSocket) closeLive();
-    const live = (liveWanted() && S.live) || (replayWanted() && S.replay.hello) || null;
+    if (S.sim && !simWanted()) stopSim();
+    const live = (liveWanted() && S.live) || (simWanted() && S.sim.hello) || (replayWanted() && S.replay.hello) || null;
     const model = live && live.model ? live.model : S.bm.bm_model;
     if (replayWanted() && S.replay.hello && !S.replayTimer) S.replayTimer = setInterval(tickReplay, 1000 * S.replay.hello.ctrl_dt);
     SC.loadModel(model, sceneBase()).then(() => {
@@ -751,7 +752,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       html += `<span class="sep"></span><span class="live-pill ${state[0]}" role="status">${state[1]}</span>`;
       html += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">Stop</button>`;
     }
-    if (replayWanted()) html += `<span class="sep"></span><span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…"}</span>`;
+    if (simWanted()) html += `<span class="sep"></span><span class="live-pill ${S.sim.error ? "err" : S.sim.hello ? "on" : ""}" role="status">${S.sim.error ? "The simulation could not start: " + S.sim.error : S.sim.hello ? `Simulated in your browser · ${S.sim.title} · ${S.sim.wins}/${S.sim.episodes} solved` : "Loading MuJoCo and the policy…"}</span>${S.sim.step === 1 ? `<button class="chip" type="button" data-sim-stop>Stop</button>` : ""}`;
+    else if (S.step === 1 && simExample()) html += `<span class="sep"></span><button class="chip" type="button" data-sim-play title="Runs the ${simExample().title} example policy in your browser on the target ranges set here">Play example policy</button>`;
+    else if (replayWanted()) html += `<span class="sep"></span><span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…"}</span>`;
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
     if (!window.claude) html += `<span class="sep"></span><button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
     if (S.backend) html += `<button class="chip" type="button" data-export="mjcf" title="The task as a MuJoCo model with its meshes (zip), e.g. for MuJoCo's Unity plug-in">MuJoCo</button>`;
@@ -767,6 +770,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       else { S.viewer = null; S.viewerClosed = false; }
       render();
     }));
+    bar.querySelectorAll("[data-sim-play]").forEach((b) => b.addEventListener("click", () => { startSim(simExample(), 1); render(); }));
+    bar.querySelectorAll("[data-sim-stop]").forEach((b) => b.addEventListener("click", () => { stopSim(); render(); }));
     bar.querySelectorAll("[data-panels]").forEach((b) => b.addEventListener("click", () => {
       S.panels = !S.panels;
       try { localStorage.setItem("studio-panels", S.panels ? "1" : "0"); } catch (e) {}
@@ -857,7 +862,58 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- example policies without a backend */
   // The hosted page ships each example's stored evaluation and a recorded live feed (same frames as
   // the live view), which the 3D scene replays in a loop.
-  const replayWanted = () => !S.backend && S.step === 6 && !!S.replay;
+  const replayWanted = () => !S.backend && S.step === 6 && !!S.replay && !simWanted();
+
+  /* ---------------------------------------------------------------- example policies simulated in the page */
+  // MuJoCo (WebAssembly) and the policy run here: static/sim.js, tested against native MuJoCo.
+  // Evaluate plays the example's own task; the Task step plays it on the target ranges set there.
+  const simWanted = () => !!S.sim && S.step === S.sim.step;
+  // The example whose policy fits the setup in the editor: same body, one sphere target, no fatigue.
+  // (Buttons sit at fixed places in their examples, so only sphere tasks are offered for free exploration.)
+  const simExample = () => (S.targets.length === 1 && S.targets[0].type === "Sphere" && !S.bm.fatigue_enabled && S.examples.find((e) => e.sim && e.replay.hello.model === S.bm.bm_model && e.summary && e.summary.targets === 1 && e.sim_kind === "sphere")) || null;
+  function stopSim() {
+    if (!S.sim) return;
+    clearInterval(S.sim.timer);
+    if (S.sim.engine) S.sim.engine.dispose();
+    S.sim = null;
+  }
+  async function startSim(ex, step) {
+    if (S.sim && S.sim.name === ex.name && S.sim.step === step) return;
+    stopSim();
+    const mine = (S.sim = { name: ex.name, title: ex.title, step, hello: null, wins: 0, episodes: 0, wait: 0 });
+    try {
+      const { TaskSim } = await import("./static/sim.js");
+      const engine = await TaskSim.load(`examples/${ex.name}`);
+      if (S.sim !== mine) { engine.dispose(); return; }
+      mine.engine = engine;
+      mine.hello = { model: ex.replay.hello.model, bodies: engine.info.bodies.map((n) => n.split("/").pop()), targets: ex.replay.hello.targets.map((t) => ({ ...t })), ctrl_dt: engine.task.ctrl_dt };
+      simReset(mine);
+      mine.timer = setInterval(() => simTick(mine), 1000 * engine.task.ctrl_dt);
+    } catch (e) { mine.error = e.message; }
+    if (S.sim === mine) { syncScene(); renderSceneBar(); }
+  }
+  // Evaluate: targets as the example was trained. Task step: the ranges set in the editor (shoulder frame).
+  function simReset(sim) {
+    const { engine } = sim, t = S.targets[0], uni = (r) => r[0] + Math.random() * (r[1] - r[0]);
+    if (sim.step === 1) engine.reset({ positions: [[uni(t.x), uni(t.y), uni(t.z)].map((v, k) => v + engine.task.origin[k])], sizes: [[uni(t.size), uni(t.size), uni(t.size)]] });
+    else engine.reset();
+    sim.radii = engine.targets.map((g) => engine.model.geom_size[3 * g.geomId]);
+  }
+  function simTick(sim) {
+    if (S.sim !== sim || !simWanted() || !SC || sceneKeys.live !== sim.hello) return;
+    if (sim.wait > 0) { if (--sim.wait === 0) simReset(sim); else return; }
+    const done = sim.engine.step();
+    sim.radii.forEach((r, k) => { if (sim.hello.targets[k].shape !== "box") SC.setLiveTargetRadius(k, r); });
+    SC.applyFrame(sim.engine.frame());
+    if (done || sim.engine.timedOut) {
+      sim.episodes++;
+      sim.wins += done ? 1 : 0;
+      sim.wait = 8;  // hold the final pose for a moment
+      renderSceneBar();
+      const stat = $("sim-stats");
+      if (stat) stat.textContent = `${sim.wins} of ${sim.episodes} episodes solved in this session`;
+    }
+  }
   fetch("examples/index.json").then((r) => (r.ok ? r.json() : [])).then((list) => { S.examples = list; if (S.step === 6) render(); }).catch(() => {});
   async function loadReplay(ex) {
     if (S.replay && S.replay.name === ex.name) return;
@@ -1124,10 +1180,23 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <div class="grid2">
         <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${e.name}" ${e === ex ? "selected" : ""}>${e.title}</option>`).join("")}</select>
           <span class="hint">${exampleNote(ex)}</span></div>
-        <div class="field"><span class="lab">&nbsp;</span><div class="chips"><button class="btn" type="button" id="ex-open">Open this task in the editor</button></div><span class="hint">The 3D view replays a recorded rollout of this policy.</span></div>
+        <div class="field"><span class="lab">&nbsp;</span><div class="chips"><button class="btn" type="button" id="ex-open">Open this task in the editor</button></div>
+          <span class="hint">${ex.sim ? `<span class="chips"><button class="chip" type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in your browser</button><button class="chip" type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : "The 3D view replays a recorded rollout of this policy."}</span></div>
       </div>
       <p class="err" id="ex-msg" hidden></p>
-      ${statRow(ex.evaluation)}`));
+      ${statRow(ex.evaluation)}
+      ${ex.sim && S.evalMode === "live" ? `<p class="muted">The policy runs in this page: MuJoCo simulates the muscles, and every episode starts from a new pose with targets drawn as in training. <span id="sim-stats">${S.sim ? `${S.sim.wins} of ${S.sim.episodes} episodes solved in this session` : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">(reset)</a></p><p class="muted">In the Task step, "Play example policy" runs it on the target ranges you set there, also outside what it was trained on.</p>` : ""}`));
+    if (ws.querySelector("#sim-reset")) ws.querySelector("#sim-reset").addEventListener("click", (e) => {
+      e.preventDefault();
+      const sim = S.sim;
+      if (!sim || !sim.engine) return;
+      Object.assign(sim, { wins: 0, episodes: 0, wait: 0 });
+      simReset(sim);
+      $("sim-stats").textContent = "0 of 0 episodes solved in this session";
+      renderSceneBar();
+    });
+    ws.querySelectorAll("[data-eval-mode]").forEach((b) => b.addEventListener("click", () => { S.evalMode = b.dataset.evalMode; render(); }));
+    if (ex.sim && S.evalMode === "live") startSim(ex, 6); else if (S.sim && S.sim.step === 6) stopSim();
     ws.querySelector("#ex-sel").addEventListener("change", (e) => { S.exampleSel = e.target.value; render(); });
     ws.querySelector("#ex-open").addEventListener("click", () => openExampleTask(ex.name).catch((e) => { const m = $("ex-msg"); m.hidden = false; m.textContent = "Could not open the task: " + e.message; }));
     loadReplay(ex);

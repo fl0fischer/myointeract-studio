@@ -448,6 +448,12 @@ export class StudioScene extends EventTarget {
     });
   }
 
+  // Radius of live target k (the page's own simulation draws a new size per episode).
+  setLiveTargetRadius(k, radius) {
+    const L = this.live;
+    if (L && L.targetMeshes[k]) L.targetMeshes[k].scale.setScalar(radius / Math.max(L.targets[k].radius, 0.005));
+  }
+
   applyFrame(f) {
     const L = this.live;
     if (!L) return;
