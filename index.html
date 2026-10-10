@@ -547,11 +547,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     return `<details class="screen-box" ${sc ? "open" : ""}><summary><b>Screen in front of the user</b> <span class="muted">· from Figma or an image</span></summary>
       <div style="display:grid; gap:12px; margin-top:12px">
         <p class="hint">Place a user interface in the scene. From a Figma frame, its buttons and other controls can become targets that stay on the screen when you move it.</p>
-        ${S.backend ? `<div class="field"><label for="figma-url">Figma frame link</label><input type="url" id="figma-url" placeholder="https://www.figma.com/design/…?node-id=…" value="${(S.figma && S.figma.url) || ""}"><span class="hint">In Figma, select the frame and use "Copy link to selection".</span></div>
-        <div class="field"><label for="figma-token">Personal access token</label><input type="password" id="figma-token" autocomplete="off" placeholder="figd_…"><span class="hint">Sent to Figma through your backend for this import only; never stored.</span></div>
-        <div class="chips"><button class="btn" type="button" id="figma-go">Import from Figma</button></div>`
-        : `<p class="hint">Importing from Figma needs a connected backend, which calls Figma's API with your token.</p>`}
-        <div class="chips"><label class="chip" for="screen-file" style="cursor:pointer">${S.backend ? "Or use an image" : "Use an image"}</label><input type="file" id="screen-file" accept="image/png,image/jpeg,image/webp" hidden></div>
+        <div class="field"><label for="figma-url">Figma frame link</label><input type="url" id="figma-url" placeholder="https://www.figma.com/design/…?node-id=…" value="${(S.figma && S.figma.url) || ""}"><span class="hint">In Figma, select the frame and use "Copy link to selection".</span></div>
+        <div class="field"><label for="figma-token">Personal access token</label><input type="password" id="figma-token" autocomplete="off" placeholder="figd_…"><span class="hint">Sent only to Figma (api.figma.com), for this import; it is not stored.</span></div>
+        <div class="chips"><button class="btn" type="button" id="figma-go">Import from Figma</button></div>
+        <div class="chips"><label class="chip" for="screen-file" style="cursor:pointer">Or use an image</label><input type="file" id="screen-file" accept="image/png,image/jpeg,image/webp" hidden></div>
         ${sc ? `<div class="field"><label for="screen-width">Screen width (m)</label><input type="number" id="screen-width" min="0.05" max="2" step="0.01" value="${sc.widthM}"><span class="hint">${sc.name || "Screen"} · ${Math.round(sc.width)} × ${Math.round(sc.height)} px. Click the screen in the 3D view to move it (M) or rotate it (R).</span></div>
           ${sc.elements && sc.elements.length ? `<div class="chips"><button class="btn" type="button" data-screen-targets="Sphere">Its ${sc.elements.length} elements become sphere targets</button><button class="btn" type="button" data-screen-targets="Button">… or button targets</button></div>${sc.more ? `<span class="hint">${sc.more} more elements were left out: a task has at most 15 targets.</span>` : ""}` : ""}
           <div class="chips"><button class="chip" type="button" id="screen-remove">Remove the screen</button></div>` : ""}
@@ -568,7 +567,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       if (!url || !token) { msg.textContent = "Paste the frame link and a personal access token first."; return; }
       msg.textContent = "Asking Figma for the frame…";
       try {
-        const f = await api("/api/figma", { method: "POST", body: { url, token } });
+        // The page asks Figma itself; if the browser cannot (blocked request), a connected backend does.
+        let f;
+        try { f = await (await import("./static/figma.js")).fetchFrame(url, token); }
+        catch (e) { if (!S.backend || !/not reachable|could not be downloaded/.test(e.message)) throw e; f = await api("/api/figma", { method: "POST", body: { url, token } }); }
         placeScreen({ name: f.name, image: f.image, width: f.width, height: f.height, elements: f.elements, more: f.more });
       } catch (e) { msg.textContent = e.message; }
     });
