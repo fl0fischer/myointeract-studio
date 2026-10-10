@@ -4,47 +4,52 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MyoInteract Studio</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%238c2233'/%3E%3Cpath d='M8 23 L14 13 L21 16' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='8' cy='23' r='2.4' fill='%23fff'/%3E%3Ccircle cx='14' cy='13' r='2.4' fill='%23fff'/%3E%3Ccircle cx='25' cy='9' r='3.2' fill='none' stroke='%23f0b08a' stroke-width='2.2'/%3E%3Ccircle cx='25' cy='9' r='0.9' fill='%23f0b08a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: product landing on top, then a three-column studio (steps · step workspace · live summary). */
 :root {
-  --bg: #f4f5f8;
-  --surface: #ffffff;
-  --ink: #161a26;
-  --muted: #5d6478;
-  --line: #dde1ea;
-  --tint: #eef0f6;
-  --accent: #c2412d;
+  --bg: #f6f3ee;
+  --surface: #fffdfa;
+  --ink: #221a18;
+  --muted: #6d615c;
+  --line: #e4dcd2;
+  --tint: #efe9e0;
+  --accent: #8c2233;
   --accent-ink: #ffffff;
-  --signal: #23708f;
+  --signal: #2c6076;
   --ok: #2b7a4b;
   --warn: #a8640c;
-  --hero-a: #1b2134;
-  --hero-b: #2a2338;
-  --scene-bg: #e4e7ee;
-  --scene-grid: #c4c9d6;
-  --scene-reach: #7d849b;
-  --glass: rgba(255, 255, 255, 0.84);
-  --scene-dim: rgba(244, 245, 248, 0.5);
+  --hero-a: #2a1719;
+  --hero-b: #3a2224;
+  --hero-ink: #f7efe8;
+  --hero-muted: #d3c5bc;
+  --hero-hi: #f0b08a;
+  --hero-line: #5d4042;
+  --scene-bg: #ebe5db;
+  --scene-grid: #d2c8ba;
+  --scene-reach: #9a8d7e;
+  --glass: rgba(255, 253, 250, 0.84);
+  --scene-dim: rgba(246, 243, 238, 0.5);
   --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
   --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f121a; --surface: #171b26; --ink: #e8ebf3; --muted: #9aa2b7; --line: #2a3040; --tint: #1e2331;
-    --accent: #ec6a52; --accent-ink: #1a0d0a; --signal: #5fb6d6; --ok: #6cc58f; --warn: #e2a74c;
-    --hero-a: #121624; --hero-b: #1d1828;
-    --scene-bg: #11151e; --scene-grid: #283044; --scene-reach: #8e97b0; --glass: rgba(23, 27, 38, 0.84); --scene-dim: rgba(15, 18, 26, 0.5);
+    --bg: #14100f; --surface: #1d1716; --ink: #f1e9e2; --muted: #a89a92; --line: #342a28; --tint: #261e1c;
+    --accent: #e0707e; --accent-ink: #1e0c0f; --signal: #6fb2cc; --ok: #6cc58f; --warn: #e2a74c;
+    --hero-a: #1a0f10; --hero-b: #251617; --hero-ink: #f7efe8; --hero-muted: #cdbfb6; --hero-hi: #f0b08a; --hero-line: #4a3234;
+    --scene-bg: #171211; --scene-grid: #3a2f2c; --scene-reach: #a39489; --glass: rgba(29, 23, 22, 0.84); --scene-dim: rgba(20, 16, 15, 0.5);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f121a; --surface: #171b26; --ink: #e8ebf3; --muted: #9aa2b7; --line: #2a3040; --tint: #1e2331;
-  --accent: #ec6a52; --accent-ink: #1a0d0a; --signal: #5fb6d6; --ok: #6cc58f; --warn: #e2a74c;
-  --hero-a: #121624; --hero-b: #1d1828;
-  --scene-bg: #11151e; --scene-grid: #283044; --scene-reach: #8e97b0; --glass: rgba(23, 27, 38, 0.84); --scene-dim: rgba(15, 18, 26, 0.5);
+  --bg: #14100f; --surface: #1d1716; --ink: #f1e9e2; --muted: #a89a92; --line: #342a28; --tint: #261e1c;
+    --accent: #e0707e; --accent-ink: #1e0c0f; --signal: #6fb2cc; --ok: #6cc58f; --warn: #e2a74c;
+    --hero-a: #1a0f10; --hero-b: #251617; --hero-ink: #f7efe8; --hero-muted: #cdbfb6; --hero-hi: #f0b08a; --hero-line: #4a3234;
+    --scene-bg: #171211; --scene-grid: #3a2f2c; --scene-reach: #a39489; --glass: rgba(29, 23, 22, 0.84); --scene-dim: rgba(20, 16, 15, 0.5);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -61,7 +66,7 @@ p { margin: 0; }
 .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .nav-in { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .brand { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-.brand-mark { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, var(--accent), #8f2c6b); }
+.brand-mark { width: 26px; height: 26px; flex: none; }
 .nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; }
 .nav a.link:hover { color: var(--ink); }
 .spacer { flex: 1; }
@@ -74,19 +79,19 @@ p { margin: 0; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* hero */
-.hero { background: linear-gradient(135deg, var(--hero-a), var(--hero-b)); color: #eef0f7; }
+.hero { background: linear-gradient(135deg, var(--hero-a), var(--hero-b)); color: var(--hero-ink); }
 .hero-in { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 56px 48px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 40px; align-items: center; }
 .hero h1 { font-size: clamp(2rem, 4vw, 3.1rem); line-height: 1.1; }
-.hero h1 em { font-style: normal; color: #f3876f; }
-.hero p.lead { font-size: 1.15rem; color: #c9cede; margin-top: 16px; max-width: 54ch; }
+.hero h1 em { font-style: normal; color: var(--hero-hi); }
+.hero p.lead { font-size: 1.15rem; color: var(--hero-muted); margin-top: 16px; max-width: 54ch; }
 .hero .cta { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
-.hero .btn { border-color: #3a4157; background: transparent; color: #eef0f7; }
-.hero .btn.primary { background: #f0705a; color: #1a0d0a; border-color: #f0705a; }
+.hero .btn { border-color: var(--hero-line); background: transparent; color: var(--hero-ink); }
+.hero .btn.primary { background: var(--hero-hi); color: var(--hero-a); border-color: var(--hero-hi); }
 .steps-strip { display: grid; gap: 12px; }
 .strip-item { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
 .strip-item b { font-family: var(--font-display); }
-.strip-num { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-family: var(--font-mono); background: rgba(240,112,90,0.18); color: #f3876f; }
-.strip-item span { color: #b8bed0; font-size: 0.93rem; }
+.strip-num { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-family: var(--font-mono); background: rgba(240, 176, 138, 0.16); color: var(--hero-hi); }
+.strip-item span { color: var(--hero-muted); font-size: 0.93rem; }
 .facts { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
 .fact b { font-family: var(--font-display); font-size: 1.05rem; display: block; }
 .fact span { color: var(--muted); font-size: 0.93rem; }
@@ -225,7 +230,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
 <nav class="nav" aria-label="Main">
   <div class="nav-in">
-    <span class="brand"><span class="brand-mark" aria-hidden="true"></span>MyoInteract Studio</span>
+    <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 23 L14 13 L21 16" fill="none" stroke="var(--accent-ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="23" r="2.4" fill="var(--accent-ink)"/><circle cx="14" cy="13" r="2.4" fill="var(--accent-ink)"/><circle cx="25" cy="9" r="3.2" fill="none" stroke="var(--logo-target, #f0b08a)" stroke-width="2.2"/><circle cx="25" cy="9" r="0.9" fill="var(--logo-target, #f0b08a)"/></svg>MyoInteract Studio</span>
     <a class="link" href="#studio">Studio</a>
     <a class="link" href="https://github.com/fl0fischer/myointeract">GitHub</a>
     <span class="spacer"></span>
@@ -237,7 +242,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 <header class="hero">
   <div class="hero-in">
     <div>
-      <span class="eyebrow" style="color:#9aa2b7">Musculoskeletal interaction, trained in minutes</span>
+      <span class="eyebrow" style="color:var(--hero-muted)">Musculoskeletal interaction, trained in minutes</span>
       <h1>Teach a <em>muscle-driven arm</em> to point, press and type.</h1>
       <p class="lead">Pick a body, place targets, choose what the agent senses and what it is rewarded for, then train thousands of simulated arms in parallel on a GPU, on your machine, on Colab or in the cloud.</p>
       <div class="cta">
@@ -247,7 +252,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     </div>
     <div class="steps-strip" aria-label="How it works">
       <div class="strip-item"><span class="strip-num">1</span><div><b>Design the task</b><br><span>Body model, targets in reach, sensing and reward, with an explanation for every choice.</span></div></div>
-      <div class="strip-item"><span class="strip-num">2</span><div><b>Train where the GPU is</b><br><span>Your workstation, a free Colab T4, a Hugging Face Space or a lab server; one interface.</span></div></div>
+      <div class="strip-item"><span class="strip-num">2</span><div><b>Train where the GPU is</b><br><span>Your workstation, a free Colab T4, a Hugging Face Space or a lab server.</span></div></div>
       <div class="strip-item"><span class="strip-num">3</span><div><b>Evaluate and compare</b><br><span>Success rate, time to target, effort and fatigue for every checkpoint, and the policy playing live in 3D.</span></div></div>
     </div>
   </div>
@@ -348,7 +353,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Docker Space in your own Hugging Face account, on the hardware you pick there (training needs a GPU). Studio runs inside the Space: create it from the template and open it.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
     "Lab server": { key: "remote", speed: 30000, note: "Any Linux or Windows machine with an NVIDIA GPU, reached through SSH.", cmd: "ssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser  # then open http://localhost:8000" },
   };
-  const COLORS = ["#c2412d", "#23708f", "#2b7a4b", "#8f2c6b", "#a8640c", "#5a54b8"];
+  const COLORS = ["#a3293d", "#2c6076", "#2b7a4b", "#7a4a8c", "#a8640c", "#56606e"];
 
   /* ---------------------------------------------------------------- state */
   const S = {
