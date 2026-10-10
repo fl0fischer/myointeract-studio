@@ -159,6 +159,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .icon-btn:hover:not(:disabled), .icon-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.18); }
 .icon-btn:disabled { opacity: 0.3; cursor: default; }
 .target-head { padding-right: 84px; }
+/* up, down and Remove stay together: on the others' line when it is wide enough, else on a line of their own */
+.chip-group { display: inline-flex; flex-wrap: nowrap; gap: 8px; }
 .icon-btn.eye { margin-right: 10px; display: inline-grid; place-items: center; }  /* set apart from copy and paste */
 .target [data-row] { border-radius: 8px; outline: 1px solid transparent; outline-offset: 4px; }
 .target [data-row][data-rowsel] { outline-color: var(--accent); background: rgba(127, 127, 127, 0.07); }
@@ -530,7 +532,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <span class="target-tools"><button class="icon-btn eye" type="button" data-toggle="${i}" aria-pressed="${!t.disabled}" title="${t.disabled ? "Switched off: left out of the task, but kept in its place. Click to switch it on" : "Part of the task. Click to switch it off for now"}" aria-label="${t.disabled ? "Switch this target on" : "Switch this target off"}" ${!t.disabled && liveTargets().length <= 1 ? "disabled" : ""}>${t.disabled ? EYE_OFF : EYE}</button><button class="icon-btn" type="button" data-copy="${i}" title="Copy this target's settings (Ctrl+C)" aria-label="Copy this target's settings">&#x29C9;</button><button class="icon-btn" type="button" data-paste="${i}" title="Paste the copied settings into this target (Ctrl+V)" aria-label="Paste the copied settings into this target" ${S.clip ? "" : "disabled"}>&#x2398;</button></span>
       <div class="target-head"><b><span class="swatch" style="background:${t.disabled ? "#9aa0a6" : t.color}"></span>${num ? "Target " + num : "Target (off)"}</b>
         <span class="chips">${["Sphere", "Button"].map((k) => `<button class="chip" type="button" data-type="${k}" data-i="${i}" aria-pressed="${t.type === k}">${k === "Sphere" ? "Sphere (point at it)" : "Button (press it)"}</button>`).join("")}
-        ${S.targets.length > 1 ? `<button class="chip" type="button" data-move="${i},-1" ${i === 0 ? "disabled" : ""} title="Earlier in the sequence" aria-label="Move target ${i + 1} earlier">&uarr;</button><button class="chip" type="button" data-move="${i},1" ${i === S.targets.length - 1 ? "disabled" : ""} title="Later in the sequence" aria-label="Move target ${i + 1} later">&darr;</button><button class="chip" type="button" data-remove="${i}">Remove</button>` : ""}</span></div>
+        ${S.targets.length > 1 ? `<span class="chip-group"><button class="chip" type="button" data-move="${i},-1" ${i === 0 ? "disabled" : ""} title="Earlier in the sequence" aria-label="Move target ${i + 1} earlier">&uarr;</button><button class="chip" type="button" data-move="${i},1" ${i === S.targets.length - 1 ? "disabled" : ""} title="Later in the sequence" aria-label="Move target ${i + 1} later">&darr;</button><button class="chip" type="button" data-remove="${i}">Remove</button></span>` : ""}</span></div>
       <div class="grid2">
         ${r("x", "Forward (m)", "Distance in front of the shoulder (x).", -1, 1, 0.005)}
         ${r("y", "Sideways (m)", "Right (–) to left (+) of the shoulder (y).", -1, 1, 0.005)}
