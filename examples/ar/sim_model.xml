@@ -126,8 +126,8 @@
   <worldbody>
     <body name="universal_robot/mocap_base" mocap="true">
       <inertial pos="0.0196936 -0.0649145 2.06962" quat="-0.0915986 0.702113 0.0853036 0.700978" mass="772027" diaginertia="2.62378e+07 1.43761e+07 1.38743e+07" />
-      <geom name="universal_robot/floor" size="7 7 0.1" pos="0 0 -0.4" type="plane" group="1" />
-      <geom size="1.05 0.205" pos="0 0 -0.19" type="cylinder" group="4" />
+      <geom name="universal_robot/floor" size="7 7 0.1" pos="0 0 -0.4" type="plane" conaffinity="5" group="1" />
+      <geom size="1.05 0.205" pos="0 0 -0.19" type="cylinder" conaffinity="5" group="4" />
       <camera name="universal_robot/side_view" pos="-3 0 2.25" quat="0.601501 0.371748 -0.371748 -0.601501" mode="trackcom" />
       <camera name="universal_robot/front_view" pos="0 -3 2.25" quat="0.850651 0.525731 0 0" mode="trackcom" />
       <light pos="0 -3 3" dir="0 0.707107 -0.707107" diffuse="0.5 0.5 0.5" specular="0.25 0.25 0.25" mode="trackcom" />
@@ -1315,8 +1315,8 @@
                                                           <body name="universal_robot/distal_thumb_r" pos="0.014 -0.0259 -0.0101">
                                                             <inertial pos="0.0056 -0.0104 -0.0044" quat="0.424708 0.820473 -0.17592 0.339851" mass="0.003" diaginertia="6e-08 5e-08 2e-08" />
                                                             <joint name="universal_robot/ip_flexion_r" pos="0 0 0" axis="-0.050102 -0.479623 0.876043" range="-1.309 0.436332" />
-                                                            <geom name="universal_robot/distal_thumb_coll_r" class="universal_robot/myohand_coll" size="0.0065 0.0108743" pos="0.005 -0.009 -0.0035" quat="0.812976 -0.509019 -0.282788 0" material="universal_robot/MatSkin" />
-                                                            <geom name="universal_robot/distal_thumb_coll_2_r" class="universal_robot/myohand_coll" size="0.007 0.0055 0.002" pos="0.015 -0.018 -0.007" quat="0.466903 0.531065 0.466454 0.531406" type="ellipsoid" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
+                                                            <geom name="universal_robot/distal_thumb_coll_r" class="universal_robot/myohand_coll" size="0.0065 0.0108743" pos="0.005 -0.009 -0.0035" quat="0.812976 -0.509019 -0.282788 0" contype="4" material="universal_robot/MatSkin" />
+                                                            <geom name="universal_robot/distal_thumb_coll_2_r" class="universal_robot/myohand_coll" size="0.007 0.0055 0.002" pos="0.015 -0.018 -0.007" quat="0.466903 0.531065 0.466454 0.531406" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/EPL-P12_r" pos="0.0054 -0.0071 -0.0046" />
                                                             <site name="universal_robot/FPL-P11_r" pos="0.0024 -0.0113 -0.0041" />
                                                             <site name="universal_robot/THtip_r" pos="0.01 -0.02 -0.008" size="0.005" rgba="0.8 0 0 1" />
@@ -1399,8 +1399,8 @@
                                                           <body name="universal_robot/distph2_r" pos="0.003333 -0.024888 0.00122">
                                                             <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
                                                             <joint name="universal_robot/md2_flexion_r" pos="0 0 0" axis="0.995004 0.0998334 0" range="0 1.5708" />
-                                                            <geom name="universal_robot/distph2_coll_r" class="universal_robot/myohand_coll" size="0.007 0.008" pos="0.001 -0.008 0" quat="0.72705 0.660674 0.168783 -0.0801334" material="universal_robot/MatSkin" />
-                                                            <geom name="universal_robot/distph2_coll_2_r" class="universal_robot/myohand_coll" size="0.005 0.008 0.002" pos="0.003 -0.018 0.0055" quat="0.990593 0.103155 0.0421185 0.0794378" type="ellipsoid" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
+                                                            <geom name="universal_robot/distph2_coll_r" class="universal_robot/myohand_coll" size="0.007 0.008" pos="0.001 -0.008 0" quat="0.72705 0.660674 0.168783 -0.0801334" contype="4" material="universal_robot/MatSkin" />
+                                                            <geom name="universal_robot/distph2_coll_2_r" class="universal_robot/myohand_coll" size="0.005 0.008 0.002" pos="0.003 -0.018 0.0055" quat="0.990593 0.103155 0.0421185 0.0794378" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP2-P10_r" pos="0.0007 -0.0056 -0.004" />
                                                             <site name="universal_robot/EDC2-P9_r" pos="0 -0.0056 0.0034" />
                                                             <site name="universal_robot/EIP-P10_r" pos="0.001 -0.004 0.003" />
@@ -1475,8 +1475,8 @@
                                                           <body name="universal_robot/distph3_r" pos="0.001365 -0.029047 0.001954">
                                                             <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
                                                             <joint name="universal_robot/md3_flexion" pos="0 0 0" axis="1 0 0" range="0 1.5708" />
-                                                            <geom name="universal_robot/distph3_coll_r" class="universal_robot/myohand_coll" size="0.007 0.008" pos="0.0013 -0.009 -0.002" quat="0.696489 0.717132 0.0174159 0.017932" material="universal_robot/MatSkin" />
-                                                            <geom name="universal_robot/distph3_coll_2_r" class="universal_robot/myohand_coll" size="0.0055 0.008 0.002" pos="0.002 -0.019 0.003" quat="0.995004 0.0998334 0 0" type="ellipsoid" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
+                                                            <geom name="universal_robot/distph3_coll_r" class="universal_robot/myohand_coll" size="0.007 0.008" pos="0.0013 -0.009 -0.002" quat="0.696489 0.717132 0.0174159 0.017932" contype="4" material="universal_robot/MatSkin" />
+                                                            <geom name="universal_robot/distph3_coll_2_r" class="universal_robot/myohand_coll" size="0.0055 0.008 0.002" pos="0.002 -0.019 0.003" quat="0.995004 0.0998334 0 0" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP3-P10_r" pos="0.0008 -0.004 -0.002" />
                                                             <site name="universal_robot/EDC3-P9_r" pos="0.0008 -0.0058 0.0041" />
                                                             <site name="universal_robot/MFtip_r" pos="0.002 -0.019 -0.001" size="0.005" rgba="0 0 0.8 1" />
@@ -1535,8 +1535,8 @@
                                                           <body name="universal_robot/distph4_r" pos="-0.002317 -0.024789 0.000563">
                                                             <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
                                                             <joint name="universal_robot/md4_flexion_r" pos="0 0 0" axis="0.825336 0 0.564642" range="0 1.5708" />
-                                                            <geom name="universal_robot/distph4_coll_r" class="universal_robot/myohand_coll" size="0.0068 0.008" pos="0 -0.01 -0.002" quat="0.695836 0.71646 -0.0348208 -0.0358529" material="universal_robot/MatSkin" />
-                                                            <geom name="universal_robot/distph4_coll_2_r" class="universal_robot/myohand_coll" size="0.005 0.008 0.002" pos="-0.004 -0.019 0.003" quat="0.964072 0.0967298 -0.246168 -0.0246992" type="ellipsoid" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
+                                                            <geom name="universal_robot/distph4_coll_r" class="universal_robot/myohand_coll" size="0.0068 0.008" pos="0 -0.01 -0.002" quat="0.695836 0.71646 -0.0348208 -0.0358529" contype="4" material="universal_robot/MatSkin" />
+                                                            <geom name="universal_robot/distph4_coll_2_r" class="universal_robot/myohand_coll" size="0.005 0.008 0.002" pos="-0.004 -0.019 0.003" quat="0.964072 0.0967298 -0.246168 -0.0246992" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP4-P10_r" pos="0.0002 -0.014 -0.0022" />
                                                             <site name="universal_robot/EDC4-P9_r" pos="-0.001 -0.008 0.003" />
                                                             <site name="universal_robot/RFtip_r" pos="-0.001 -0.018 0.001" size="0.005" rgba="0.8 0.8 0 1" />
@@ -1601,8 +1601,8 @@
                                                           <body name="universal_robot/distph5_r" pos="-0.002871 -0.020677 -0.002243">
                                                             <inertial pos="0 0 0" mass="0.001" diaginertia="0.0001 0.0001 0.0001" />
                                                             <joint name="universal_robot/md5_flexion_r" pos="0 0 0" axis="0.867728 -0.149438 0.474042" range="0 1.5708" />
-                                                            <geom name="universal_robot/5distph_coll_r" class="universal_robot/myohand_coll" size="0.006 0.007" pos="-0.0002 -0.009 -0.002" quat="0.677709 0.73363 -0.0339137 -0.0367121" material="universal_robot/MatSkin" />
-                                                            <geom name="universal_robot/5distph_coll_2_r" class="universal_robot/myohand_coll" size="0.0045 0.006 0.002" pos="-0.005 -0.018 0" quat="0.91646 0.0919527 -0.387473 -0.038877" type="ellipsoid" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
+                                                            <geom name="universal_robot/5distph_coll_r" class="universal_robot/myohand_coll" size="0.006 0.007" pos="-0.0002 -0.009 -0.002" quat="0.677709 0.73363 -0.0339137 -0.0367121" contype="4" material="universal_robot/MatSkin" />
+                                                            <geom name="universal_robot/5distph_coll_2_r" class="universal_robot/myohand_coll" size="0.0045 0.006 0.002" pos="-0.005 -0.018 0" quat="0.91646 0.0919527 -0.387473 -0.038877" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP5-P10_r" pos="-0.0003 -0.0139 -0.0048" />
                                                             <site name="universal_robot/EDC5-P9_r" pos="-0.002 -0.007 0" />
                                                             <site name="universal_robot/EDM-P9_r" pos="-0.0023 -0.0033 0.0006" />
@@ -1654,7 +1654,11 @@
       <body name="universal_robot/body_target_1" pos="0.413396 -0.02469 0.735531" quat="0.92388 0 -0.382683 0">
         <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
         <geom name="universal_robot/geom_target_1" size="0.025 0.025 0.01" type="box" rgba="0.0852042 0 0.343854 1" />
-        <site name="universal_robot/site_target_1" pos="0 0 0.01" size="0.025 0.025 0.01" type="box" rgba="0.0852042 0 0.343854 1" />
+        <body name="universal_robot/button_pad_1" pos="0 0 0.009">
+          <inertial pos="0 0 0" mass="0.005" diaginertia="1.04333e-06 1.04333e-06 2.08333e-06" />
+          <geom name="universal_robot/button_pad_geom_1" size="0.025 0.025 0.001" type="box" contype="0" conaffinity="4" rgba="0.0852042 0 0.343854 1" />
+          <site name="universal_robot/site_target_1" pos="0 0 0.001" size="0.025 0.025 0.001" type="box" rgba="0.0852042 0 0.343854 0" />
+        </body>
       </body>
       <body name="universal_robot/body_target_2" pos="0.293396 -0.243754 1.03782">
         <inertial pos="0 0 0" mass="0.281596" diaginertia="0.000186228 0.000186228 0.000186228" />
@@ -1664,7 +1668,11 @@
       <body name="universal_robot/body_target_3" pos="0.413396 -0.02469 1.03553" quat="0.92388 0 -0.382683 0">
         <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
         <geom name="universal_robot/geom_target_3" size="0.025 0.025 0.01" type="box" rgba="0.0070925 0.510666 0.0370323 1" />
-        <site name="universal_robot/site_target_3" pos="0 0 0.01" size="0.025 0.025 0.01" type="box" rgba="0.0070925 0.510666 0.0370323 1" />
+        <body name="universal_robot/button_pad_3" pos="0 0 0.009">
+          <inertial pos="0 0 0" mass="0.005" diaginertia="1.04333e-06 1.04333e-06 2.08333e-06" />
+          <geom name="universal_robot/button_pad_geom_3" size="0.025 0.025 0.001" type="box" contype="0" conaffinity="4" rgba="0.0070925 0.510666 0.0370323 1" />
+          <site name="universal_robot/site_target_3" pos="0 0 0.001" size="0.025 0.025 0.001" type="box" rgba="0.0070925 0.510666 0.0370323 0" />
+        </body>
       </body>
       <body name="universal_robot/body_target_4" pos="0.293396 -0.220733 1.03782">
         <inertial pos="0 0 0" mass="0.281596" diaginertia="0.000186228 0.000186228 0.000186228" />
@@ -1674,7 +1682,11 @@
       <body name="universal_robot/body_target_5" pos="0.413396 -0.32469 0.735531" quat="0.92388 0 -0.382683 0">
         <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
         <geom name="universal_robot/geom_target_5" size="0.025 0.025 0.01" type="box" rgba="0.509804 0.00784314 0.00784314 1" />
-        <site name="universal_robot/site_target_5" pos="0 0 0.01" size="0.025 0.025 0.01" type="box" rgba="0.509804 0.00784314 0.00784314 1" />
+        <body name="universal_robot/button_pad_5" pos="0 0 0.009">
+          <inertial pos="0 0 0" mass="0.005" diaginertia="1.04333e-06 1.04333e-06 2.08333e-06" />
+          <geom name="universal_robot/button_pad_geom_5" size="0.025 0.025 0.001" type="box" contype="0" conaffinity="4" rgba="0.509804 0.00784314 0.00784314 1" />
+          <site name="universal_robot/site_target_5" pos="0 0 0.001" size="0.025 0.025 0.001" type="box" rgba="0.509804 0.00784314 0.00784314 0" />
+        </body>
       </body>
       <body name="universal_robot/body_target_6" pos="0.298016 -0.243754 0.750115">
         <inertial pos="0 0 0" mass="0.577257" diaginertia="0.000616051 0.000616051 0.000616051" />
@@ -1684,7 +1696,11 @@
       <body name="universal_robot/body_target_7" pos="0.413396 -0.32469 1.03553" quat="0.92388 0 -0.382683 0">
         <inertial pos="0 0 0" mass="0.0125" diaginertia="1.06771e-06 1.06771e-06 1.30208e-06" />
         <geom name="universal_robot/geom_target_7" size="0.0125 0.0125 0.01" type="box" rgba="0.415312 0.415312 0.415312 1" />
-        <site name="universal_robot/site_target_7" pos="0 0 0.01" size="0.0125 0.0125 0.01" type="box" rgba="0.415312 0.415312 0.415312 1" />
+        <body name="universal_robot/button_pad_7" pos="0 0 0.009">
+          <inertial pos="0 0 0" mass="0.00125" diaginertia="6.55208e-08 6.55208e-08 1.30208e-07" />
+          <geom name="universal_robot/button_pad_geom_7" size="0.0125 0.0125 0.001" type="box" contype="0" conaffinity="4" rgba="0.415312 0.415312 0.415312 1" />
+          <site name="universal_robot/site_target_7" pos="0 0 0.001" size="0.0125 0.0125 0.001" type="box" rgba="0.415312 0.415312 0.415312 0" />
+        </body>
       </body>
     </body>
   </worldbody>

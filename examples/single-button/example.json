@@ -13,14 +13,14 @@
   "episodes": 1024,
   "vision": false,
   "success_rate": 1.0,
-  "time_to_success_s": 0.3966308534145355,
-  "mean_excitation": 0.3619786500930786,
+  "time_to_success_s": 0.39165037870407104,
+  "mean_excitation": 0.33154013752937317,
   "final_mf": null
  },
  "replay": {
   "file": "replay.bin",
-  "floats": 409,
-  "frames": 300,
+  "floats": 416,
+  "frames": 400,
   "hello": {
    "type": "hello",
    "model": "MyoArm_nohand",
@@ -82,7 +82,8 @@
     "fixed-eye",
     "side_camera",
     "head_on_camera",
-    "body_target_0"
+    "body_target_0",
+    "button_pad_0"
    ],
    "targets": [
     {
