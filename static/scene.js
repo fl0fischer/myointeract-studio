@@ -239,6 +239,9 @@ export class StudioScene extends EventTarget {
 
   setView(kind) {
     this._viewSet = true;
+    // From the user's own eyes the skull is in the way: it is drawn in every other view only.
+    const head = this.bodyByName.get("head");
+    if (head) head.traverse((o) => { if (o.isMesh && o.userData.body) o.visible = kind !== "user"; });
     const o = this.origin.clone();
     let eye, look = o.clone(), up = new THREE.Vector3(0, 0, 1), fov = 40;
     if (kind === "top") { eye = o.clone().add(new THREE.Vector3(0.3, 0, 2.4)); look = o.clone().add(new THREE.Vector3(0.3, 0, 0)); up = new THREE.Vector3(1, 0, 0); }

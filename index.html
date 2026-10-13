@@ -173,6 +173,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .screen-box summary { cursor: pointer; }
 input[type="password"] { font: inherit; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
 .foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.save-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.save-row p { margin: 4px 0 0; font-size: 0.88rem; max-width: 52ch; }
 
 /* summary */
 .summary { display: grid; gap: 12px; align-content: start; }
@@ -184,7 +186,7 @@ input[type="password"] { font: inherit; padding: 8px 10px; border-radius: 9px; b
 .min-btn { border: 0; background: none; color: var(--muted, #8a8f98); font: inherit; font-size: 1.3rem; line-height: 1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
 .min-btn:hover, .min-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.15); }
 #workspace { position: relative; }
-#workspace > .min-btn, #summary-toggle { position: absolute; top: 10px; right: 10px; z-index: 1; }
+#workspace > .min-btn, #summary-toggle, .dialog-close { position: absolute; top: 10px; right: 10px; z-index: 1; }
 .summary .panel:first-child { position: relative; }
 .summary .panel:first-child .group-title { padding-right: 24px; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 0.92rem; }
@@ -288,12 +290,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <div class="field" id="preset-row" hidden><label for="preset-select">Presets on the backend</label>
         <div class="chips"><select id="preset-select" style="flex:1"></select><button class="chip" type="button" id="preset-load">Load</button><button class="chip" type="button" id="preset-save">Save as…</button></div>
         <span class="err" id="preset-msg"></span></div>
-      <div class="group-title"><h3>Configuration</h3>
-        <span class="chips"><button class="chip" type="button" id="copy-cfg">Copy</button><label class="chip" for="import-cfg" style="cursor:pointer">Import</label></span>
-      </div>
-      <input type="file" id="import-cfg" accept="application/json" hidden>
+      <div class="group-title"><h3>Configuration</h3></div>
+      <div class="chips"><button class="btn primary" type="button" data-save-cfg>Save configuration</button><label class="btn" for="import-cfg" style="cursor:pointer">Upload configuration</label></div>
+      <input type="file" id="import-cfg" accept="application/json,.json" hidden>
+      <span class="muted" style="font-size:0.82rem" id="cfg-note">One JSON file with the task and the learning hyperparameters. Edit it by hand, upload it here again, train from it with <span class="mono">myo_train --config &lt;file&gt;</span>, open it in the Gradio UI (it is the format of <span class="mono">myo_config/gradio_tasks/</span>), or read it in your own learning framework.</span>
+      <span class="err" id="cfg-msg" role="status"></span>
       <pre class="code" id="cfg-json"></pre>
-      <span class="muted" style="font-size:0.82rem" id="cfg-note">Same format as the presets in <span class="mono">myo_config/gradio_tasks/</span>, so it loads in the Gradio UI too.</span>
       <p class="demo-banner" id="cfg-warn" role="status" hidden></p>
     </div>
   </aside>
@@ -302,19 +304,20 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
 <dialog id="connect-dialog" aria-labelledby="connect-title">
   <form method="dialog" id="connect-form" style="display:grid; gap:14px">
+    <button class="min-btn dialog-close" value="cancel" type="submit" aria-label="Close" title="Close">&times;</button>
     <h3 id="connect-title">Connect compute</h3>
     <p class="muted">Studio talks to a myoInteract backend. Start it where your GPU is, then paste its address. Opened from the backend itself (<span class="mono">myo_studio serve</span>), Studio connects on its own.</p>
     <div class="cards" id="conn-cards"></div>
     <div class="field"><label for="backend-url">Backend address</label><input type="url" id="backend-url" placeholder="http://localhost:8000"><span class="hint" id="conn-hint"></span></div>
     <div class="field" id="pair-field"><label for="pair-code">Pairing code</label><input type="text" id="pair-code" autocomplete="off" spellcheck="false" placeholder="e.g. 3fa9c2"><span class="hint"><span class="mono">myo_studio serve</span> prints it in its terminal. Only needed when this page is not served by Studio itself.</span></div>
     <pre class="code" id="conn-cmd"></pre>
-    <div class="foot"><button class="btn" value="cancel" type="submit">Cancel</button><button class="btn primary" type="button" id="conn-go">Connect</button></div>
+    <div class="foot" style="justify-content:flex-end"><button class="btn primary" type="button" id="conn-go">Connect</button></div>
     <span class="muted" id="conn-status" role="status"></span>
     <div class="handoff" id="handoff" hidden>
       <h4>Or continue on your machine</h4>
       <p class="muted">A page hosted on another website may not be allowed to reach a server on your computer. Start <span class="mono">myo_studio serve</span>, then open your local Studio with everything you set here.</p>
       <div class="chips"><a class="btn primary" id="handoff-link" href="http://localhost:8000/" target="_blank" rel="noopener">Open local Studio with this setup</a><button class="btn" type="button" id="handoff-copy">Copy setup</button></div>
-      <span class="hint">The setup travels in the link after the "#", which browsers never send to a server. If the link does not open, use Copy setup and Import it in the local Studio.</span>
+      <span class="hint">The setup travels in the link after the "#", which browsers never send to a server. If the link does not open, save the configuration here and upload it in the local Studio.</span>
     </div>
   </form>
 </dialog>
@@ -372,6 +375,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl });
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
 
+  const EXPORT_3D = false;  // the "Export 3D (glTF)" chip in the scene bar
   const STEPS = [
     ["Body", renderBody], ["Task", renderTask], ["Sensing", renderSensing], ["Reward", renderReward],
     ["Training", renderTraining], ["Run", renderRun], ["Evaluate", renderEvaluate],
@@ -561,7 +565,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function renderTask(ws) {
     ws.append(h(`<div><span class="eyebrow">Step 2 of 7</span><h2>Place the targets</h2></div>
       <p class="why"><b>Why it matters:</b> each episode draws every target from its region, so the policy learns to reach anywhere inside, not one point. Several targets are visited in order. Keep regions inside the arm's reach (the faint sphere around the shoulder) or enable rejection below.</p>
-      <p class="hint">In the 3D view, click a target and drag its arrows to move it; <b>Resize</b> (S) stretches its region instead. Double-click to add a target where you point, Delete removes the selected one. Ctrl+C copies the selected target; Ctrl+V over the 3D view adds a copy there, elsewhere it pastes the settings into the selected target. Click a row below to copy and paste just that row. <b>User View</b> shows the task as the simulated user sees it.</p>
+      <p class="hint">In the scene, click a target and drag its arrows to move it; <b>Resize</b> (S) stretches its region instead. Double-click to add a target where you point, Delete removes the selected one. Ctrl+C copies the selected target; Ctrl+V over the 3D view adds a copy there, elsewhere it pastes the settings into the selected target. Click a row below to copy and paste just that row. <b>User View</b> shows the task as the simulated user sees it.</p>
       <span class="err" id="sketch-msg" role="status"></span>
       <div id="targets" style="display:grid; gap:12px"></div>
       <div class="chips"><button class="btn" type="button" id="add-target">Add a target</button></div>
@@ -860,7 +864,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (!SC) { bar.hidden = true; return; }
     bar.hidden = false;
     const v = S.viewer;
-    const views = [["perspective", "3D"], ["top", "Top"], ["side", "Side"], ["user", "User View"]];
+    const views = [["perspective", "Default"], ["top", "Top"], ["side", "Side"], ["user", "User View"]];
     let html = views.map(([k, l]) => `<button class="chip" type="button" data-view="${k}" aria-pressed="${S.view === k}">${l}</button>`).join("");
     html += `<span class="sep"></span><button class="chip" type="button" data-reach aria-pressed="${S.showReach}" title="The reach used by out-of-reach rejection">Reach</button>`;
     html += `<button class="chip" type="button" data-muscles aria-pressed="${S.showMuscles}" title="Show or hide the muscles and tendons">Muscles</button>`;
@@ -883,7 +887,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     else if (S.step === 1 && simExample()) html += `<span class="sep"></span><button class="chip" type="button" data-sim-play title="Runs the ${simExample().title} example policy in your browser on the target ranges set here">Play example policy</button>`;
     else if (replayWanted()) html += `<span class="sep"></span><span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…"}</span>`;
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
-    if (!window.claude) html += `<span class="sep"></span><button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
+    // The glTF export is switched off for now (EXPORT_3D); its code stays, to be re-enabled later.
+    if (EXPORT_3D && !window.claude) html += `<span class="sep"></span><button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
     if (S.backend) html += `<button class="chip" type="button" data-export="mjcf" title="The task as a MuJoCo model with its meshes (zip), e.g. for MuJoCo's Unity plug-in">MuJoCo</button>`;
     if (S.sceneError) html += `<span class="live-pill err">${S.sceneError}</span>`;
     bar.innerHTML = html;
@@ -1167,7 +1172,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         <div class="field"><label for="rl-ep">Epochs per update</label><input id="rl-ep" type="number" min="1" max="20" value="${S.rl.epochs}" data-bind="rl.epochs"></div>
         <div class="field"><label for="rl-ck">Checkpoint every (iterations)</label><input id="rl-ck" type="number" min="1" value="${S.rl.ckpt}" data-bind="rl.ckpt"></div>
         <div class="field"><label for="rl-seed">Target seed</label><input id="rl-seed" type="number" value="${S.rl.seed}" data-bind="rl.seed"></div>
-      </div></details>`));
+      </div></details>
+      <div class="save-row"><div><b>Keep this setup</b><p class="muted">The task and these learning hyperparameters as one JSON file: edit it by hand, upload it here again, train from it with <span class="mono">myo_train --config &lt;file&gt;</span>, or use it in your own learning framework.</p></div>
+        <div class="chips"><button class="btn primary" type="button" data-save-cfg>Save configuration</button><label class="btn" for="import-cfg" style="cursor:pointer">Upload configuration</label></div></div>`));
     const cards = ws.querySelector("#target-cards");
     for (const [name, t] of Object.entries(TARGETS)) {
       const b = document.createElement("button");
@@ -1659,15 +1666,17 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     try { localStorage.setItem("studio-summary-closed", closed ? "1" : ""); } catch (e) {}
   });
   try { if (localStorage.getItem("studio-summary-closed")) $("summary-toggle").click(); } catch (e) {}
-  $("copy-cfg").addEventListener("click", (ev) => {
-    const text = JSON.stringify(toPreset(), null, 2);
-    navigator.clipboard.writeText(text).then(() => { ev.target.textContent = gradioWarning() ? "Copied (not for the Gradio UI)" : "Copied"; setTimeout(() => (ev.target.textContent = "Copy"), gradioWarning() ? 4000 : 1500); }).catch(() => {
-      const r = document.createRange(); r.selectNodeContents($("cfg-json")); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
-    });
-  });
+  // Save configuration: the setup as <name>.json, the preset format the backend, the Gradio UI and myo_train read.
+  function saveConfiguration() {
+    const blob = new Blob([JSON.stringify(toPreset(), null, 2) + "\n"], { type: "application/json" });
+    const link = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: `${S.preset === "untitled" ? "myointeract-setup" : S.preset}.json` });
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  }
+  document.addEventListener("click", (ev) => { if (ev.target.closest("[data-save-cfg]")) saveConfiguration(); });
   $("import-cfg").addEventListener("change", (ev) => {
     const f = ev.target.files[0]; if (!f) return;
-    f.text().then((txt) => { try { fromPreset(JSON.parse(txt)); S.preset = f.name.replace(/\.json$/, ""); render(); } catch (e) { $("preset-msg").textContent = "Could not read " + f.name; } });
+    f.text().then((txt) => { try { fromPreset(JSON.parse(txt)); S.preset = f.name.replace(/\.json$/, ""); $("cfg-msg").textContent = ""; render(); } catch (e) { $("cfg-msg").textContent = "Could not read " + f.name + " as a configuration."; } ev.target.value = ""; });
   });
   // Loads the pointing task example (its preset: body, target, sensing, reward, budget) and opens the Task step.
   $("hero-preset").addEventListener("click", async (ev) => {

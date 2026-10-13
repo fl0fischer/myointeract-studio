@@ -532,13 +532,13 @@
   "distance": 1,
   "subtask_bonus": 1,
   "completion_bonus": 10,
-  "neural_effort": 0.0048,
+  "neural_effort": 0.0052,
   "jac_effort": 0
  },
  "extra_overrides": [
-  "++env.task_config.weighted_reward_keys.action_rate=0.005",
-  "++env.task_config.weighted_reward_keys.pain_penalty=0.3",
-  "++env.task_config.weighted_reward_keys.pronation=1.0",
-  "++env.task_config.weighted_reward_keys.button_force=3.0"
+  "++env.task_config.weighted_reward_keys.action_rate=0.00125",
+  "++env.task_config.weighted_reward_keys.pain_penalty=0.075",
+  "++env.task_config.weighted_reward_keys.pronation=0.25",
+  "++env.task_config.weighted_reward_keys.button_force=0.75"
  ]
 }

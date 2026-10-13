@@ -12,14 +12,14 @@
   "checkpoint": "model_final.onnx",
   "episodes": 1024,
   "vision": false,
-  "success_rate": 0.99609375,
-  "time_to_success_s": 1.9370099306106567,
-  "mean_excitation": 0.2735688090324402,
+  "success_rate": 0.8779296875,
+  "time_to_success_s": 2.0454392433166504,
+  "mean_excitation": 0.2531208395957947,
   "final_mf": null
  },
  "replay": {
   "file": "replay.bin",
-  "floats": 439,
+  "floats": 467,
   "frames": 400,
   "hello": {
    "type": "hello",
@@ -83,9 +83,13 @@
     "side_camera",
     "head_on_camera",
     "body_target_0",
+    "button_pad_0",
     "body_target_1",
+    "button_pad_1",
     "body_target_2",
-    "body_target_3"
+    "button_pad_2",
+    "body_target_3",
+    "button_pad_3"
    ],
    "targets": [
     {
