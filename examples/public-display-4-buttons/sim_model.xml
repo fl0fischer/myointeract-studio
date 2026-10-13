@@ -1647,39 +1647,39 @@
         <camera name="universal_robot/head_on_camera" pos="0 0 12" fovy="10" />
       </body>
       <body name="universal_robot/body_target_0" pos="0.413396 -0.32469 1.03553" quat="0.707107 0 -0.707107 0">
-        <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
-        <geom name="universal_robot/geom_target_0" size="0.025 0.025 0.01" type="box" rgba="0.8 0.1 0.1 1" />
-        <body name="universal_robot/button_pad_0" pos="0 0 0.009">
-          <inertial pos="0 0 0" mass="0.005" diaginertia="1.04333e-06 1.04333e-06 2.08333e-06" />
-          <geom name="universal_robot/button_pad_geom_0" size="0.025 0.025 0.001" type="box" contype="0" conaffinity="4" rgba="0.8 0.1 0.1 1" />
-          <site name="universal_robot/site_target_0" pos="0 0 0.001" size="0.025 0.025 0.001" type="box" rgba="0.8 0.1 0.1 0" />
+        <inertial pos="0 0 0.01" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+        <geom name="universal_robot/geom_target_0" size="0.025 0.025 0.01" type="box" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.8 0.1 0.1 1" />
+        <body name="universal_robot/button_pad_0">
+          <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
+          <geom name="universal_robot/button_pad_geom_0" size="0.025 0.025 0.01" type="box" contype="0" conaffinity="4" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.8 0.1 0.1 1" />
+          <site name="universal_robot/site_target_0" pos="0 0 0.01" size="0.025 0.025 0.001" type="box" rgba="0.8 0.1 0.1 0" />
         </body>
       </body>
       <body name="universal_robot/body_target_1" pos="0.413396 -0.02469 1.03553" quat="0.707107 0 -0.707107 0">
-        <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
-        <geom name="universal_robot/geom_target_1" size="0.025 0.025 0.01" type="box" rgba="0.1 0.8 0.1 1" />
-        <body name="universal_robot/button_pad_1" pos="0 0 0.009">
-          <inertial pos="0 0 0" mass="0.005" diaginertia="1.04333e-06 1.04333e-06 2.08333e-06" />
-          <geom name="universal_robot/button_pad_geom_1" size="0.025 0.025 0.001" type="box" contype="0" conaffinity="4" rgba="0.1 0.8 0.1 1" />
-          <site name="universal_robot/site_target_1" pos="0 0 0.001" size="0.025 0.025 0.001" type="box" rgba="0.1 0.8 0.1 0" />
+        <inertial pos="0 0 0.01" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+        <geom name="universal_robot/geom_target_1" size="0.025 0.025 0.01" type="box" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.1 0.8 0.1 1" />
+        <body name="universal_robot/button_pad_1">
+          <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
+          <geom name="universal_robot/button_pad_geom_1" size="0.025 0.025 0.01" type="box" contype="0" conaffinity="4" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.1 0.8 0.1 1" />
+          <site name="universal_robot/site_target_1" pos="0 0 0.01" size="0.025 0.025 0.001" type="box" rgba="0.1 0.8 0.1 0" />
         </body>
       </body>
       <body name="universal_robot/body_target_2" pos="0.413396 -0.32469 0.735531" quat="0.707107 0 -0.707107 0">
-        <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
-        <geom name="universal_robot/geom_target_2" size="0.025 0.025 0.01" type="box" rgba="0.1 0.1 0.8 1" />
-        <body name="universal_robot/button_pad_2" pos="0 0 0.009">
-          <inertial pos="0 0 0" mass="0.005" diaginertia="1.04333e-06 1.04333e-06 2.08333e-06" />
-          <geom name="universal_robot/button_pad_geom_2" size="0.025 0.025 0.001" type="box" contype="0" conaffinity="4" rgba="0.1 0.1 0.8 1" />
-          <site name="universal_robot/site_target_2" pos="0 0 0.001" size="0.025 0.025 0.001" type="box" rgba="0.1 0.1 0.8 0" />
+        <inertial pos="0 0 0.01" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+        <geom name="universal_robot/geom_target_2" size="0.025 0.025 0.01" type="box" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.1 0.1 0.8 1" />
+        <body name="universal_robot/button_pad_2">
+          <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
+          <geom name="universal_robot/button_pad_geom_2" size="0.025 0.025 0.01" type="box" contype="0" conaffinity="4" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.1 0.1 0.8 1" />
+          <site name="universal_robot/site_target_2" pos="0 0 0.01" size="0.025 0.025 0.001" type="box" rgba="0.1 0.1 0.8 0" />
         </body>
       </body>
       <body name="universal_robot/body_target_3" pos="0.413396 -0.02469 0.735531" quat="0.707107 0 -0.707107 0">
-        <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
-        <geom name="universal_robot/geom_target_3" size="0.025 0.025 0.01" type="box" rgba="0.8 0.8 0.1 1" />
-        <body name="universal_robot/button_pad_3" pos="0 0 0.009">
-          <inertial pos="0 0 0" mass="0.005" diaginertia="1.04333e-06 1.04333e-06 2.08333e-06" />
-          <geom name="universal_robot/button_pad_geom_3" size="0.025 0.025 0.001" type="box" contype="0" conaffinity="4" rgba="0.8 0.8 0.1 1" />
-          <site name="universal_robot/site_target_3" pos="0 0 0.001" size="0.025 0.025 0.001" type="box" rgba="0.8 0.8 0.1 0" />
+        <inertial pos="0 0 0.01" mass="0.001" diaginertia="1e-06 1e-06 1e-06" />
+        <geom name="universal_robot/geom_target_3" size="0.025 0.025 0.01" type="box" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.8 0.8 0.1 1" />
+        <body name="universal_robot/button_pad_3">
+          <inertial pos="0 0 0" mass="0.05" diaginertia="1.20833e-05 1.20833e-05 2.08333e-05" />
+          <geom name="universal_robot/button_pad_geom_3" size="0.025 0.025 0.01" type="box" contype="0" conaffinity="4" priority="1" solref="0.004" solimp="0.95 0.99" rgba="0.8 0.8 0.1 1" />
+          <site name="universal_robot/site_target_3" pos="0 0 0.01" size="0.025 0.025 0.001" type="box" rgba="0.8 0.8 0.1 0" />
         </body>
       </body>
     </body>
