@@ -12,15 +12,15 @@
   "checkpoint": "model_final.onnx",
   "episodes": 1024,
   "vision": false,
-  "success_rate": 1.0,
-  "time_to_success_s": 1.660791039466858,
-  "mean_excitation": 0.3363436758518219,
+  "success_rate": 0.96484375,
+  "time_to_success_s": 2.4551618099212646,
+  "mean_excitation": 0.09261447936296463,
   "final_mf": null
  },
  "replay": {
   "file": "replay.bin",
   "floats": 449,
-  "frames": 300,
+  "frames": 400,
   "hello": {
    "type": "hello",
    "model": "MyoArm_nohand",

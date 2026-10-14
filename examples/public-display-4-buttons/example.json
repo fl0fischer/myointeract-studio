@@ -12,9 +12,9 @@
   "checkpoint": "model_final.onnx",
   "episodes": 1024,
   "vision": false,
-  "success_rate": 0.958984375,
-  "time_to_success_s": 1.673574447631836,
-  "mean_excitation": 0.4286390542984009,
+  "success_rate": 0.9619140625,
+  "time_to_success_s": 1.8093401193618774,
+  "mean_excitation": 0.2755012512207031,
   "final_mf": null
  },
  "replay": {

@@ -7,14 +7,14 @@
   "fatigue": false,
   "vision": false
  },
- "training_steps": 21995520,
+ "training_steps": 45056000,
  "evaluation": {
   "checkpoint": "model_final.onnx",
   "episodes": 1024,
   "vision": false,
-  "success_rate": 0.9462890625,
-  "time_to_success_s": 4.012538909912109,
-  "mean_excitation": 0.3957453668117523,
+  "success_rate": 0.8095703125,
+  "time_to_success_s": 4.679191589355469,
+  "mean_excitation": 0.32972514629364014,
   "final_mf": null
  },
  "replay": {
