@@ -348,9 +348,16 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     ["distance", 1, 0, 10, 0.1, "Pays for getting closer to the current target, every step. The main learning signal."],
     ["subtask_bonus", 0, 0, 10, 0.5, "One-off bonus for each target reached in a sequence."],
     ["completion_bonus", 10, 0, 50, 1, "One-off bonus when the whole task is done."],
-    ["neural_effort", 0, 0, 1, 0.01, "Penalises large muscle commands: smoother, more human-like movements."],
+    ["neural_effort", 0, 0, 0.1, 0.0001, "Penalises large muscle commands: smoother, more human-like movements."],
     ["body_contact_penalty", 0, 0, 0.01, 0.0001, "Penalises touching the torso with the arm."],
+    // The terms below have no slider in the Gradio UI: it keeps a preset's values but cannot change them.
+    ["action_rate", 0, 0, 0.05, 0.0001, "Penalises changing the muscle commands from one step to the next: less jitter.", true],
+    ["pain_penalty", 0, 0, 2, 0.01, "Penalises holding a joint beyond its comfortable range.", true],
+    ["pronation", 0, 0, 5, 0.05, "Penalises a forearm turned palm-up: the palm faces down, as people point and press.", true],
+    ["button_force", 0, 0, 15, 0.05, "Penalises pressing a button harder than a deliberate press (5 N).", true],
   ];
+  // Reward terms the Gradio task builder has no control for: stored in presets as Hydra overrides.
+  const EXTRA_REWARDS = REWARDS.filter((r) => r[6]).map((r) => r[0]);
   const TARGETS = {
     "Google Colab": { key: "colab", speed: 9000, note: "Free T4 GPU, about 5x slower than an RTX 5090; sessions end after inactivity. Studio runs inside the Colab session: open the notebook, run its two cells and follow the link it prints.", cmd: "# open in Colab and run the two cells:\n# https://colab.research.google.com/github/fl0fischer/myointeract/blob/main/tutorials/myointeract/studio_colab.ipynb\nfrom myoInteract.studio.colab import launch\nlaunch()  # prints the link that opens Studio" },
     "This machine": { key: "local", speed: 48000, note: "Your own NVIDIA GPU (measured on an RTX 5090).", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages" },
@@ -1152,7 +1159,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function renderReward(ws) {
     ws.append(h(`<div><span class="eyebrow">Step 4 of 7</span><h2>What the agent is rewarded for</h2></div>
       <p class="why"><b>Why it matters:</b> the weights set the trade-off the agent learns. A strong distance term learns fast; bonuses make it finish the task; effort and contact penalties shape how it moves.</p>
-      <div style="display:grid; gap:14px">${REWARDS.map(([k, , min, max, step, note]) => `<div class="field"><div class="group-title"><label for="rw-${k}"><span class="mono">${k}</span></label><span class="mono" id="rwv-${k}">${S.reward[k]}</span></div>
+      <div style="display:grid; gap:14px">${REWARDS.map(([k, , min, max, step, note, studioOnly]) => `<div class="field"><div class="group-title"><label for="rw-${k}"><span class="mono">${k}</span>${studioOnly ? ' <span class="hint" title="Not adjustable in the Gradio UI">Studio only</span>' : ""}</label><span class="mono" id="rwv-${k}">${S.reward[k]}</span></div>
         <input id="rw-${k}" type="range" min="${min}" max="${max}" step="${step}" value="${S.reward[k]}" data-bind="reward.${k}" data-live="rwv-${k}"><span class="hint">${note}</span></div>`).join("")}</div>`));
     bindInputs(ws);
   }
@@ -1451,7 +1458,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         qpos: OBS.body.map(([k]) => S.obs[k]), qvel: OBS.fatigue.map(([k]) => S.obs[k]),
         qacc: OBS.vision.map(([k]) => S.obs[k]), ee_pos: OBS.task.map(([k]) => S.obs[k]),
       },
-      reward: { ...S.reward },
+      reward: Object.fromEntries(Object.entries(S.reward).filter(([k]) => !EXTRA_REWARDS.includes(k))),
+      extra_overrides: EXTRA_REWARDS.filter((k) => S.reward[k] > 0).map((k) => `++env.task_config.weighted_reward_keys.${k}=${S.reward[k]}`),
     };
   }
   function fromPreset(p) {
@@ -1468,6 +1476,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       S.rl = { steps: r["Number of Total Training Steps"] ?? S.rl.steps, envs: r["Number of Parallel Environments"] ?? S.rl.envs, unroll: r["Unroll Length"] ?? S.rl.unroll, minibatches: r["Number of Minibatches"] ?? S.rl.minibatches, epochs: r["Number of Epochs Per Update"] ?? S.rl.epochs, ckpt: r["Checkpoint Interval (in Number of Training Iterations)"] ?? S.rl.ckpt, seed: r["Target Initial Seed"] ?? S.rl.seed };
     }
     if (p.reward) for (const k of Object.keys(S.reward)) if (k in p.reward) S.reward[k] = p.reward[k];
+    for (const o of p.extra_overrides || []) {
+      const m = o.match(/weighted_reward_keys\.(\w+)=([-\d.eE]+)$/);
+      if (m && EXTRA_REWARDS.includes(m[1])) S.reward[m[1]] = +m[2];
+    }
     if (p.obs) {
       const groups = [["qpos", "body"], ["qvel", "fatigue"], ["qacc", "vision"], ["ee_pos", "task"]];
       for (const [key, g] of groups) if (Array.isArray(p.obs[key])) OBS[g].forEach(([k], i) => { if (i < p.obs[key].length) S.obs[k] = !!p.obs[key][i]; });
