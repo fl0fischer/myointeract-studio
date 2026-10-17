@@ -1282,10 +1282,8 @@
                                                       <site name="universal_robot/Trpzm_site_OP_side_r" pos="0.0125474 -0.0222585 0.00136571" />
                                                       <site name="universal_robot/S_grasp_r" pos="-0.011 -0.06 -0.03" size="0.01" />
                                                       <camera name="universal_robot/plam_lookat" pos="-0.011 -0.06 -0.5" quat="0.000796327 0 1 0" />
-                                                      <body name="universal_robot/firstmc_r" pos="0.0072 -0.0054 -0.0025">
+                                                      <body name="universal_robot/firstmc_r" pos="0.0072 -0.0054 -0.0025" quat="0.956718 -0.0507859 0.1427 -0.248493">
                                                         <inertial pos="0.0078 -0.0147 -0.006" quat="0.276978 0.738061 -0.396601 0.470379" mass="0.016" diaginertia="1.51216e-06 1.48498e-06 2.12861e-07" />
-                                                        <joint name="universal_robot/cmc_flexion" pos="0 0 0" axis="-0.042399 -0.665286 0.745384" range="-0.78 0.7" />
-                                                        <joint name="universal_robot/cmc_abduction" pos="0 0 0" axis="0.495557 0.731736 0.467959" range="-0.5 0.78" />
                                                         <geom name="universal_robot/1mcskin_r" class="universal_robot/myohand_coll" size="0.0095 0.0205608" pos="0.00725 -0.0126 -0.00485" quat="0.831202 -0.48566 -0.270624 0" material="universal_robot/MatSkin" />
                                                         <geom name="universal_robot/MPthumb_wrap" class="universal_robot/myoarm_wrap" size="0.0085 0.01" pos="0.0177 -0.0305 -0.0143" quat="0.904577 0.123988 0.114414 -0.391506" type="cylinder" />
                                                         <site name="universal_robot/EPL-P8_r" pos="0.0066 -0.0043 0.0079" />
@@ -1300,9 +1298,8 @@
                                                         <site name="universal_robot/OP-P2_r" pos="0.011 -0.03 -0.016" />
                                                         <site name="universal_robot/MPthumb_site_EPB_side_r" pos="0.0252901 -0.0179637 -0.00935966" />
                                                         <site name="universal_robot/MPthumb_site_FPL_side_r" pos="0.0177 -0.0305 -0.0143" />
-                                                        <body name="universal_robot/proximal_thumb_r" pos="0.0165 -0.0292 -0.0127">
+                                                        <body name="universal_robot/proximal_thumb_r" pos="0.0165 -0.0292 -0.0127" quat="0.999848 0.00147115 0.00355136 -0.0170238">
                                                           <inertial pos="0.0096 -0.0163 -0.0063" quat="0.399544 0.661622 0.577435 0.26304" mass="0.0079" diaginertia="4.2e-07 4.2e-07 4.2e-07" />
-                                                          <joint name="universal_robot/mp_flexion_r" pos="0 0 0" axis="-0.084295 -0.203488 0.975442" range="-0.785398 0.698132" />
                                                           <geom name="universal_robot/proximal_thumb_coll_r" class="universal_robot/myohand_coll" size="0.0085 0.0155629" pos="0.007 -0.01295 -0.00505" quat="0.813784 -0.511257 -0.276355 0" material="universal_robot/MatSkin" />
                                                           <geom name="universal_robot/IPthumb_wrap" class="universal_robot/myoarm_wrap" size="0.0045 0.005" pos="0.0121 -0.0302 -0.0096" quat="0.987395 0.151909 -0.000296583 0.044437" type="cylinder" />
                                                           <site name="universal_robot/EPL-P10_r" pos="0.0115 -0.0036 0.0016" />
@@ -1312,9 +1309,8 @@
                                                           <site name="universal_robot/FPL-P10_r" pos="0.0059 -0.026 -0.0111" />
                                                           <site name="universal_robot/IPthumb_site_EPL_side_r" pos="0.0167862 -0.030399 -0.0079041" />
                                                           <site name="universal_robot/IPthumb_site_FPL_side_r" pos="0.00820158 -0.028993 -0.00586527" />
-                                                          <body name="universal_robot/distal_thumb_r" pos="0.014 -0.0259 -0.0101">
+                                                          <body name="universal_robot/distal_thumb_r" pos="0.014 -0.0259 -0.0101" quat="0.939693 0.0171359 0.164041 -0.299624">
                                                             <inertial pos="0.0056 -0.0104 -0.0044" quat="0.424708 0.820473 -0.17592 0.339851" mass="0.003" diaginertia="6e-08 5e-08 2e-08" />
-                                                            <joint name="universal_robot/ip_flexion_r" pos="0 0 0" axis="-0.050102 -0.479623 0.876043" range="-1.309 0.436332" />
                                                             <geom name="universal_robot/distal_thumb_coll_r" class="universal_robot/myohand_coll" size="0.0065 0.0108743" pos="0.005 -0.009 -0.0035" quat="0.812976 -0.509019 -0.282788 0" contype="4" material="universal_robot/MatSkin" />
                                                             <geom name="universal_robot/distal_thumb_coll_2_r" class="universal_robot/myohand_coll" size="0.007 0.0055 0.002" pos="0.015 -0.018 -0.007" quat="0.466903 0.531065 0.466454 0.531406" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/EPL-P12_r" pos="0.0054 -0.0071 -0.0046" />
@@ -1357,8 +1353,6 @@
                                                       <site name="universal_robot/2ndmcp_ellipsoid_site_RI2_side_r" pos="-0.0107522 -0.0332733 0.00473501" />
                                                       <body name="universal_robot/2proxph_r" pos="0.003501 -0.028243 0.00362">
                                                         <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="universal_robot/mcp2_flexion_r" pos="0 0 0" axis="0.995013 0.09975 0" range="0 1.5708" />
-                                                        <joint name="universal_robot/mcp2_abduction_r" pos="0 0 0" axis="-0.054999 0.085899 0.994785" range="-0.261799 0.261799" />
                                                         <geom name="universal_robot/proxph2_coll_r" class="universal_robot/myohand_coll" size="0.009 0.02" pos="0.004 -0.021 0.00362" quat="0.743646 0.641407 0.170361 -0.0810239" material="universal_robot/MatSkin" />
                                                         <geom name="universal_robot/Secondpm_wrap" class="universal_robot/myoarm_wrap" size="0.0042 0.005" pos="0.0075 -0.0407 0.0061" quat="0.731792 0.0341239 -0.68058 0.0113202" type="cylinder" />
                                                         <site name="universal_robot/FDS2-P6_r" pos="0.0013 -0.0084 -0.012" />
@@ -1380,7 +1374,6 @@
                                                         <site name="universal_robot/Secondpm_site_UI_UB2_side_r" pos="0.0147187 -0.0418367 0.0110691" />
                                                         <body name="universal_robot/midph2_r" pos="0.00751 -0.041273 0.007326">
                                                           <inertial pos="0 0 0" mass="0.003" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="universal_robot/pm2_flexion_r" pos="0 0 0" axis="0.97517 0.0998334 -0.197677" range="0 1.5708" />
                                                           <geom name="universal_robot/midph2_coll_r" class="universal_robot/myohand_coll" size="0.008 0.012" pos="0.0013 -0.012 0" quat="0.72705 0.660674 0.168783 -0.0801334" material="universal_robot/MatSkin" />
                                                           <geom name="universal_robot/Secondmd_wrap" class="universal_robot/myoarm_wrap" size="0.003 0.005" pos="0.0036 -0.0243 0.0003" quat="0.749819 -0.0209733 -0.656264 0.0815428" type="cylinder" />
                                                           <site name="universal_robot/EIP-P8_r" pos="0.0012 -0.009 0.006" />
@@ -1398,7 +1391,6 @@
                                                           <site name="universal_robot/Secondmd_site_EIP_side_r" pos="0.00435202 -0.0234011 0.00618443" />
                                                           <body name="universal_robot/distph2_r" pos="0.003333 -0.024888 0.00122">
                                                             <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                            <joint name="universal_robot/md2_flexion_r" pos="0 0 0" axis="0.995004 0.0998334 0" range="0 1.5708" />
                                                             <geom name="universal_robot/distph2_coll_r" class="universal_robot/myohand_coll" size="0.007 0.008" pos="0.001 -0.008 0" quat="0.72705 0.660674 0.168783 -0.0801334" contype="4" material="universal_robot/MatSkin" />
                                                             <geom name="universal_robot/distph2_coll_2_r" class="universal_robot/myohand_coll" size="0.005 0.008 0.002" pos="0.003 -0.018 0.0055" quat="0.990593 0.103155 0.0421185 0.0794378" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP2-P10_r" pos="0.0007 -0.0056 -0.004" />
@@ -1439,10 +1431,8 @@
                                                       <site name="universal_robot/3rdmcp_ellipsoid_site_FDP3_side_r" pos="0.0015 -0.025 0.002" />
                                                       <site name="universal_robot/3rdmcp_ellipsoid_site_EDC3_side_r" pos="0.0016 -0.0291 0.0081" />
                                                       <site name="universal_robot/3rdmcp_ellipsoid_site_LU_RB3_side_r" pos="0 0 0" />
-                                                      <body name="universal_robot/3proxph_r" pos="0.00024 -0.02629 0.001778">
+                                                      <body name="universal_robot/3proxph_r" pos="0.00024 -0.02629 0.001778" quat="0.766044 0.629975 0 0.127702">
                                                         <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="universal_robot/mcp3_flexion_r" pos="0 0 0" axis="0.980067 0 0.198669" range="0 1.5708" />
-                                                        <joint name="universal_robot/mcp3_abduction_r" pos="0 0 0" axis="-0.198669 0 0.980067" range="-0.261799 0.261799" />
                                                         <geom name="universal_robot/proxph3_coll_r" class="universal_robot/myohand_coll" size="0.009 0.022" pos="0.001 -0.022 0.004" quat="0.723001 0.668192 0.134859 -0.112259" material="universal_robot/MatSkin" />
                                                         <geom name="universal_robot/Thirdpm_wrap" class="universal_robot/myoarm_wrap" size="0.004 0.005" pos="0.0017 -0.0439 0.005" quat="0.700673 0.00645453 -0.712452 0.0377825" type="cylinder" />
                                                         <site name="universal_robot/FDS3-P6_r" pos="0.0006 -0.0146 -0.0088" />
@@ -1459,9 +1449,8 @@
                                                         <site name="universal_robot/Thirdpm_site_EDC3_side_r" pos="0.00155575 -0.04355 0.012991" />
                                                         <site name="universal_robot/Thirdpm_site_LU_RB3_side_r" pos="0.00155575 -0.04355 0.012991" />
                                                         <site name="universal_robot/Thirdpm_site_UI_UB3_side_r" pos="0.00155575 -0.04355 0.012991" />
-                                                        <body name="universal_robot/midph3_r" pos="0.00165 -0.044211 0.00623">
+                                                        <body name="universal_robot/midph3_r" pos="0.00165 -0.044211 0.00623" quat="0.707107 0.707107 0 0">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="universal_robot/pm3_flexion_r" pos="0 0 0" axis="1 0 0" range="0 1.5708" />
                                                           <geom name="universal_robot/midph3_coll_r" class="universal_robot/myohand_coll" size="0.008 0.014" pos="0.0012 -0.014 0" quat="0.706847 0.684988 0.142874 -0.103663" material="universal_robot/MatSkin" />
                                                           <geom name="universal_robot/Thirdmd_wrap" class="universal_robot/myoarm_wrap" size="0.003 0.005" pos="0.0014 -0.0289 0.0012" quat="0.708186 -0.0221627 -0.701515 0.0765368" type="cylinder" />
                                                           <site name="universal_robot/FDS3-P8_r" pos="0.0002 -0.0107 -0.0054" />
@@ -1472,9 +1461,8 @@
                                                           <site name="universal_robot/LU_RB3-P5_r" pos="0.0049 -0.0116 0.0035" />
                                                           <site name="universal_robot/UI_UB3-P5_r" pos="-0.0054 -0.0077 0.006" />
                                                           <site name="universal_robot/Thirdmd_site_EDC3_side_r" pos="0.00142423 -0.028063 0.00714128" />
-                                                          <body name="universal_robot/distph3_r" pos="0.001365 -0.029047 0.001954">
+                                                          <body name="universal_robot/distph3_r" pos="0.001365 -0.029047 0.001954" quat="0.866025 0.5 0 0">
                                                             <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                            <joint name="universal_robot/md3_flexion" pos="0 0 0" axis="1 0 0" range="0 1.5708" />
                                                             <geom name="universal_robot/distph3_coll_r" class="universal_robot/myohand_coll" size="0.007 0.008" pos="0.0013 -0.009 -0.002" quat="0.696489 0.717132 0.0174159 0.017932" contype="4" material="universal_robot/MatSkin" />
                                                             <geom name="universal_robot/distph3_coll_2_r" class="universal_robot/myohand_coll" size="0.0055 0.008 0.002" pos="0.002 -0.019 0.003" quat="0.995004 0.0998334 0 0" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP3-P10_r" pos="0.0008 -0.004 -0.002" />
@@ -1500,10 +1488,8 @@
                                                       <site name="universal_robot/4thmcp_ellipsoid_site_FDP4_side_r" pos="-0.002 -0.024 0.002" />
                                                       <site name="universal_robot/4thmcp_ellipsoid_site_EDC4_side_r" pos="-0.0003 -0.0254 0.0083" />
                                                       <site name="universal_robot/4thmcp_ellipsoid_site_UI_UB4_side_r" pos="-0.0107758 -0.0261555 -0.00498369" />
-                                                      <body name="universal_robot/4proxph_r" pos="-0.00183 -0.023689 -0.000173">
+                                                      <body name="universal_robot/4proxph_r" pos="-0.00183 -0.023689 -0.000173" quat="0.766044 0.578796 0 0.279591">
                                                         <inertial pos="0 0 0" mass="0.01" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="universal_robot/mcp4_flexion_r" pos="0 0 0" axis="0.900447 0 0.434966" range="0 1.5708" />
-                                                        <joint name="universal_robot/mcp4_abduction_r" pos="0 0 0" axis="-0.434966 0 0.900447" range="-0.261799 0.261799" />
                                                         <geom name="universal_robot/proxph4_coll_r" class="universal_robot/myohand_coll" size="0.0085 0.018" pos="-0.001 -0.02 0.0008" quat="0.706822 0.70626 -0.028288 -0.0282655" material="universal_robot/MatSkin" />
                                                         <geom name="universal_robot/Fourthpm_wrap" class="universal_robot/myoarm_wrap" size="0.004 0.005" pos="-0.0033 -0.0401 -0.0001" quat="0.35623 -0.660837 -0.527455 0.397727" type="cylinder" />
                                                         <site name="universal_robot/FDS4-P6_r" pos="0.0001 -0.0127 -0.0075" />
@@ -1519,9 +1505,8 @@
                                                         <site name="universal_robot/UI_UB4-P4_r" pos="-0.0089 -0.0388 0.0018" />
                                                         <site name="universal_robot/Fourthpm_site_EDC4_side_r" pos="0.00028232 -0.0402561 0.008299" />
                                                         <site name="universal_robot/Fourthpm_site_UI_UB4_side_r" pos="-0.0089 -0.0388 0.0018" />
-                                                        <body name="universal_robot/midph4_r" pos="-0.003528 -0.040255 0.001345">
+                                                        <body name="universal_robot/midph4_r" pos="-0.003528 -0.040255 0.001345" quat="0.707107 0.651289 0 0.27536">
                                                           <inertial pos="0 0 0" mass="0.003" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="universal_robot/pm4_flexion" pos="0 0 0" axis="0.921061 0 0.389418" range="0 1.5708" />
                                                           <geom name="universal_robot/midph4_coll_r" class="universal_robot/myohand_coll" size="0.0075 0.01" pos="0 -0.012 -0.001" quat="0.703282 0.709785 -0.0281463 -0.0284066" material="universal_robot/MatSkin" />
                                                           <geom name="universal_robot/Fourthmd_wrap" class="universal_robot/myoarm_wrap" size="0.003 0.005" pos="-0.0021 -0.0247 -0.0001" quat="0.524748 -0.0852157 -0.846667 0.0230782" type="cylinder" />
                                                           <site name="universal_robot/FDS4-P8_r" pos="0 -0.0119 -0.0018" />
@@ -1532,9 +1517,8 @@
                                                           <site name="universal_robot/LU_RB4-P5_r" pos="0.0043 -0.0045 0.0043" />
                                                           <site name="universal_robot/UI_UB4-P5_r" pos="-0.0058 -0.004 0.0034" />
                                                           <site name="universal_robot/Fourthmd_site_EDC4_side_r" pos="-0.0021 -0.0247 0.0061" rgba="1 0 0 1" />
-                                                          <body name="universal_robot/distph4_r" pos="-0.002317 -0.024789 0.000563">
+                                                          <body name="universal_robot/distph4_r" pos="-0.002317 -0.024789 0.000563" quat="0.866025 0.412668 0 0.282321">
                                                             <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                            <joint name="universal_robot/md4_flexion_r" pos="0 0 0" axis="0.825336 0 0.564642" range="0 1.5708" />
                                                             <geom name="universal_robot/distph4_coll_r" class="universal_robot/myohand_coll" size="0.0068 0.008" pos="0 -0.01 -0.002" quat="0.695836 0.71646 -0.0348208 -0.0358529" contype="4" material="universal_robot/MatSkin" />
                                                             <geom name="universal_robot/distph4_coll_2_r" class="universal_robot/myohand_coll" size="0.005 0.008 0.002" pos="-0.004 -0.019 0.003" quat="0.964072 0.0967298 -0.246168 -0.0246992" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP4-P10_r" pos="0.0002 -0.014 -0.0022" />
@@ -1563,10 +1547,8 @@
                                                       <site name="universal_robot/5thmcp_ellipsoid_site_EDC5_side_r" pos="-0.0101211 -0.0279141 -0.00430677" />
                                                       <site name="universal_robot/5thmcp_ellipsoid_site_LU_RB5_side_r" pos="-0.00890322 -0.0194098 -0.0110643" />
                                                       <site name="universal_robot/5thmcp_ellipsoid_site_UI_UB5_side_r" pos="0.00407413 -0.0225573 -0.0142669" />
-                                                      <body name="universal_robot/5proxph_r" pos="-0.001597 -0.021431 -0.001496">
+                                                      <body name="universal_robot/5proxph_r" pos="-0.001597 -0.021431 -0.001496" quat="0.766044 0.530516 0 0.362945">
                                                         <inertial pos="0 0 0" mass="0.005" diaginertia="0.0001 0.0001 0.0001" />
-                                                        <joint name="universal_robot/mcp5_flexion_r" pos="0 0 0" axis="0.825336 0 0.564642" range="0 1.5708" />
-                                                        <joint name="universal_robot/mcp5_abduction_r" pos="0 0 0" axis="-0.564642 0 0.825336" range="-0.261799 0.261799" />
                                                         <geom name="universal_robot/5proxph_coll_r" class="universal_robot/myohand_coll" size="0.008 0.016" pos="-0.003 -0.018 -0.002" quat="0.666629 0.743713 -0.0333592 -0.0372166" material="universal_robot/MatSkin" />
                                                         <geom name="universal_robot/Fifthpm_wrap" class="universal_robot/myoarm_wrap" size="0.004 0.005" pos="-0.0046 -0.0349 -0.0042" quat="0.4295 -0.0398509 -0.90052 -0.0548241" type="cylinder" />
                                                         <site name="universal_robot/EDM-P7_r" pos="-0.0054 -0.0324 0.0001" />
@@ -1584,9 +1566,8 @@
                                                         <site name="universal_robot/Fifthpm_site_EDC5_side_r" pos="-0.0026 -0.0399 -0.0022" />
                                                         <site name="universal_robot/Fifthpm_site_LU_RB5_side_r" pos="-0.0032 -0.0372 0.0031" />
                                                         <site name="universal_robot/Fifthpm_site_UI_UB5_side_r" pos="-0.0107 -0.0359 -0.0032" />
-                                                        <body name="universal_robot/midph5_r" pos="-0.005279 -0.035563 -0.002879">
+                                                        <body name="universal_robot/midph5_r" pos="-0.005279 -0.035563 -0.002879" quat="0.707107 0.583601 0 0.399262">
                                                           <inertial pos="0 0 0" mass="0.002" diaginertia="0.0001 0.0001 0.0001" />
-                                                          <joint name="universal_robot/pm5_flexion_r" pos="0 0 0" axis="0.825336 0 0.564642" range="0 1.5708" />
                                                           <geom name="universal_robot/5midph_coll_r" class="universal_robot/myohand_coll" size="0.007 0.009" pos="-0.001 -0.011 -0.0025" quat="0.666262 0.743303 -0.0400237 -0.0446518" material="universal_robot/MatSkin" />
                                                           <geom name="universal_robot/Fifthmd_wrap" class="universal_robot/myoarm_wrap" size="0.003 0.005" pos="-0.0025 -0.0205 -0.0025" quat="0.35929 -0.0253303 -0.929016 -0.0848458" type="cylinder" />
                                                           <site name="universal_robot/FDS5-P8_r" pos="0.0011 -0.0182 -0.0046" />
@@ -1598,9 +1579,8 @@
                                                           <site name="universal_robot/UI_UB5-P5_r" pos="-0.005 -0.016 -0.002" />
                                                           <site name="universal_robot/Fifthmd_site_EDC5_side_r" pos="-0.00694323 -0.0205834 0.00153122" />
                                                           <site name="universal_robot/EDM-P8_r" pos="-0.002 -0.003 0.003" />
-                                                          <body name="universal_robot/distph5_r" pos="-0.002871 -0.020677 -0.002243">
+                                                          <body name="universal_robot/distph5_r" pos="-0.002871 -0.020677 -0.002243" quat="0.866025 0.433864 -0.074719 0.237021">
                                                             <inertial pos="0 0 0" mass="0.001" diaginertia="0.0001 0.0001 0.0001" />
-                                                            <joint name="universal_robot/md5_flexion_r" pos="0 0 0" axis="0.867728 -0.149438 0.474042" range="0 1.5708" />
                                                             <geom name="universal_robot/5distph_coll_r" class="universal_robot/myohand_coll" size="0.006 0.007" pos="-0.0002 -0.009 -0.002" quat="0.677709 0.73363 -0.0339137 -0.0367121" contype="4" material="universal_robot/MatSkin" />
                                                             <geom name="universal_robot/5distph_coll_2_r" class="universal_robot/myohand_coll" size="0.0045 0.006 0.002" pos="-0.005 -0.018 0" quat="0.91646 0.0919527 -0.387473 -0.038877" type="ellipsoid" contype="4" material="universal_robot/MatSkin" rgba="1 1 1 0.8" />
                                                             <site name="universal_robot/FDP5-P10_r" pos="-0.0003 -0.0139 -0.0048" />
@@ -2217,99 +2197,6 @@
       <site site="universal_robot/APL-P7_r" />
       <site site="universal_robot/APL-P8_r" />
     </spatial>
-    <spatial name="universal_robot/OP_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/OP-P1_r" />
-      <site site="universal_robot/OP-P2_r" />
-    </spatial>
-    <spatial name="universal_robot/RI2_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/RI2-P1_r" />
-      <site site="universal_robot/RI2-P2_r" />
-      <geom geom="universal_robot/2ndmcp_ellipsoid_wrap" sidesite="universal_robot/2ndmcp_ellipsoid_site_RI2_side_r" />
-      <site site="universal_robot/RI2-P3_r" />
-    </spatial>
-    <spatial name="universal_robot/LU_RB2_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/LU_RB2-P1_r" />
-      <site site="universal_robot/LU_RB2-P2_r" />
-      <site site="universal_robot/LU_RB2-P3_r" />
-      <site site="universal_robot/LU_RB2-P4_r" />
-      <geom geom="universal_robot/Secondpm_wrap" sidesite="universal_robot/Secondpm_site_LU_RB2_side_r" />
-      <site site="universal_robot/LU_RB2-P5_r" />
-      <site site="universal_robot/LU_RB2-P6_r" />
-    </spatial>
-    <spatial name="universal_robot/UI_UB2_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/UI_UB2-P1_r" />
-      <site site="universal_robot/UI_UB2-P2_r" />
-      <site site="universal_robot/UI_UB2-P3_r" />
-      <site site="universal_robot/UI_UB2-P4_r" />
-      <geom geom="universal_robot/Secondpm_wrap" sidesite="universal_robot/Secondpm_site_UI_UB2_side_r" />
-      <site site="universal_robot/UI_UB2-P5_r" />
-      <site site="universal_robot/UI_UB2-P6_r" />
-    </spatial>
-    <spatial name="universal_robot/RI3_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/RI3-P1_r" />
-      <site site="universal_robot/RI3-P2_r" />
-      <site site="universal_robot/RI3-P3_r" />
-    </spatial>
-    <spatial name="universal_robot/LU_RB3_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/LU_RB3-P1_r" />
-      <site site="universal_robot/LU_RB3-P2_r" />
-      <site site="universal_robot/LU_RB3-P3_r" />
-      <site site="universal_robot/LU_RB3-P4_r" />
-      <geom geom="universal_robot/Thirdpm_wrap" sidesite="universal_robot/Thirdpm_site_LU_RB3_side_r" />
-      <site site="universal_robot/LU_RB3-P5_r" />
-    </spatial>
-    <spatial name="universal_robot/UI_UB3_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/UI_UB3-P1_r" />
-      <site site="universal_robot/UI_UB3-P2_r" />
-      <site site="universal_robot/UI_UB3-P3_r" />
-      <site site="universal_robot/UI_UB3-P4_r" />
-      <geom geom="universal_robot/Thirdpm_wrap" sidesite="universal_robot/Thirdpm_site_UI_UB3_side_r" />
-      <site site="universal_robot/UI_UB3-P5_r" />
-    </spatial>
-    <spatial name="universal_robot/RI4_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/RI4-P1_r" />
-      <site site="universal_robot/RI4-P2_r" />
-      <site site="universal_robot/RI4-P3_r" />
-    </spatial>
-    <spatial name="universal_robot/LU_RB4_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/LU_RB4-P1_r" />
-      <site site="universal_robot/LU_RB4-P2_r" />
-      <site site="universal_robot/LU_RB4-P3_r" />
-      <site site="universal_robot/LU_RB4-P4_r" />
-      <site site="universal_robot/LU_RB4-P5_r" />
-    </spatial>
-    <spatial name="universal_robot/UI_UB4_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/UI_UB4-P1_r" />
-      <site site="universal_robot/UI_UB4-P2_r" />
-      <geom geom="universal_robot/4thmcp_ellipsoid_wrap" sidesite="universal_robot/4thmcp_ellipsoid_site_UI_UB4_side_r" />
-      <site site="universal_robot/UI_UB4-P3_r" />
-      <site site="universal_robot/UI_UB4-P4_r" />
-      <geom geom="universal_robot/Fourthpm_wrap" sidesite="universal_robot/Fourthpm_site_UI_UB4_side_r" />
-      <site site="universal_robot/UI_UB4-P5_r" />
-    </spatial>
-    <spatial name="universal_robot/RI5_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/RI5-P1_r" />
-      <site site="universal_robot/RI5-P2_r" />
-      <site site="universal_robot/RI5-P3_r" />
-    </spatial>
-    <spatial name="universal_robot/LU_RB5_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/LU_RB5-P1_r" />
-      <site site="universal_robot/LU_RB5-P2_r" />
-      <geom geom="universal_robot/5thmcp_ellipsoid_wrap" sidesite="universal_robot/5thmcp_ellipsoid_site_LU_RB5_side_r" />
-      <site site="universal_robot/LU_RB5-P3_r" />
-      <site site="universal_robot/LU_RB5-P4_r" />
-      <geom geom="universal_robot/Fifthpm_wrap" sidesite="universal_robot/Fifthpm_site_LU_RB5_side_r" />
-      <site site="universal_robot/LU_RB5-P5_r" />
-    </spatial>
-    <spatial name="universal_robot/UI_UB5_tendon" class="universal_robot/myoarm_forearm_muscle">
-      <site site="universal_robot/UI_UB5-P1_r" />
-      <site site="universal_robot/UI_UB5-P2_r" />
-      <geom geom="universal_robot/5thmcp_ellipsoid_wrap" sidesite="universal_robot/5thmcp_ellipsoid_site_UI_UB5_side_r" />
-      <site site="universal_robot/UI_UB5-P3_r" />
-      <site site="universal_robot/UI_UB5-P4_r" />
-      <geom geom="universal_robot/Fifthpm_wrap" sidesite="universal_robot/Fifthpm_site_UI_UB5_side_r" />
-      <site site="universal_robot/UI_UB5-P5_r" />
-    </spatial>
   </tendon>
 
   <actuator>
@@ -2337,8 +2224,32 @@
     <general name="universal_robot/BICshort" class="universal_robot/myoarm_upperarm_muscle" tendon="universal_robot/BICshort_tendon" lengthrange="0.268189 0.449579" gainprm="0.486445 1.50858 270.82 1 0 1.8 10 1.80875 1.4" biasprm="0.486445 1.50858 270.82 1 0 1.8 10 1.80875 1.4" />
     <general name="universal_robot/BRA" class="universal_robot/myoarm_upperarm_muscle" tendon="universal_robot/BRA_tendon" lengthrange="0.105976 0.14593" gainprm="0.526201 1.21956 1168.76 1 0 1.8 10 0.920725 1.4" biasprm="0.526201 1.21956 1168.76 1 0 1.8 10 0.920725 1.4" />
     <general name="universal_robot/BRD" class="universal_robot/myoarm_upperarm_muscle" tendon="universal_robot/BRD_tendon" lengthrange="0.200364 0.32774" gainprm="0.130305 1.37938 272.486 1 0 1.8 10 0.93764 1.4" biasprm="0.130305 1.37938 272.486 1 0 1.8 10 0.93764 1.4" />
+    <general name="universal_robot/ECRL" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/ECRL_tendon" lengthrange="0.313191 0.341072" gainprm="0.75 1.05 337.3" biasprm="0.75 1.05 337.3" />
+    <general name="universal_robot/ECRB" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/ECRB_tendon" lengthrange="0.26997 0.301495" gainprm="0.75 1.05 252.2" biasprm="0.75 1.05 252.2" />
+    <general name="universal_robot/ECU" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/ECU_tendon" lengthrange="0.279041 0.306754" gainprm="0.75 1.05 192.9" biasprm="0.75 1.05 192.9" />
+    <general name="universal_robot/FCR" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FCR_tendon" lengthrange="0.295866 0.331494" gainprm="0.75 1.05 407.9" biasprm="0.75 1.05 407.9" />
+    <general name="universal_robot/FCU" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FCU_tendon" lengthrange="0.293357 0.332707" gainprm="0.75 1.05 479.8" biasprm="0.75 1.05 479.8" />
+    <general name="universal_robot/PL" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/PL_tendon" lengthrange="0.311593 0.362396" gainprm="0.75 1.05 101" biasprm="0.75 1.05 101" />
     <general name="universal_robot/PT" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/PT_tendon" lengthrange="0.147243 0.170204" gainprm="0.75 1.05 557.2" biasprm="0.75 1.05 557.2" />
     <general name="universal_robot/PQ" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/PQ_tendon" lengthrange="0.0220792 0.0371669" gainprm="0.75 1.05 284.7" biasprm="0.75 1.05 284.7" />
+    <general name="universal_robot/FDS5" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDS5_tendon" lengthrange="0.354916 0.423992" gainprm="0.75 1.05 75.3" biasprm="0.75 1.05 75.3" />
+    <general name="universal_robot/FDS4" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDS4_tendon" lengthrange="0.422088 0.480218" gainprm="0.75 1.05 171.2" biasprm="0.75 1.05 171.2" />
+    <general name="universal_robot/FDS3" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDS3_tendon" lengthrange="0.328489 0.390589" gainprm="0.75 1.05 258.8" biasprm="0.75 1.05 258.8" />
+    <general name="universal_robot/FDS2" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDS2_tendon" lengthrange="0.330149 0.392331" gainprm="0.75 1.05 162.5" biasprm="0.75 1.05 162.5" />
+    <general name="universal_robot/FDP5" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDP5_tendon" lengthrange="0.387224 0.450745" gainprm="0.75 1.05 236.8" biasprm="0.75 1.05 236.8" />
+    <general name="universal_robot/FDP4" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDP4_tendon" lengthrange="0.348164 0.417976" gainprm="0.75 1.05 172.9" biasprm="0.75 1.05 172.9" />
+    <general name="universal_robot/FDP3" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDP3_tendon" lengthrange="0.336078 0.398672" gainprm="0.75 1.05 212.4" biasprm="0.75 1.05 212.4" />
+    <general name="universal_robot/FDP2" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FDP2_tendon" lengthrange="0.336953 0.40261" gainprm="0.75 1.05 197.3" biasprm="0.75 1.05 197.3" />
+    <general name="universal_robot/EDC5" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EDC5_tendon" lengthrange="0.381709 0.426592" gainprm="0.75 1.05 139.4" biasprm="0.75 1.05 139.4" />
+    <general name="universal_robot/EDC4" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EDC4_tendon" lengthrange="0.391706 0.456154" gainprm="0.75 1.05 109.2" biasprm="0.75 1.05 109.2" />
+    <general name="universal_robot/EDC3" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EDC3_tendon" lengthrange="0.399791 0.456735" gainprm="0.75 1.05 94.4" biasprm="0.75 1.05 94.4" />
+    <general name="universal_robot/EDC2" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EDC2_tendon" lengthrange="0.395914 0.455475" gainprm="0.75 1.05 48.8" biasprm="0.75 1.05 48.8" />
+    <general name="universal_robot/EDM" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EDM_tendon" lengthrange="0.37707 0.417549" gainprm="0.75 1.05 72.4" biasprm="0.75 1.05 72.4" />
+    <general name="universal_robot/EIP" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EIP_tendon" lengthrange="0.245809 0.291046" gainprm="0.75 1.05 47.3" biasprm="0.75 1.05 47.3" />
+    <general name="universal_robot/EPL" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EPL_tendon" lengthrange="0.253147 0.327478" gainprm="0.75 1.05 88.3" biasprm="0.75 1.05 88.3" />
+    <general name="universal_robot/EPB" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/EPB_tendon" lengthrange="0.146292 0.199276" gainprm="0.75 1.05 46" biasprm="0.75 1.05 46" />
+    <general name="universal_robot/FPL" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/FPL_tendon" lengthrange="0.22287 0.27967" gainprm="0.75 1.05 201" biasprm="0.75 1.05 201" />
+    <general name="universal_robot/APL" class="universal_robot/myoarm_forearm_muscle" tendon="universal_robot/APL_tendon" lengthrange="0.204756 0.228384" gainprm="0.75 1.05 116.7" biasprm="0.75 1.05 116.7" />
   </actuator>
 
   <sensor>
