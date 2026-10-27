@@ -316,6 +316,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .jdot, .jdot-key { position: absolute; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1.5px var(--surface); }
 .jdot.limit { background: var(--warn); }
 .jdot-key { position: static; display: inline-block; margin: 0 2px 0 0; vertical-align: -1px; width: 8px; height: 8px; }
+.jband-key { display: inline-block; width: 14px; height: 7px; border-radius: 3px; vertical-align: 0; background: color-mix(in srgb, var(--accent) 30%, transparent); }
 
 @media (max-width: 1100px) {
   /* the nav stays pinned: the 3D view fills the screen below it and would otherwise trap scrolling */
@@ -1272,7 +1273,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (S.mus.meter) S.mus.meter.endEpisode(fatigue);
     if (S.mus.jmeter) S.mus.jmeter.endEpisode();
   }
-  // The card: muscles or joints, live or per episode. Built when a feed starts or the view changes;
+  // The card: muscles (live or per episode) or joints (angle now over the range per episode). Built when a feed starts or the view changes;
   // afterwards only the live rows are redrawn every frame, and the table when an episode (or window) ends.
   function renderMuscleCard(full = false) {
     const card = $("mcard");
@@ -1292,14 +1293,17 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const title = kinds.length > 1
         ? `<span class="mcard-kinds"><button class="kind-arrow" type="button" data-mkind="-1" aria-label="Show ${other(-1)}" title="${other(-1)}">&#8249;</button><b>${kinds[at][1]}</b><button class="kind-arrow" type="button" data-mkind="1" aria-label="Show ${other(1)}" title="${other(1)}">&#8250;</button></span>`
         : `<b>${kinds[0][1]}</b>`;
-      card.innerHTML = `<div class="mcard-head">${title}<span class="seg" role="group" aria-label="View"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn fold-btn" type="button" data-mcard-min aria-expanded="${S.mcard.open}" aria-label="${S.mcard.open ? "Fold" : "Unfold"} the card" title="${S.mcard.open ? "Fold" : "Unfold"}">${foldIcon(S.mcard.open)}</button></div><div class="mcard-body"></div>`;
+      // joints have one view: the angle now over the range per episode
+      const views = kind === "joints" ? "" : `<span class="seg" role="group" aria-label="View"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span>`;
+      card.innerHTML = `<div class="mcard-head">${title}${views}<button class="min-btn fold-btn" type="button" data-mcard-min aria-expanded="${S.mcard.open}" aria-label="${S.mcard.open ? "Fold" : "Unfold"} the card" title="${S.mcard.open ? "Fold" : "Unfold"}">${foldIcon(S.mcard.open)}</button></div><div class="mcard-body"></div>`;
       full = true;
       sceneFocus();
     }
-    if (full && S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = kind === "joints" ? JM.jointRangesHtml(S.mus.jmeter, n, unit) : MM.groupsHtml(S.mus.meter, unit);
-    if (S.mcard.view === "live" && S.mcard.open) {
+    const live = kind === "joints" || S.mcard.view === "live";
+    if (full && !live) card.querySelector(".mcard-body").innerHTML = MM.groupsHtml(S.mus.meter, unit);
+    if (live && S.mcard.open) {
       card.querySelector(".mcard-body").innerHTML = kind === "joints"
-        ? JM.jointBarsHtml(S.mus.jmeter, n) + `<span class="mcard-note"><span class="jdot-key"></span> angle now · band: range used · <span class="tick-key"></span> mean · within the joint's limits</span>`
+        ? JM.jointBarsHtml(S.mus.jmeter, n) + JM.jointNote(S.mus.jmeter, unit)
         : MM.barsHtml(S.mus.meter, n) + `<span class="mcard-note">Bar: activation now · <span class="tick-key"></span> mean so far · busiest first</span>`;
     }
   }
@@ -2353,7 +2357,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     { el: "#connect-btn", title: "Connect compute", text: "Without a backend, Studio is a demo. Start myo_studio serve on a GPU machine and pair this page with it: training, evaluation and live views then run there." },
     { step: 5, el: "#workspace", title: "6 · Run", text: "Start training and follow it: click success rate, reward or episode length to plot that curve. The 3D view follows the newest checkpoint while it trains." },
     { step: 6, el: "#workspace", title: "7 · Evaluate", text: "The deterministic policy on fresh episodes: success, time, effort, fatigue and which targets were reached. The example policies play live in the browser." },
-    { step: 6, el: "#mcard", title: "Muscles and joints", text: "While a policy plays: the busiest muscles, or the joints that move most within their limits, live and per episode. The 3D muscles light up with their activation." },
+    { step: 6, el: "#mcard", title: "Muscles and joints", text: "While a policy plays: the busiest muscles, live and per episode; the arrows switch to the joints that move most, each angle between its limits. The 3D muscles light up with their activation." },
     { el: "#summary", title: "Config overview", text: "Everything in one JSON file: save it, upload it later, or train from it with myo_train --config, outside Studio." },
     { title: "That's Studio", text: "Start from the pointing example or design a task from scratch. The paper behind it is linked at the top (Cite for the BibTeX).", end: true },
   ];
