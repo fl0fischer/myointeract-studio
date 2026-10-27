@@ -187,6 +187,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .card span { color: var(--muted); font-size: 0.74rem; line-height: 1.35; }
 .card .tag { justify-self: start; font-size: 0.66rem; padding: 1px 7px; border-radius: 999px; background: var(--tint); color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card:disabled { opacity: 0.5; cursor: not-allowed; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .chip { font: inherit; font-size: 0.8rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; white-space: nowrap; }
 .chip:hover:not(:disabled) { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 25%, var(--line)); }
@@ -417,7 +418,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <div class="summary-body">
         <dl class="kv" id="summary-kv"></dl>
         <div class="summary-sec">
-          <div class="group-title"><span class="muted" style="font-size:0.84rem">Training time · <span id="est-target">This machine</span></span><span class="est" id="est-time">–</span></div>
+          <div class="group-title"><span class="muted" style="font-size:0.84rem">Training time · <span id="est-target">My GPU machine</span></span><span class="est" id="est-time">–</span></div>
           <span class="hint" id="est-note"></span>
         </div>
         <div class="summary-sec">
@@ -478,6 +479,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     <button class="min-btn dialog-close" value="cancel" type="submit" aria-label="Close" title="Close">&times;</button>
     <h3 id="connect-title">Connect compute</h3>
     <p class="muted">Studio talks to a myoInteract backend. Start it where your GPU is, then paste its address. Opened from the backend itself (<span class="mono">myo_studio serve</span>), Studio connects on its own.</p>
+    <p class="demo-banner" id="conn-mobile" hidden></p>
     <div class="cards" id="conn-cards"></div>
     <div class="field"><label for="backend-url">Backend address</label><input type="url" id="backend-url" placeholder="http://localhost:8000"><span class="hint" id="conn-hint"></span></div>
     <div class="field" id="pair-field"><label for="pair-code">Pairing code</label><input type="text" id="pair-code" autocomplete="off" spellcheck="false" placeholder="e.g. 3fa9c2"><span class="hint"><span class="mono">myo_studio serve</span> prints it in its terminal. Only needed when this page is not served by Studio itself.</span></div>
@@ -532,17 +534,17 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   // Reward terms the Gradio task builder has no control for: stored in presets as Hydra overrides.
   const EXTRA_REWARDS = REWARDS.filter((r) => r[6]).map((r) => r[0]);
   const TARGETS = {
+    "My GPU machine": { key: "local", speed: 48000, desktop: true, note: "A computer with an NVIDIA GPU: this one, or a lab server over SSH.", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git@v1.0.0a1\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages\n\n# on a lab server: tunnel its port first, run the two lines there, then open http://localhost:8000\nssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser" },
     "Google Colab": { key: "colab", speed: 9000, note: "Free T4 GPU, about 5x slower than an RTX 5090. Studio runs inside the Colab session.", cmd: "# open in Colab and run the two cells:\n# https://colab.research.google.com/github/fl0fischer/myointeract/blob/main/tutorials/myointeract/studio_colab.ipynb\nfrom myoInteract.studio.colab import launch\nlaunch()  # prints the link that opens Studio" },
-    "This machine": { key: "local", speed: 48000, note: "My own NVIDIA GPU.", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git@v1.0.0a1\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages" },
     "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Space in my Hugging Face account, on the GPU you pick there.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
-    "Lab server": { key: "remote", speed: 30000, note: "Any machine with an NVIDIA GPU, reached through SSH.", cmd: "ssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser  # then open http://localhost:8000" },
   };
+  const MOBILE_NOTE = "On a phone or tablet, Studio designs the task but cannot train it: save the configuration, then train from a computer, on its own NVIDIA GPU, in Google Colab or in a Hugging Face Space.";
   const COLORS = ["#d9432a", "#3b4250", "#c98a2b", "#7a4a8c", "#2f7d6d", "#8a8f98"];
 
   /* ---------------------------------------------------------------- state */
   const S = {
     runMetric: "success",  // the curve the Train step plots
-    step: 0, done: new Set(), preset: "untitled", target: "This machine", backend: null,
+    step: 0, done: new Set(), preset: "untitled", target: "My GPU machine", backend: null,
     bm: { bm_model: "MyoArm_nohand", ctrl_dt: 0.05, reset_type: "epsilon_uniform", sigdepnoise_enabled: false, constantnoise_enabled: false, fatigue_enabled: false, mj_impl_type: "mjlab" },
     task: { max_duration: 4, reject_unreachable: true },
     targets: [{ type: "Sphere", x: [0.225, 0.375], y: [-0.036, 0.036], z: [-0.3, -0.3], size: [0.01, 0.03], dwell: 0.25, force: 1, angle: 90, color: COLORS[0] }],
@@ -554,8 +556,13 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live", paused: false,
   };
   const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl, targets: S.targets });
-  // Wide screens remember a folded step panel; phones always start with it open (1 Body unfolded).
-  try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = matchMedia("(max-width: 1100px)").matches || localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
+  // "This machine" and "Lab server" are one option now; wide screens remember a folded step panel, phones open it.
+  try { const t = localStorage.getItem("studio-target"), target = { "This machine": "My GPU machine", "Lab server": "My GPU machine" }[t] || t; if (target && TARGETS[target]) S.target = target; S.stepOpen = matchMedia("(max-width: 1100px)").matches || localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
+  // Phones and tablets cannot run the backend themselves: "My GPU machine" is off there and Colab the default.
+  const MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (matchMedia("(pointer: coarse)").matches && matchMedia("(max-width: 1100px)").matches);
+  const usable = (name) => !(MOBILE && TARGETS[name].desktop);
+  const targetOrder = () => Object.entries(TARGETS).sort(([a], [b]) => usable(b) - usable(a));  // options a phone cannot use go last
+  if (!usable(S.target)) S.target = "Google Colab";
 
   const EXPORT_3D = false;  // the "Export 3D (glTF)" chip in the scene bar
   const STEPS = [
@@ -1259,21 +1266,26 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   // afterwards only the live rows are redrawn every frame, and the table when an episode (or window) ends.
   function renderMuscleCard(full = false) {
     const card = $("mcard");
-    if (!S.mus || !MM || !JM) { card.hidden = true; card.innerHTML = ""; return; }
+    if (!S.mus || !MM || !JM) { card.hidden = true; card.innerHTML = ""; delete card.dataset.head; return; }
     const kinds = [["muscles", "Muscles", S.mus.meter], ["joints", "Joints", S.mus.jmeter]].filter((k) => k[2]);
     const kind = kinds.some((k) => k[0] === S.mcard.kind) ? S.mcard.kind : kinds[0][0];
     const unit = S.mus.windowed ? `${MUSCLE_WINDOW_S} s` : "episode";
     const n = matchMedia("(max-width: 1100px)").matches ? 5 : 8;
-    if (full || card.hidden || !card.firstChild) {
+    // The header (with the muscles / joints menu) is rebuilt only when it changes, so an open menu
+    // stays open across episode ends; the table below is refreshed then.
+    const headKey = [S.mus.hello && S.mus.hello.bodies.length, kinds.map((k) => k[0]).join(), kind, S.mcard.view, S.mcard.open, unit].join("|");
+    if (card.hidden || !card.firstChild || card.dataset.head !== headKey) {
+      card.dataset.head = headKey;
       card.hidden = false;
       card.classList.toggle("closed", !S.mcard.open);
       const title = kinds.length > 1
         ? `<select class="mcard-kind" aria-label="Show muscles or joints">${kinds.map(([k, l]) => `<option value="${k}" ${k === kind ? "selected" : ""}>${l}</option>`).join("")}</select>`
         : `<b>${kinds[0][1]}</b>`;
       card.innerHTML = `<div class="mcard-head">${title}<span class="seg" role="group" aria-label="View"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn fold-btn" type="button" data-mcard-min aria-expanded="${S.mcard.open}" aria-label="${S.mcard.open ? "Fold" : "Unfold"} the card" title="${S.mcard.open ? "Fold" : "Unfold"}">${foldIcon(S.mcard.open)}</button></div><div class="mcard-body"></div>`;
-      if (S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = kind === "joints" ? JM.jointRangesHtml(S.mus.jmeter, n, unit) : MM.groupsHtml(S.mus.meter, unit);
+      full = true;
       sceneFocus();
     }
+    if (full && S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = kind === "joints" ? JM.jointRangesHtml(S.mus.jmeter, n, unit) : MM.groupsHtml(S.mus.meter, unit);
     if (S.mcard.view === "live" && S.mcard.open) {
       card.querySelector(".mcard-body").innerHTML = kind === "joints"
         ? JM.jointBarsHtml(S.mus.jmeter, n) + `<span class="mcard-note"><span class="jdot-key"></span> angle now · band: range used · <span class="tick-key"></span> mean · within the joint's limits</span>`
@@ -1491,11 +1503,13 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         <div class="chips"><button class="btn small primary" type="button" data-save-cfg>Save configuration</button><label class="btn small" for="import-cfg" style="cursor:pointer">Upload</label></div></div>`));
     bindWandb(ws);
     const cards = ws.querySelector("#target-cards");
-    for (const [name, t] of Object.entries(TARGETS)) {
+    if (MOBILE) cards.before(h(`<p class="demo-banner mobile-note">${MOBILE_NOTE}</p>`).firstElementChild);
+    for (const [name, t] of targetOrder()) {
       const b = document.createElement("button");
       b.className = "card"; b.type = "button";
       b.setAttribute("aria-pressed", String(S.target === name));
-      b.innerHTML = `<b>${name}</b><span>${t.note}</span>`;
+      b.disabled = !usable(name);
+      b.innerHTML = `${b.disabled ? '<span class="tag">needs a computer</span>' : ""}<b>${name}</b><span>${t.note}${MOBILE && !b.disabled ? " Set it up from a computer." : ""}</span>`;
       b.addEventListener("click", () => { S.target = name; try { localStorage.setItem("studio-target", name); } catch (e) {} render(); });
       cards.append(b);
     }
@@ -2149,18 +2163,22 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     };
     $("backend-url").oninput = updateHandoff;
     cards.innerHTML = "";
-    let pick = S.target;
+    let pick = usable(S.target) ? S.target : "Google Colab";
+    $("conn-mobile").hidden = !MOBILE;
+    $("conn-mobile").textContent = MOBILE_NOTE;
     const show = () => {
       cards.querySelectorAll(".card").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.name === pick)));
       $("conn-cmd").textContent = TARGETS[pick].cmd;
       $("conn-hint").textContent = TARGETS[pick].note;
-      $("backend-url").placeholder = pick === "This machine" || pick === "Lab server" ? "http://localhost:8000" : "https://…";
+      $("backend-url").placeholder = pick === "My GPU machine" ? "http://localhost:8000" : "https://…";
       updateHandoff();
     };
-    for (const name of Object.keys(TARGETS)) {
+    for (const [name] of targetOrder()) {
       const b = document.createElement("button");
       b.type = "button"; b.className = "card"; b.dataset.name = name;
       b.innerHTML = `<b>${name}</b>`;
+      b.disabled = !usable(name);
+      if (b.disabled) b.title = "Needs a computer with an NVIDIA GPU";
       b.addEventListener("click", () => { pick = name; show(); });
       cards.append(b);
     }
@@ -2267,7 +2285,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     { step: 1, el: "#scene-bar", title: "What the 3D view shows", text: "The bar names it first: Task setup (my task, arm at rest), Example policy (a trained policy on my targets), Evaluation (an example on its task) or Live (a run on the backend), with Play, Pause and Stop beside it." },
     { step: 2, el: "#workspace", title: "3 · Sensing", text: "What the agent observes: joint angles and velocities, muscle states, the targets, optionally vision. Fewer signals usually train faster." },
     { step: 3, el: "#workspace", title: "4 · Reward", text: "The trade-off the agent learns: distance drives learning, bonuses make it finish, effort and other penalties shape how it moves." },
-    { step: 4, el: "#workspace", title: "5 · Training", text: "The training budget and where it runs: my own GPU, Google Colab, a Hugging Face Space or a lab server. Runs can log to Weights & Biases as well." },
+    { step: 4, el: "#workspace", title: "5 · Training", text: "The training budget and where it runs: my GPU machine (this computer or a lab server over SSH), Google Colab or a Hugging Face Space. Runs can log to Weights & Biases as well." },
     { el: "#connect-btn", title: "Connect compute", text: "Without a backend, Studio is a demo. Start myo_studio serve on a GPU machine and pair this page with it: training, evaluation and live views then run there." },
     { step: 5, el: "#workspace", title: "6 · Run", text: "Start training and follow it: click success rate, reward or episode length to plot that curve. The 3D view follows the newest checkpoint while it trains." },
     { step: 6, el: "#workspace", title: "7 · Evaluate", text: "The deterministic policy on fresh episodes: success, time, effort, fatigue and which targets were reached. The example policies play live in the browser." },
@@ -2416,7 +2434,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   // was paired with before (asking the browser for local network access is left to the Connect dialog).
   (async () => {
     const own = location.protocol.startsWith("http") ? await fetch("/api/health").then((r) => (r.ok ? r.json() : null)).catch(() => null) : null;
-    if (own && own.ok && !own.pairing) { S.target = "This machine"; setConnected(location.origin, `This machine · ${own.device}`); render(); return; }
+    if (own && own.ok && !own.pairing) { S.target = "My GPU machine"; setConnected(location.origin, `This machine · ${own.device}`); render(); return; }
     let url = null, code = "";
     try { url = localStorage.getItem("studio-last-backend"); code = url ? localStorage.getItem(pairKey(url)) || "" : ""; } catch (e) {}
     if (!url || window.claude) return;
