@@ -123,7 +123,7 @@ p { margin: 0; }
 .fact span { color: var(--muted); font-size: 0.84rem; }
 
 /* studio */
-.studio { position: relative; height: calc(100vh - 51px); min-height: 620px; overflow: hidden; border-top: 1px solid var(--line); background: var(--scene-bg); }
+.studio { scroll-margin-top: 51px; position: relative; height: calc(100vh - 51px); min-height: 620px; overflow: hidden; border-top: 1px solid var(--line); background: var(--scene-bg); }
 #stage { position: absolute; inset: 0; }
 #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 #stage::after { content: ""; position: absolute; inset: 0; background: var(--scene-dim); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
@@ -154,6 +154,14 @@ p { margin: 0; }
 .live-pill { font-size: 0.8rem; color: var(--muted); padding-inline: 6px; max-width: 100%; }
 .live-pill.on::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
 .live-pill.err { color: var(--warn); }
+/* the scene bar names what the 3D view shows */
+.mode-badge { flex: none; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 7px; border-radius: 6px; background: var(--tint); color: var(--muted); }
+.mode-badge.policy { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent); }
+.mode-badge.eval { background: color-mix(in srgb, #3b6fd8 16%, var(--surface)); color: #3b6fd8; }
+.mode-badge.live { background: color-mix(in srgb, var(--ok) 18%, var(--surface)); color: var(--ok); }
+.chip.primary-chip { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.mode-note { font-size: 0.8rem; margin: 0; line-height: 1.5; }
+.mode-note .mode-badge { display: inline-block; margin-right: 6px; vertical-align: 1px; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 12px; min-width: 0; }
 .panel h2 { font-size: 1.06rem; }
 .panel-head { display: grid; gap: 2px; padding-right: 24px; }
@@ -299,6 +307,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
 @media (max-width: 1100px) {
   .nav { position: static; }
+  .studio { scroll-margin-top: 0; }
   .nav-in { padding: 8px 12px; gap: 8px; }
   .nav a.link, #connect-btn .wide { display: none; }
   .brand { font-size: 0.95rem; gap: 7px; }
@@ -353,7 +362,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 23 L14 13 L21 16" fill="none" stroke="var(--accent-ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="23" r="2.4" fill="var(--accent-ink)"/><circle cx="14" cy="13" r="2.4" fill="var(--accent-ink)"/><circle cx="25" cy="9" r="3.2" fill="none" stroke="var(--logo-target, #14161b)" stroke-width="2.2"/><circle cx="25" cy="9" r="0.9" fill="var(--logo-target, #14161b)"/></svg><span>MyoInteract<span class="wide"> Studio</span></span></span>
     <a class="link" href="#studio">Studio</a>
     <a class="link" href="https://github.com/fl0fischer/myointeract">GitHub</a>
-    <a class="link" href="https://arxiv.org/abs/2602.15245" target="_blank" rel="noopener">Paper</a>
+    <a class="link" href="https://doi.org/10.1145/3800645.3812899" target="_blank" rel="noopener">Paper</a>
     <button class="link link-btn" type="button" data-cite>Cite</button>
     <span class="spacer"></span>
     <span class="pill" id="conn-pill"><span class="dot"></span><span id="conn-text">Demo mode</span></span>
@@ -366,7 +375,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     <div>
       <h1>Teach a <em>muscle-driven user model</em> to interact with your interface</h1>
       <p class="lead">Design an interaction task, train it on a GPU, and watch the policy move in your browser.</p>
-      <p class="paper-ref">From the DIS 2026 paper by Ankit Bhattarai, Hannah Selder, Florian Fischer, Arthur Fleig and Per Ola Kristensson. <a href="https://arxiv.org/abs/2602.15245" target="_blank" rel="noopener">Read the paper</a> · <button class="link-btn" type="button" data-cite>Cite it</button></p>
+      <p class="paper-ref">From the DIS 2026 paper by Ankit Bhattarai, Hannah Selder, Florian Fischer, Arthur Fleig and Per Ola Kristensson. <a href="https://doi.org/10.1145/3800645.3812899" target="_blank" rel="noopener">Read the paper</a> · <button class="link-btn" type="button" data-cite>Cite it</button></p>
       <div class="cta">
         <button class="btn primary" type="button" id="hero-tour">Walkthrough</button>
         <button class="btn" type="button" id="hero-preset">Try the pointing example</button>
@@ -427,15 +436,19 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   <form method="dialog" style="display:grid; gap:12px">
     <button class="min-btn dialog-close" value="cancel" type="submit" aria-label="Close" title="Close">&times;</button>
     <h3 id="cite-title">Cite MyoInteract</h3>
-    <p style="font-size:0.88rem; margin:0">Ankit Bhattarai, Hannah Selder, Florian Fischer, Arthur Fleig and Per Ola Kristensson. <b>MyoInteract: A Framework for Fast Prototyping of Biomechanical HCI Tasks using Reinforcement Learning.</b> Designing Interactive Systems (DIS) 2026. <a href="https://arxiv.org/abs/2602.15245" target="_blank" rel="noopener">arXiv:2602.15245</a></p>
-    <pre class="code" id="cite-bib">@misc{bhattarai2026myointeractframeworkfastprototyping,
+    <p style="font-size:0.88rem; margin:0">Ankit Bhattarai, Hannah Selder, Florian Fischer, Arthur Fleig and Per Ola Kristensson. <b>MyoInteract: A Framework for Fast Prototyping of Biomechanical HCI Tasks using Reinforcement Learning.</b> Proceedings of the 2026 Designing Interactive Systems Conference (DIS '26), 2829–2851. <a href="https://doi.org/10.1145/3800645.3812899" target="_blank" rel="noopener">doi:10.1145/3800645.3812899</a></p>
+    <pre class="code" id="cite-bib">@inproceedings{bhattarai2026myointeract,
+  author={Bhattarai, Ankit and Selder, Hannah and Fischer, Florian and Fleig, Arthur and Kristensson, Per Ola},
   title={MyoInteract: A Framework for Fast Prototyping of Biomechanical HCI Tasks using Reinforcement Learning},
-  author={Ankit Bhattarai and Hannah Selder and Florian Fischer and Arthur Fleig and Per Ola Kristensson},
+  booktitle={Proceedings of the 2026 Designing Interactive Systems Conference},
+  series={DIS '26},
   year={2026},
-  eprint={2602.15245},
-  archivePrefix={arXiv},
-  primaryClass={cs.HC},
-  url={https://arxiv.org/abs/2602.15245},
+  pages={2829--2851},
+  publisher={Association for Computing Machinery},
+  address={New York, NY, USA},
+  location={Singapore, Singapore},
+  doi={10.1145/3800645.3812899},
+  url={https://doi.org/10.1145/3800645.3812899},
 }</pre>
     <div class="foot" style="justify-content:flex-end"><button class="btn primary" type="button" id="cite-copy">Copy BibTeX</button></div>
   </form>
@@ -532,7 +545,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
     view: "perspective", stepOpen: true, row: null, rowClip: null, clipKind: null, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
-    examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live",
+    examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live", paused: false,
   };
   const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl, targets: S.targets });
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
@@ -597,6 +610,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function go(i) {
     S.done.add(S.step);
     S.step = Math.max(0, Math.min(STEPS.length - 1, i));
+    S.paused = false;
     render();
     document.getElementById("studio").scrollIntoView({ block: "start" });
   }
@@ -1062,19 +1076,35 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const modes = S.sel === "screen" ? [["translate", "Move" + key("M")], ["rotate", "Rotate" + key("R")]] : [["translate", "Move" + key("M")], ["scale", "Resize" + key("S")], ...(button ? [["rotate", "Rotate" + key("R")]] : [])];
       html += `<span class="sep"></span><span class="seg" role="group" aria-label="Edit mode">` + modes.map(([k, l]) => `<button type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${l}</button>`).join("") + `</span>`;
     }
-    let act = "";  // what plays in the scene and its controls: one group, first on narrow screens
+    // What the 3D view shows, always named first: the task at rest, a policy on my targets, an
+    // evaluation of an example task, or a backend's live view; with the controls that fit it.
+    const badge = (kind, label) => `<span class="mode-badge ${kind}">${label}</span>`;
+    const pill = (cls, text) => `<span class="live-pill ${cls}" role="status">${esc(text)}</span>`;
+    const pause = S.paused ? `<button class="chip" type="button" data-play>&#9654; Play</button>` : `<button class="chip" type="button" data-pause>&#10074;&#10074; Pause</button>`;
+    let act = "";
     if (v && LIVE_STEPS.includes(S.step)) {
       const secs = v.t0 ? Math.round((Date.now() - v.t0) / 1000) : 0;
       const state = v.error ? ["err", `Live view failed: ${v.error}`]
-        : v.busy ? ["", `Starting the live view: building the task and loading the policy… ${secs} s`]
+        : v.busy ? ["", `Starting: building the task and loading the policy… ${secs} s`]
         : v.kind === "viser" ? ["", "Playing in the viser tab"]
         : S.live ? ["on", `${v.name || v.label} · ${S.liveStatus}`] : ["", "Connecting to the live view…"];
-      act += `<span class="live-pill ${state[0]}" role="status">${esc(state[1])}</span>`;
-      act += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">Stop</button>`;
+      act += badge("live", "Live") + pill(state[0], state[1]);
+      act += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">&#9632; Stop</button>`;
+    } else if (simWanted()) {
+      const sim = S.sim, ok = sim.hello && !sim.error;
+      const text = sim.error ? "The simulation could not start: " + sim.error : !sim.hello ? "Loading MuJoCo and the policy…"
+        : S.step === 1 ? `${sim.title} policy on my targets · ${sim.wins}/${sim.episodes} solved` : `${sim.title} example · live in my browser · ${sim.wins}/${sim.episodes} solved`;
+      act += badge(S.step === 1 ? "policy" : "eval", S.step === 1 ? "Example policy" : "Evaluation") + pill(sim.error ? "err" : ok && !S.paused ? "on" : "", text + (S.paused ? " · paused" : ""));
+      if (ok) act += pause + `<button class="chip" type="button" data-sim-new title="Start a new episode">&#8635; New episode</button>`;
+      if (S.step === 1) act += `<button class="chip" type="button" data-sim-stop title="Stop the policy and edit the targets">&#9632; Stop · edit targets</button>`;
+    } else if (replayWanted()) {
+      const r = S.replay;
+      act += badge("eval", "Evaluation") + pill(r.error ? "err" : r.hello && !S.paused ? "on" : "", r.error ? "The recorded rollout could not load: " + r.error : r.hello ? `${r.title} example · recorded rollout` + (S.paused ? " · paused" : "") : "Loading the recorded rollout…");
+      if (r.hello) act += pause;
+    } else if (S.step <= 4 || (S.step === 5 && !S.backend)) {
+      act += badge("setup", "Task setup") + pill("", S.step === 1 ? "My task · arm at rest, no policy · drag the targets to place them" : "My task · arm at rest, no policy");
+      if (S.step === 1 && simExample()) act += `<button class="chip primary-chip" type="button" data-sim-play title="Runs the ${esc(simExample().title)} example policy in my browser on the target ranges set here">&#9654; Play example policy</button>`;
     }
-    if (simWanted()) act += `<span class="live-pill ${S.sim.error ? "err" : S.sim.hello ? "on" : ""}" role="status">${esc(S.sim.error ? "The simulation could not start: " + S.sim.error : S.sim.hello ? `Simulated in my browser · ${S.sim.title} · ${S.sim.wins}/${S.sim.episodes} solved` : "Loading MuJoCo and the policy…")}</span>${S.sim.step === 1 ? `<button class="chip" type="button" data-sim-stop>Stop</button>` : ""}`;
-    else if (S.step === 1 && simExample()) act += `<button class="chip" type="button" data-sim-play title="Runs the ${esc(simExample().title)} example policy in your browser on the target ranges set here">Play example policy</button>`;
-    else if (replayWanted()) act += `<span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${esc(S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…")}</span>`;
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
     // The glTF export is switched off for now (EXPORT_3D); its code stays, to be re-enabled later.
     if (EXPORT_3D && !window.claude) html += `<button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
@@ -1094,6 +1124,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     }));
     bar.querySelectorAll("[data-sim-play]").forEach((b) => b.addEventListener("click", () => { startSim(simExample(), 1); render(); }));
     bar.querySelectorAll("[data-sim-stop]").forEach((b) => b.addEventListener("click", () => { stopSim(); render(); }));
+    bar.querySelectorAll("[data-pause]").forEach((b) => b.addEventListener("click", () => { S.paused = true; renderSceneBar(); }));
+    bar.querySelectorAll("[data-play]").forEach((b) => b.addEventListener("click", () => { S.paused = false; renderSceneBar(); }));
+    bar.querySelectorAll("[data-sim-new]").forEach((b) => b.addEventListener("click", () => { if (S.sim && S.sim.engine) { S.sim.wait = 0; simReset(S.sim); S.paused = false; renderSceneBar(); } }));
     bar.querySelectorAll("[data-export]").forEach((b) => b.addEventListener("click", () => exportScene(b.dataset.export, b)));
   }
   function setMode(mode) {
@@ -1273,6 +1306,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   async function startSim(ex, step) {
     if (S.sim && S.sim.name === ex.name && S.sim.step === step) return;
     stopSim();
+    S.paused = false;
     const mine = (S.sim = { name: ex.name, title: ex.title, step, hello: null, wins: 0, episodes: 0, wait: 0, reached: ex.replay.hello.targets.map(() => 0) });
     try {
       const { TaskSim } = await import("./static/sim.js");
@@ -1296,7 +1330,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   // "3 of 3 episodes solved in this session", with the muscles' mean fatigue for tasks that model it
   const simStats = (sim) => `${sim.wins} of ${sim.episodes} episodes solved in this session` + (sim.engine && sim.engine.fatigue ? ` · mean fatigue ${sim.engine.meanFatigue.toFixed(2)} at the end of the last one` : "");
   function simTick(sim) {
-    if (S.sim !== sim || !simWanted() || !SC || sceneKeys.live !== sim.hello) return;
+    if (S.sim !== sim || !simWanted() || !SC || sceneKeys.live !== sim.hello || S.paused) return;
     if (sim.wait > 0) { if (--sim.wait === 0) simReset(sim); else return; }
     const done = sim.engine.step();
     sim.radii.forEach((r, k) => { if (sim.hello.targets[k].shape !== "box") SC.setLiveTargetRadius(k, r); });
@@ -1331,7 +1365,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function tickReplay() {
     const r = S.replay;
     if (!replayWanted() || !r.hello) { clearInterval(S.replayTimer); S.replayTimer = null; return; }
-    if (SC && sceneKeys.live === r.hello) { showFrame(r.frames.subarray(r.i * r.floats, (r.i + 1) * r.floats), r.hello, true); r.i = (r.i + 1) % r.n; }
+    if (SC && sceneKeys.live === r.hello && !S.paused) { showFrame(r.frames.subarray(r.i * r.floats, (r.i + 1) * r.floats), r.hello, true); r.i = (r.i + 1) % r.n; }
   }
   async function openExampleTask(name) {
     const preset = S.backend ? await api("/api/presets/" + encodeURIComponent(name)) : await (await fetch(`examples/${name}/preset.json`)).json();
@@ -1712,9 +1746,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       </div>`;
   const exampleNote = (ex) => [(MODELS.find((m) => m.id === ex.replay.hello.model) || {}).name, ex.summary && `${ex.summary.targets} target${ex.summary.targets === 1 ? "" : "s"}`, ex.training_steps && `trained for ${Math.round(ex.training_steps / 1e6)} M steps`, `evaluated on ${ex.evaluation.episodes} episodes`].filter(Boolean).join(" · ");
   function renderEvaluateExamples(ws) {
-    const ex = S.examples.find((e) => e.name === S.exampleSel) || S.examples[0];
+    // the example chosen here, else the one trained on the task in the editor, else the first
+    const ex = S.examples.find((e) => e.name === S.exampleSel) || S.examples.find((e) => e.name === S.preset) || S.examples[0];
+    const mine = ex.name === S.preset;
     ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
       <p class="demo-banner">Example policies, trained and evaluated in advance. Connect compute to evaluate your own runs.</p>
+      <p class="mode-note"><span class="mode-badge eval">Evaluation</span>${mine ? `The policy trained on my task (${esc(ex.title)}), on the task as it was trained.` : `The ${esc(ex.title)} example on <b>its own task</b>, not my setup. <a href="#" id="ex-open-note">Open its task in the editor</a> to work on it.`}</p>
       <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${esc(e.name)}" ${e === ex ? "selected" : ""}>${esc(e.title)}</option>`).join("")}</select>
         <span class="hint">${esc(exampleNote(ex))}</span></div>
       <div class="chips">${ex.sim ? `<span class="seg" role="group" aria-label="Playback"><button type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in my browser</button><button type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : `<span class="hint">The 3D view replays a recorded rollout.</span>`}<button class="btn small" type="button" id="ex-open">Open the task in the editor</button></div>
@@ -1735,6 +1772,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     ws.querySelectorAll("[data-eval-mode]").forEach((b) => b.addEventListener("click", () => { S.evalMode = b.dataset.evalMode; render(); }));
     if (ex.sim && S.evalMode === "live") startSim(ex, 6); else if (S.sim && S.sim.step === 6) stopSim();
     ws.querySelector("#ex-sel").addEventListener("change", (e) => { S.exampleSel = e.target.value; render(); });
+    ws.querySelector("#ex-open-note")?.addEventListener("click", (e) => { e.preventDefault(); ws.querySelector("#ex-open").click(); });
     ws.querySelector("#ex-open").addEventListener("click", () => openExampleTask(ex.name).catch((e) => { const m = $("ex-msg"); m.hidden = false; m.textContent = "Could not open the task: " + e.message; }));
     loadReplay(ex);
   }
@@ -2213,6 +2251,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     { step: 0, el: "#workspace", title: "1 · Body", text: "Pick the biomechanical user model: MyoArm or MoBL, with or without hand. Muscles, not motors, move every joint." },
     { step: 1, el: "#workspace", title: "2 · Task", text: "Place targets: spheres to point at, buttons to press. Every episode draws each target's position and size from its ranges; several targets make a sequence. A Figma frame or an image can serve as the screen." },
     { step: 1, el: "#stage", title: "The 3D view", text: "Drag targets and their regions here, switch the camera, show reach and muscles. \"Play example policy\" runs a trained policy on my target ranges, right in the browser." },
+    { step: 1, el: "#scene-bar", title: "What the 3D view shows", text: "The bar names it first: Task setup (my task, arm at rest), Example policy (a trained policy on my targets), Evaluation (an example on its task) or Live (a run on the backend), with Play, Pause and Stop beside it." },
     { step: 2, el: "#workspace", title: "3 · Sensing", text: "What the agent observes: joint angles and velocities, muscle states, the targets, optionally vision. Fewer signals usually train faster." },
     { step: 3, el: "#workspace", title: "4 · Reward", text: "The trade-off the agent learns: distance drives learning, bonuses make it finish, effort and other penalties shape how it moves." },
     { step: 4, el: "#workspace", title: "5 · Training", text: "The training budget and where it runs: my own GPU, Google Colab, a Hugging Face Space or a lab server. Runs can log to Weights & Biases as well." },
@@ -2300,6 +2339,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     ev.target.disabled = true;
     try {
       await openExampleTask("pointing");
+      S.exampleSel = "pointing";
       const ex = simExample();  // the example policy for these targets, played in the browser
       if (ex) { startSim(ex, 1); render(); }
     }
