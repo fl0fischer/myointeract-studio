@@ -68,7 +68,7 @@ h3 { font-size: 0.98rem; }
 p { margin: 0; }
 .mono { font-family: var(--font-mono); font-size: 0.85em; font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
-.eyebrow { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+.eyebrow { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
 
 /* nav */
 .nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
@@ -82,11 +82,11 @@ p { margin: 0; }
 #conn-text { overflow: hidden; text-overflow: ellipsis; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
 .pill.on .dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent); }
-.btn { font: inherit; font-weight: 600; font-size: 0.9rem; line-height: 1.3; text-decoration: none; display: inline-block; border-radius: 10px; padding: 7px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; transition: border-color 0.15s, filter 0.15s, background 0.15s; white-space: nowrap; }
+.btn { font: inherit; font-weight: 600; font-size: 0.84rem; line-height: 1.3; text-decoration: none; display: inline-block; border-radius: 9px; padding: 6px 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; transition: border-color 0.15s, filter 0.15s, background 0.15s; white-space: nowrap; }
 .btn:hover:not(:disabled) { border-color: color-mix(in srgb, var(--ink) 28%, var(--line)); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
 .btn.primary:hover:not(:disabled) { filter: brightness(1.07); }
-.btn.small { padding: 5px 10px; font-size: 0.82rem; border-radius: 8px; }
+.btn.small { padding: 4px 9px; font-size: 0.78rem; border-radius: 8px; }
 .btn:focus-visible, input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -115,14 +115,14 @@ p { margin: 0; }
 #stage::after { content: ""; position: absolute; inset: 0; background: var(--scene-dim); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
 #stage.dim::after { opacity: 1; }
 .stage-msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
-.overlay { position: absolute; inset: 14px 14px 68px; display: grid; grid-template-columns: 168px minmax(0, 440px) minmax(0, 1fr) 296px; grid-template-rows: minmax(0, 1fr); gap: 14px; align-items: start; pointer-events: none; }
+.overlay { position: absolute; inset: 12px 12px 64px; display: grid; grid-template-columns: 136px minmax(0, 392px) minmax(0, 1fr) 272px; grid-template-rows: minmax(0, 1fr); gap: 12px; align-items: start; pointer-events: none; }
 .overlay > * { pointer-events: auto; max-height: 100%; overflow: auto; scrollbar-width: thin; }
 .overlay > .gap { pointer-events: none; }
 .overlay .panel, .stepper, .scene-bar, .mcard { background: var(--glass); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); border: 1px solid color-mix(in srgb, var(--line) 85%, transparent); box-shadow: var(--shadow); }
-.stepper { display: grid; gap: 2px; padding: 6px; border-radius: var(--radius); }
-.stepper button { all: unset; cursor: pointer; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: center; padding: 7px 8px; border-radius: 9px; color: var(--muted); font-size: 0.92rem; font-weight: 500; }
+.stepper { display: grid; gap: 1px; padding: 5px; border-radius: var(--radius); }
+.stepper button { all: unset; cursor: pointer; display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: center; padding: 5px 7px; border-radius: 8px; color: var(--muted); font-size: 0.84rem; font-weight: 500; }
 .stepper button:hover { color: var(--ink); background: color-mix(in srgb, var(--surface) 55%, transparent); }
-.stepper button .n { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.72rem; background: var(--tint); }
+.stepper button .n { width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.62rem; background: var(--tint); }
 .stepper button[aria-current="step"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.05); }
 .stepper button[aria-current="step"] .n { background: var(--accent); color: var(--accent-ink); }
 .stepper button.done .n { background: color-mix(in srgb, var(--ok) 16%, var(--tint)); color: var(--ok); }
@@ -140,26 +140,26 @@ p { margin: 0; }
 .live-pill { font-size: 0.8rem; color: var(--muted); padding-inline: 6px; max-width: 100%; }
 .live-pill.on::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
 .live-pill.err { color: var(--warn); }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: grid; gap: 16px; min-width: 0; }
-.panel h2 { font-size: 1.22rem; }
-.panel-head { display: grid; gap: 3px; padding-right: 28px; }
-.lede { color: var(--muted); font-size: 0.92rem; }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 14px; }
-.field { display: grid; gap: 5px; min-width: 0; align-content: start; }
-.field label, .field .lab { font-weight: 600; font-size: 0.86rem; }
-.field .hint, .hint { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
-input[type="number"], input[type="text"], input[type="url"], input[type="password"], select { font: inherit; font-size: 0.9rem; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; min-height: 34px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 12px; min-width: 0; }
+.panel h2 { font-size: 1.06rem; }
+.panel-head { display: grid; gap: 2px; padding-right: 24px; }
+.lede { color: var(--muted); font-size: 0.82rem; line-height: 1.4; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 12px; }
+.field { display: grid; gap: 4px; min-width: 0; align-content: start; }
+.field label, .field .lab { font-weight: 600; font-size: 0.8rem; }
+.field .hint, .hint { font-size: 0.74rem; color: var(--muted); line-height: 1.35; }
+input[type="number"], input[type="text"], input[type="url"], input[type="password"], select { font: inherit; font-size: 0.84rem; padding: 4px 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; min-height: 30px; }
 input[type="range"] { width: 100%; accent-color: var(--accent); }
-.toggle-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.toggle-row { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
 .toggle-row input { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
-.toggle-row b { display: block; font-size: 0.88rem; }
-.toggle-row span { color: var(--muted); font-size: 0.8rem; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
-.card { all: unset; cursor: pointer; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 4px; align-content: start; background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
+.toggle-row b { display: block; font-size: 0.82rem; }
+.toggle-row span { color: var(--muted); font-size: 0.74rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.card { all: unset; cursor: pointer; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; display: grid; gap: 3px; align-content: start; background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
 .card:hover { border-color: color-mix(in srgb, var(--ink) 28%, var(--line)); }
 .card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.card b { font-family: var(--font-display); font-size: 0.9rem; }
-.card span { color: var(--muted); font-size: 0.8rem; line-height: 1.4; }
+.card b { font-family: var(--font-display); font-size: 0.84rem; }
+.card span { color: var(--muted); font-size: 0.74rem; line-height: 1.35; }
 .card .tag { justify-self: start; font-size: 0.66rem; padding: 1px 7px; border-radius: 999px; background: var(--tint); color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -169,16 +169,17 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .chip.tog[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
 .chip:disabled { opacity: 0.5; cursor: not-allowed; }
 .group-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.target { position: relative; cursor: pointer; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+.target { position: relative; cursor: pointer; border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
 .target-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-.target-head b { font-size: 0.92rem; }
+.target-head b { font-size: 0.86rem; }
 .swatch { width: 12px; height: 12px; border-radius: 4px; display: inline-block; vertical-align: -1px; margin-right: 6px; }
 .name-edit { border: 1px solid transparent; background: transparent; color: var(--muted); font-size: 0.82rem; width: 14ch; padding: 2px 4px; border-radius: 4px; }
 .name-edit:hover, .name-edit:focus { border-color: var(--line); color: inherit; background: var(--bg); outline: none; }
-.range2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.bound { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.bound > span { color: var(--muted); font-size: 0.74rem; }
-.bound input { flex: 1; min-width: 0; }
+/* a range as two boxes, minimum – maximum */
+.range2 { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px; align-items: center; }
+.range2 .to { color: var(--muted); font-size: 0.8rem; }
+.range2 input { padding-inline: 7px; appearance: textfield; -moz-appearance: textfield; }
+.range2 input::-webkit-inner-spin-button, .range2 input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .target.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .target.off { opacity: 0.55; background: rgba(127, 127, 127, 0.06); }
 /* two blocks of small icons at a card's top right: copy and paste, then order, on/off and remove */
@@ -189,24 +190,24 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .icon-btn:disabled { opacity: 0.3; cursor: default; }
 .target [data-row] { border-radius: 8px; outline: 1px solid transparent; outline-offset: 4px; }
 .target [data-row][data-rowsel] { outline-color: var(--accent); background: rgba(127, 127, 127, 0.07); }
-.screen-box, .tips, .wandb-box { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
-.screen-box summary, .tips summary, .panel details > summary { cursor: pointer; font-size: 0.88rem; }
-.tips { font-size: 0.82rem; color: var(--muted); }
+.screen-box, .tips, .wandb-box { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.screen-box summary, .tips summary, .panel details > summary { cursor: pointer; font-size: 0.82rem; }
+.tips { font-size: 0.78rem; color: var(--muted); }
 .tips ul { margin: 8px 0 2px; padding-left: 18px; display: grid; gap: 4px; }
 .foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 4px; }
-.save-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.save-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
 .save-row p { margin: 2px 0 0; font-size: 0.8rem; max-width: 46ch; }
-.wandb-box { display: grid; gap: 10px; }
+.wandb-box { display: grid; gap: 8px; }
 .wandb-head { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
-.wandb-head b { font-size: 0.9rem; }
+.wandb-head b { font-size: 0.84rem; }
 .wb-mark { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: #ffcc33; color: #1a1c1f; font-size: 0.62rem; font-weight: 800; font-family: var(--font-mono); margin-right: 8px; vertical-align: -5px; }
 
 /* summary */
-.summary { display: grid; gap: 12px; align-content: start; }
+.summary { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
 /* a hidden step panel keeps its grid cell, so the summary stays where it is */
 .overlay.step-closed #workspace { visibility: hidden; pointer-events: none; }
 .summary.closed .summary-body { display: none; }
-.summary .panel { padding: 16px; gap: 12px; position: relative; }
+.summary .panel { padding: 14px; gap: 10px; position: relative; }
 .summary .panel > .group-title { padding-right: 24px; }
 .summary-sec { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
 .summary-body { display: grid; gap: 12px; }
@@ -214,8 +215,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .min-btn { border: 0; background: none; color: var(--muted); font: inherit; font-size: 1.25rem; line-height: 1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
 .min-btn:hover, .min-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.15); }
 #workspace { position: relative; }
-#workspace > .min-btn, #summary-toggle, .dialog-close { position: absolute; top: 10px; right: 10px; z-index: 1; }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 0.84rem; margin: 0; }
+#workspace > .min-btn, #summary-toggle, .dialog-close { position: absolute; top: 8px; right: 8px; z-index: 1; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.8rem; margin: 0; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
 pre.code { margin: 0; font-family: var(--font-mono); font-size: 0.74rem; background: var(--tint); border-radius: 10px; padding: 10px 12px; max-height: 240px; overflow: auto; white-space: pre; }
@@ -226,12 +227,12 @@ details.json > summary { cursor: pointer; font-size: 0.8rem; color: var(--muted)
 .chart { width: 100%; height: auto; display: block; }
 .chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
 .chart .grid { stroke: var(--line); }
-.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; }
-.stat { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: color-mix(in srgb, var(--tint) 45%, var(--surface)); }
-.stat b { font-family: var(--font-display); font-size: 1.2rem; display: block; font-variant-numeric: tabular-nums; }
-.stat span { color: var(--muted); font-size: 0.78rem; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 6px; }
+.stat { border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px; background: color-mix(in srgb, var(--tint) 45%, var(--surface)); }
+.stat b { font-family: var(--font-display); font-size: 1.02rem; display: block; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 0.7rem; line-height: 1.25; display: block; }
 .log { font-family: var(--font-mono); font-size: 0.74rem; background: var(--tint); border-radius: 10px; padding: 10px 12px; max-height: 140px; overflow: auto; }
-.demo-banner { font-size: 0.82rem; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; }
+.demo-banner { font-size: 0.78rem; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; }
 .handoff { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
 .handoff h4 { margin: 0; font-family: var(--font-display); font-size: 0.95rem; }
 dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); padding: 22px; max-width: 520px; width: calc(100% - 32px); box-shadow: var(--shadow); }
@@ -241,11 +242,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .video-ph { aspect-ratio: 4 / 3; max-width: 100%; border-radius: 12px; background: linear-gradient(160deg, var(--tint), var(--line)); display: grid; place-items: center; color: var(--muted); font-size: 0.88rem; text-align: center; padding: 16px; }
 
 /* muscle activity card over the 3D view */
-.mcard { position: absolute; top: 14px; left: 50%; width: 296px; max-height: calc(100% - 96px); overflow: hidden auto; border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; font-size: 0.78rem; z-index: 2; scrollbar-width: thin; }
+.mcard { position: absolute; top: 14px; left: 50%; width: 296px; max-height: calc(100% - 96px); overflow: hidden auto; border-radius: 12px; padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; font-size: 0.78rem; z-index: 2; scrollbar-width: thin; }
+/* on wide screens the card heads the right column, above the summary, off the body */
+.summary > .mcard { position: static; width: auto; max-height: none; overflow: visible; }
 .mcard-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .mcard-head b { font-family: var(--font-display); font-size: 0.84rem; white-space: nowrap; }
 .mcard.closed .seg { display: none; }
-.mcard .min-btn { width: 22px; height: 22px; font-size: 1rem; }
+.mcard .min-btn { width: 22px; height: 22px; font-size: 1rem; flex: none; }
+.mcard .seg button { padding: 3px 8px; font-size: 0.76rem; }
 .mcard.closed .mcard-body { display: none; }
 .mcard-body { display: grid; gap: 7px; }
 .mbar, .mgroup { display: grid; grid-template-columns: minmax(0, 1fr) 84px 32px; gap: 8px; align-items: center; }
@@ -291,12 +295,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   .stepper { position: sticky; top: 0; z-index: 2; display: flex; gap: 2px; overflow-x: auto; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 6px 8px; scrollbar-width: none; }
   .stepper button { grid-template-columns: auto auto; gap: 6px; padding: 5px 9px; font-size: 0.82rem; white-space: nowrap; }
   .stepper button .n { width: 20px; height: 20px; font-size: 0.66rem; border-radius: 6px; }
-  #workspace { border: 0; border-radius: 0; padding: 14px 16px 18px; gap: 14px; }
+  #workspace { border: 0; border-radius: 0; padding: 12px 14px 16px; gap: 12px; }
   .overlay.step-closed #workspace, .overlay.step-closed .summary { display: none; }
   .summary { padding: 0 12px 14px; }
   .summary .panel { border-radius: 12px; }
-  .panel h2 { font-size: 1.06rem; }
-  .lede { font-size: 0.84rem; }
+  .panel h2 { font-size: 1rem; }
   .target .hint, .toggle-row > span > span { display: none; }
   .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   .card span:not(.tag) { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -655,8 +658,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function targetHtml(t, i) {
     const row = (key) => `data-row="${i}.${key}"${S.row && S.row.i === i && S.row.key === key ? ' data-rowsel="1"' : ""}`;
     const r = (key, label, hint, min, max, step) => `<div class="field" ${row(key)}><span class="lab">${label}</span><div class="range2">
-      <span class="bound"><span>min</span><input type="number" aria-label="${label} minimum" min="${min}" max="${max}" step="${step}" value="${esc(t[key][0])}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1"></span>
-      <span class="bound"><span>max</span><input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${esc(t[key][1])}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></span></div><span class="hint">${hint}</span></div>`;
+      <input type="number" aria-label="${label} minimum" min="${min}" max="${max}" step="${step}" value="${esc(t[key][0])}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1"><span class="to" aria-hidden="true">–</span>
+      <input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${esc(t[key][1])}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></div><span class="hint">${hint}</span></div>`;
     const num = targetNumber(i);
     const only = S.targets.length <= 1, lastOn = !t.disabled && liveTargets().length <= 1;
     const icon = (attr, title, glyph, off = false, cls = "") => `<button class="icon-btn${cls}" type="button" ${attr} title="${title}" aria-label="${title}" ${off ? "disabled" : ""}>${glyph}</button>`;
@@ -930,7 +933,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function sceneFocus() {
     if (!SC) return;
     const stage = $("stage").getBoundingClientRect();
-    if (getComputedStyle($("workspace").parentElement).position !== "absolute") { SC.setFocus(null); return; }
+    const wide = getComputedStyle($("workspace").parentElement).position === "absolute";
+    placeMuscleCard(wide);
+    if (!wide) { SC.setFocus(null); return; }
     const left = (S.stepOpen ? $("workspace") : $("stepper")).getBoundingClientRect().right - stage.left;
     const sum = $("summary").getBoundingClientRect();
     const right = (sum.width ? sum.left : stage.right) - stage.left;
@@ -940,8 +945,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const bar = $("scene-bar");
     bar.style.left = span ? `${(span[0] + span[1]) / 2}px` : "";
     bar.style.maxWidth = span ? `${span[1] - span[0] - 16}px` : "";
-    // The muscle card sits at the top right of the same gap.
-    $("mcard").style.left = span ? `${Math.max(span[0] + 8, span[1] - $("mcard").offsetWidth - 12)}px` : "";
+  }
+  // The muscle card: top of the right column on wide screens, a corner of the 3D view on narrow ones.
+  function placeMuscleCard(wide) {
+    const card = $("mcard");
+    if (wide && card.parentElement !== $("summary")) $("summary").prepend(card);
+    else if (!wide && card.parentElement !== $("studio")) $("scene-bar").after(card);
   }
   window.addEventListener("resize", sceneFocus);
   function setStepOpen(open) {
@@ -1145,7 +1154,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (full || card.hidden || !card.firstChild) {
       card.hidden = false;
       card.classList.toggle("closed", !S.mcard.open);
-      card.innerHTML = `<div class="mcard-head"><b>Muscle activity</b><span class="seg" role="group" aria-label="Muscle view"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn" type="button" data-mcard-min aria-label="${S.mcard.open ? "Minimise" : "Show"} the muscle activity" title="${S.mcard.open ? "Minimise" : "Show"}">${S.mcard.open ? "&ndash;" : "+"}</button></div><div class="mcard-body"></div>`;
+      card.innerHTML = `<div class="mcard-head"><b>Muscles</b><span class="seg" role="group" aria-label="Muscle view"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn" type="button" data-mcard-min aria-label="${S.mcard.open ? "Minimise" : "Show"} the muscle activity" title="${S.mcard.open ? "Minimise" : "Show"}">${S.mcard.open ? "&ndash;" : "+"}</button></div><div class="mcard-body"></div>`;
       if (S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = MM.groupsHtml(S.mus.meter, unit);
       sceneFocus();
     }
@@ -1596,7 +1605,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <div class="chips">${ex.sim ? `<span class="seg" role="group" aria-label="Playback"><button type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in your browser</button><button type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : `<span class="hint">The 3D view replays a recorded rollout.</span>`}<button class="btn small" type="button" id="ex-open">Open the task in the editor</button></div>
       <p class="err" id="ex-msg" hidden></p>
       ${statRow(ex.evaluation)}
-      ${ex.sim && S.evalMode === "live" ? `<p class="hint">Simulated in this page with MuJoCo: a new start pose and new targets every episode${ex.summary && ex.summary.fatigue ? ", from a random fatigue state" : ""}. <span id="sim-stats">${S.sim ? simStats(S.sim) : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">Reset</a></p><p class="hint">The card over the 3D view shows the muscles: the busiest ones live, the muscle groups per episode. "Play example policy" in the Task step runs it on your own target ranges.</p>` : ""}`));
+      ${ex.sim && S.evalMode === "live" ? `<p class="hint">Simulated in this page with MuJoCo: a new start pose and new targets every episode${ex.summary && ex.summary.fatigue ? ", from a random fatigue state" : ""}. <span id="sim-stats">${S.sim ? simStats(S.sim) : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">Reset</a></p><p class="hint">The Muscles card shows the busiest muscles live and the muscle groups per episode. "Play example policy" in the Task step runs it on your own target ranges.</p>` : ""}`));
     if (ws.querySelector("#sim-reset")) ws.querySelector("#sim-reset").addEventListener("click", (e) => {
       e.preventDefault();
       const sim = S.sim;
