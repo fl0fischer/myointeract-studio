@@ -147,7 +147,8 @@ p { margin: 0; }
 .scene-bar > * { flex: none; }
 .scene-bar .toggles { display: inline-flex; gap: 6px; }
 .scene-bar .seg button { padding: 4px 8px; }
-.scene-bar .act { display: flex; gap: 6px; align-items: center; justify-content: center; flex: 1 1 100%; }
+.scene-bar .act { display: flex; flex-direction: column; gap: 4px; align-items: center; flex: 1 1 100%; min-width: 0; }
+.scene-bar .act-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; max-width: 100%; min-width: 0; }
 .live-pill { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--tint); flex: none; }
 .seg button { all: unset; cursor: pointer; font-size: 0.8rem; font-weight: 500; padding: 4px 10px; border-radius: 7px; color: var(--muted); white-space: nowrap; }
@@ -1098,35 +1099,35 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const badge = (kind, label) => `<span class="mode-badge ${kind}">${label}</span>`;
     const pill = (cls, text) => `<span class="live-pill ${cls}" role="status">${esc(text)}</span>`;
     const pause = S.paused ? `<button class="chip" type="button" data-play>&#9654; Play</button>` : `<button class="chip" type="button" data-pause>&#10074;&#10074; Pause</button>`;
-    let act = "";
+    let status = "", ctrl = "";  // two rows: what plays, then its controls
     if (v && LIVE_STEPS.includes(S.step)) {
       const secs = v.t0 ? Math.round((Date.now() - v.t0) / 1000) : 0;
       const state = v.error ? ["err", `Live view failed: ${v.error}`]
         : v.busy ? ["", `Starting: building the task and loading the policy… ${secs} s`]
         : v.kind === "viser" ? ["", "Playing in the viser tab"]
         : S.live ? ["on", `${v.name || v.label} · ${S.liveStatus}`] : ["", "Connecting to the live view…"];
-      act += badge("live", "Live") + pill(state[0], state[1]);
-      act += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">&#9632; Stop</button>`;
+      status += badge("live", "Live") + pill(state[0], state[1]);
+      ctrl += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">&#9632; Stop</button>`;
     } else if (simWanted()) {
       const sim = S.sim, ok = sim.hello && !sim.error;
       const text = sim.error ? "The simulation could not start: " + sim.error : !sim.hello ? "Loading MuJoCo and the policy…"
         : S.step === 1 ? `${sim.title} policy on my targets · ${sim.wins}/${sim.episodes} solved` : `${sim.title} example · ${sim.wins}/${sim.episodes} solved`;
-      act += badge(S.step === 1 ? "policy" : "eval", S.step === 1 ? "Example policy" : "Evaluation") + pill(sim.error ? "err" : ok && !S.paused ? "on" : "", text + (S.paused ? " · paused" : ""));
-      if (ok) act += pause + `<button class="chip" type="button" data-sim-new title="Start a new episode">&#8635; New episode</button>`;
-      if (S.step === 1) act += `<button class="chip" type="button" data-sim-stop title="Stop the policy and edit the targets">&#9632; Stop · edit targets</button>`;
+      status += badge(S.step === 1 ? "policy" : "eval", S.step === 1 ? "Example policy" : "Evaluation") + pill(sim.error ? "err" : ok && !S.paused ? "on" : "", text + (S.paused ? " · paused" : ""));
+      if (ok) ctrl += pause + `<button class="chip" type="button" data-sim-new title="Start a new episode">&#8635; New episode</button>`;
+      if (S.step === 1) ctrl += `<button class="chip" type="button" data-sim-stop title="Stop the policy and edit the targets">&#9632; Stop · edit targets</button>`;
     } else if (replayWanted()) {
       const r = S.replay;
-      act += badge("eval", "Evaluation") + pill(r.error ? "err" : r.hello && !S.paused ? "on" : "", r.error ? "The recorded rollout could not load: " + r.error : r.hello ? `${r.title} example · recorded rollout` + (S.paused ? " · paused" : "") : "Loading the recorded rollout…");
-      if (r.hello) act += pause;
+      status += badge("eval", "Evaluation") + pill(r.error ? "err" : r.hello && !S.paused ? "on" : "", r.error ? "The recorded rollout could not load: " + r.error : r.hello ? `${r.title} example · recorded rollout` + (S.paused ? " · paused" : "") : "Loading the recorded rollout…");
+      if (r.hello) ctrl += pause;
     } else if (S.step <= 4 || (S.step === 5 && !S.backend)) {
-      act += badge("setup", "Task setup") + pill("", S.step === 1 ? "Static rest posture · drag the targets to place them" : "Static rest posture");
-      if (S.step === 1 && simExample()) act += `<button class="chip primary-chip" type="button" data-sim-play title="Runs the ${esc(simExample().title)} example policy in my browser on the target ranges set here">&#9654; Play example policy</button>`;
+      status += badge("setup", "Task setup") + pill("", S.step === 1 ? "Static rest posture · drag the targets to place them" : "Static rest posture");
+      if (S.step === 1 && simExample()) ctrl += `<button class="chip primary-chip" type="button" data-sim-play title="Runs the ${esc(simExample().title)} example policy in my browser on the target ranges set here">&#9654; Play example policy</button>`;
     }
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
     // The glTF export is switched off for now (EXPORT_3D); its code stays, to be re-enabled later.
     if (EXPORT_3D && !window.claude) html += `<button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
     if (S.backend) html += `<button class="chip" type="button" data-export="mjcf" title="The task as a MuJoCo model with its meshes (zip), e.g. for MuJoCo's Unity plug-in">MuJoCo</button>`;
-    if (act) html += `<span class="act">${act}</span>`;
+    if (status) html += `<span class="act"><span class="act-row">${status}</span>${ctrl ? `<span class="act-row">${ctrl}</span>` : ""}</span>`;
     if (S.sceneError) html += `<span class="live-pill err">${esc(S.sceneError)}</span>`;
     bar.innerHTML = html;
     bar.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => { S.view = b.dataset.view; SC.setView(S.view); renderSceneBar(); }));
