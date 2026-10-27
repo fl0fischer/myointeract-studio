@@ -553,7 +553,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
     view: "perspective", stepOpen: true, row: null, rowClip: null, clipKind: null, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
-    examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live", paused: false,
+    examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live", evalMetric: "success", paused: false,
   };
   const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl, targets: S.targets });
   // "This machine" and "Lab server" are one option now; wide screens remember a folded step panel, phones open it.
@@ -1093,7 +1093,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const modes = S.sel === "screen" ? [["translate", "Move" + key("M")], ["rotate", "Rotate" + key("R")]] : [["translate", "Move" + key("M")], ["scale", "Resize" + key("S")], ...(button ? [["rotate", "Rotate" + key("R")]] : [])];
       html += `<span class="sep"></span><span class="seg" role="group" aria-label="Edit mode">` + modes.map(([k, l]) => `<button type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${l}</button>`).join("") + `</span>`;
     }
-    // What the 3D view shows, always named first: the task at rest, a policy on my targets, an
+    // What the 3D view shows, always named first: the static rest posture, a policy on my targets, an
     // evaluation of an example task, or a backend's live view; with the controls that fit it.
     const badge = (kind, label) => `<span class="mode-badge ${kind}">${label}</span>`;
     const pill = (cls, text) => `<span class="live-pill ${cls}" role="status">${esc(text)}</span>`;
@@ -1110,7 +1110,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     } else if (simWanted()) {
       const sim = S.sim, ok = sim.hello && !sim.error;
       const text = sim.error ? "The simulation could not start: " + sim.error : !sim.hello ? "Loading MuJoCo and the policy…"
-        : S.step === 1 ? `${sim.title} policy on my targets · ${sim.wins}/${sim.episodes} solved` : `${sim.title} example · live in my browser · ${sim.wins}/${sim.episodes} solved`;
+        : S.step === 1 ? `${sim.title} policy on my targets · ${sim.wins}/${sim.episodes} solved` : `${sim.title} example · ${sim.wins}/${sim.episodes} solved`;
       act += badge(S.step === 1 ? "policy" : "eval", S.step === 1 ? "Example policy" : "Evaluation") + pill(sim.error ? "err" : ok && !S.paused ? "on" : "", text + (S.paused ? " · paused" : ""));
       if (ok) act += pause + `<button class="chip" type="button" data-sim-new title="Start a new episode">&#8635; New episode</button>`;
       if (S.step === 1) act += `<button class="chip" type="button" data-sim-stop title="Stop the policy and edit the targets">&#9632; Stop · edit targets</button>`;
@@ -1119,7 +1119,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       act += badge("eval", "Evaluation") + pill(r.error ? "err" : r.hello && !S.paused ? "on" : "", r.error ? "The recorded rollout could not load: " + r.error : r.hello ? `${r.title} example · recorded rollout` + (S.paused ? " · paused" : "") : "Loading the recorded rollout…");
       if (r.hello) act += pause;
     } else if (S.step <= 4 || (S.step === 5 && !S.backend)) {
-      act += badge("setup", "Task setup") + pill("", S.step === 1 ? "My task · arm at rest, no policy · drag the targets to place them" : "My task · arm at rest, no policy");
+      act += badge("setup", "Task setup") + pill("", S.step === 1 ? "Static rest posture · drag the targets to place them" : "Static rest posture");
       if (S.step === 1 && simExample()) act += `<button class="chip primary-chip" type="button" data-sim-play title="Runs the ${esc(simExample().title)} example policy in my browser on the target ranges set here">&#9654; Play example policy</button>`;
     }
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
@@ -1339,7 +1339,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       mine.hello = { model: ex.replay.hello.model, bodies: engine.info.bodies.map((n) => n.split("/").pop()), targets: ex.replay.hello.targets.map((t) => ({ ...t })), muscles: engine.muscleNames, joints: engine.jointInfo, ctrl_dt: engine.task.ctrl_dt };
       simReset(mine);
       mine.timer = setInterval(() => simTick(mine), 1000 * engine.task.ctrl_dt);
-    } catch (e) { mine.error = e.message; }
+    } catch (e) {
+      mine.error = e.message;
+      // Evaluate falls back to the example's recorded rollout
+      if (S.sim === mine && step === 6) { S.evalMode = "replay"; stopSim(); render(); return; }
+    }
     if (S.sim === mine) { syncScene(); renderSceneBar(); }
   }
   // Evaluate: targets as the example was trained. Task step: the ranges set in the editor (shoulder frame).
@@ -1762,26 +1766,64 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   const simTargetRates = (sim) => (sim && sim.episodes ? sim.reached.map((c) => c / sim.episodes) : null);
   const exampleTargets = (ex) => targetsHtml(ex.evaluation.targets_reached, ex.replay.hello.targets.map((t) => t.rgba), ex.sim && S.evalMode === "live" ? simTargetRates(S.sim) : null,
     `share of ${ex.evaluation.episodes} episodes${ex.sim && S.evalMode === "live" ? ' · <span class="tick-key"></span> this session' : ""}`);
-  const statRow = (res) => `<div class="stat-row">
-        <div class="stat" title="Deterministic policy on fresh episodes"><b>${res ? pct(res.success_rate) : "–"}</b><span>success rate</span></div>
-        <div class="stat"><b>${res && res.time_to_success_s != null ? res.time_to_success_s.toFixed(2) + " s" : "–"}</b><span>time to success</span></div>
-        <div class="stat"><b>${res ? res.mean_excitation.toFixed(2) : "–"}</b><span>mean excitation</span></div>
-        <div class="stat"><b>${res ? (res.final_mf == null ? "off" : res.final_mf.toFixed(2)) : "–"}</b><span>final fatigue (MF)</span></div>
-      </div>`;
+  // The evaluation tiles pick what is shown below them: the targets reached, or the spread over the episodes.
+  const EVAL_METRICS = [
+    ["success", "success rate", (r) => pct(r.success_rate)],
+    ["time", "time to success", (r) => (r.time_to_success_s != null ? r.time_to_success_s.toFixed(2) + " s" : "–"), "time_s", (v) => v.toFixed(2) + " s", "solved episodes"],
+    ["excitation", "mean excitation", (r) => r.mean_excitation.toFixed(2), "excitation", (v) => v.toFixed(2), "episodes"],
+    ["mf", "final fatigue (MF)", (r) => (r.final_mf == null ? "off" : r.final_mf.toFixed(2)), "final_mf", (v) => v.toFixed(2), "episodes"],
+  ];
+  const evalValues = (res, m) => (res && res.per_episode && res.per_episode[m[3]] ? res.per_episode[m[3]].filter((v) => v != null) : []);
+  const evalPick = (res, targets) => {
+    const can = (m) => !!res && (m[0] === "success" ? !!targets() : evalValues(res, m).length > 0);
+    return { can, sel: EVAL_METRICS.find((m) => m[0] === S.evalMetric && can(m)) || EVAL_METRICS.find(can) };
+  };
+  // Histogram of one metric over the evaluated episodes, with its mean.
+  function evalHist(res, m) {
+    const [, label, , , show, of] = m, vals = evalValues(res, m), n = vals.length, bins = 20;
+    const W = 380, H = 130, L = 34, R = 8, T = 8, B = 22;
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (hi - lo < 1e-9) { lo -= 0.05; hi += 0.05; }
+    const counts = new Array(bins).fill(0);
+    for (const v of vals) counts[Math.min(bins - 1, Math.floor(((v - lo) / (hi - lo)) * bins))]++;
+    const top = Math.max(...counts) / n, mean = vals.reduce((a, b) => a + b, 0) / n;
+    const xs = (v) => L + ((v - lo) / (hi - lo)) * (W - L - R), ys = (f) => T + (1 - f / top) * (H - T - B), bw = (W - L - R) / bins;
+    let out = "";
+    for (let k = 0; k <= 2; k++) { const f = (k / 2) * top, y = ys(f); out += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${Math.round(f * 100)}%</text>`; }
+    counts.forEach((c, k) => { if (c) out += `<rect x="${(L + k * bw + 1).toFixed(1)}" y="${ys(c / n).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${(H - B - ys(c / n)).toFixed(1)}" rx="2" style="fill:var(--accent);opacity:0.75"><title>${show(lo + (k * (hi - lo)) / bins)} to ${show(lo + ((k + 1) * (hi - lo)) / bins)}: ${c} of ${n}</title></rect>`; });
+    out += `<line x1="${xs(mean)}" x2="${xs(mean)}" y1="${T}" y2="${H - B}" style="stroke:var(--ink);stroke-width:2;stroke-dasharray:4 3;opacity:0.6"/>`;
+    out += `<text x="${L}" y="${H - 8}">${show(lo)}</text><text x="${W - R}" y="${H - 8}" text-anchor="end">${show(hi)}</text>`;
+    return `<div class="tgt-box"><div class="group-title"><b>${label[0].toUpperCase() + label.slice(1)}</b><span class="hint">share of ${n} ${of} · dashed: mean ${show(mean)}</span></div><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label} per episode">${out}</svg></div>`;
+  }
+  const evalDetail = (res, targets) => { const { sel } = evalPick(res, targets); return !sel ? "" : sel[0] === "success" ? targets() : evalHist(res, sel); };
+  // `targets` gives the targets-reached box (re-read on every click, so the session tick stays fresh).
+  const statRow = (res, targets = () => "") => {
+    const { can, sel } = evalPick(res, targets);
+    return `<div class="stat-row">${EVAL_METRICS.map((m) => {
+      const inner = `<b>${res ? m[2](res) : "–"}</b><span>${m[1]}</span>`;
+      return can(m) ? `<button class="stat stat-btn" type="button" data-eval-metric="${m[0]}" aria-pressed="${m === sel}" title="${m[0] === "success" ? "Show the targets reached" : "Show its spread over the episodes"}">${inner}</button>` : `<div class="stat">${inner}</div>`;
+    }).join("")}</div><div id="ev-detail">${evalDetail(res, targets)}</div>`;
+  };
+  function bindEvalTiles(ws, res, targets) {
+    ws.querySelectorAll("[data-eval-metric]").forEach((b) => b.addEventListener("click", () => {
+      S.evalMetric = b.dataset.evalMetric;
+      ws.querySelectorAll("[data-eval-metric]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      $("ev-detail").innerHTML = evalDetail(res, targets);
+    }));
+  }
   const exampleNote = (ex) => [(MODELS.find((m) => m.id === ex.replay.hello.model) || {}).name, ex.summary && `${ex.summary.targets} target${ex.summary.targets === 1 ? "" : "s"}`, ex.training_steps && `trained for ${Math.round(ex.training_steps / 1e6)} M steps`, `evaluated on ${ex.evaluation.episodes} episodes`].filter(Boolean).join(" · ");
   function renderEvaluateExamples(ws) {
     // the example chosen here, else the one trained on the task in the editor, else the first
     const ex = S.examples.find((e) => e.name === S.exampleSel) || S.examples.find((e) => e.name === S.preset) || S.examples[0];
-    const mine = ex.name === S.preset;
+    const mine = ex.name === S.preset, exTargets = () => exampleTargets(ex);
     ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
       <p class="demo-banner">Example policies, trained and evaluated in advance. <button class="link-btn" type="button" data-connect>Connect compute</button> to evaluate your own runs.</p>
-      <p class="mode-note"><span class="mode-badge eval">Evaluation</span>${mine ? `The policy trained on my task (${esc(ex.title)}), on the task as it was trained.` : `The ${esc(ex.title)} example on <b>its own task</b>, not my setup. <a href="#" id="ex-open-note">Open its task in the editor</a> to work on it.`}</p>
+      <p class="mode-note"><span class="mode-badge eval">Evaluation</span>${mine ? `The ${esc(ex.title)} policy, on the task it was trained on.` : `The ${esc(ex.title)} example on <b>its own task</b>, not the one in the editor. <a href="#" id="ex-open-note">Open its task in the editor</a> to work on it.`}</p>
       <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${esc(e.name)}" ${e === ex ? "selected" : ""}>${esc(e.title)}</option>`).join("")}</select>
         <span class="hint">${esc(exampleNote(ex))}</span></div>
-      <div class="chips">${ex.sim ? `<span class="seg" role="group" aria-label="Playback"><button type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in my browser</button><button type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : `<span class="hint">The 3D view replays a recorded rollout.</span>`}<button class="btn small" type="button" id="ex-open">Open the task in the editor</button></div>
+      <div class="chips">${ex.sim && S.evalMode === "live" ? "" : `<span class="hint">The 3D view replays a recorded rollout.</span>`}<button class="btn small" type="button" id="ex-open">Open the task in the editor</button></div>
       <p class="err" id="ex-msg" hidden></p>
-      ${statRow(ex.evaluation)}
-      ${exampleTargets(ex)}
+      ${statRow(ex.evaluation, exTargets)}
       ${ex.sim && S.evalMode === "live" ? `<p class="hint">Simulated in this page with MuJoCo: a new start pose and new targets every episode${ex.summary && ex.summary.fatigue ? ", from a random fatigue state" : ""}. <span id="sim-stats">${S.sim ? simStats(S.sim) : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">Reset</a></p><p class="hint">The Muscles card shows the busiest muscles live and the muscle groups per episode. "Play example policy" in the Task step runs it on your own target ranges.</p>` : ""}`));
     if (ws.querySelector("#sim-reset")) ws.querySelector("#sim-reset").addEventListener("click", (e) => {
       e.preventDefault();
@@ -1793,8 +1835,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       $("sim-stats").textContent = "0 of 0 episodes solved in this session";
       renderSceneBar();
     });
-    ws.querySelectorAll("[data-eval-mode]").forEach((b) => b.addEventListener("click", () => { S.evalMode = b.dataset.evalMode; render(); }));
     if (ex.sim && S.evalMode === "live") startSim(ex, 6); else if (S.sim && S.sim.step === 6) stopSim();
+    bindEvalTiles(ws, ex.evaluation, exTargets);
     ws.querySelector("#ex-sel").addEventListener("change", (e) => { S.exampleSel = e.target.value; render(); });
     ws.querySelector("#ex-open-note")?.addEventListener("click", (e) => { e.preventDefault(); ws.querySelector("#ex-open").click(); });
     ws.querySelector("#ex-open").addEventListener("click", () => openExampleTask(ex.name).catch((e) => { const m = $("ex-msg"); m.hidden = false; m.textContent = "Could not open the task: " + e.message; }));
@@ -1832,6 +1874,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     // An example shows its stored evaluation until it is evaluated again here.
     const stored = !!(run && run.example && !ev.busy && !(ev.result && ev.label && ev.label.startsWith(run.id + " ·")));
     const res = stored ? run.example.evaluation : ev.result;
+    const resTargets = () => (res ? targetsHtml(res.targets_reached, (run && run.example ? run.example.replay.hello.targets : S.live ? S.live.targets : []).map((t) => t.rgba), null, `share of ${res.episodes} episodes`) : "");
     const opt = (r) => `<option value="${esc(r.id)}" ${run && r.id === run.id ? "selected" : ""}>${esc(r.name)}${runSummary(r) ? " · " + esc(runSummary(r)) : ""} · ${r.checkpoints.length} checkpoint${r.checkpoints.length === 1 ? "" : "s"}</option>`;
     const group = (label, list) => (list.length ? `<optgroup label="${label}">${list.map(opt).join("")}</optgroup>` : "");
     ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
@@ -1845,10 +1888,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       </div>
       ${ev.error ? `<p class="err">${esc(ev.error)}</p>` : ""}
       ${stored ? `<p class="muted">Stored result of this example; Evaluate runs it again on this machine.</p>` : res && ev.label ? `<p class="muted">Result for ${esc(ev.label)}</p>` : ""}
-      ${statRow(res)}
-      ${res ? targetsHtml(res.targets_reached, (run && run.example ? run.example.replay.hello.targets : S.live ? S.live.targets : []).map((t) => t.rgba), null, `share of ${res.episodes} episodes`) : ""}
+      ${statRow(res, resTargets)}
       ${res && res.video ? `<video class="media" src="${esc(S.backend)}/api/jobs/${encodeURIComponent(ev.id)}/files/${encodeURIComponent(res.video)}" controls autoplay muted loop playsinline></video>` : ""}`));
     const runSel = ws.querySelector("#ev-run"), ckSel = ws.querySelector("#ev-ckpt");
+    bindEvalTiles(ws, res, resTargets);
     runSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: null }; S.viewerClosed = false; render(); });
     ckSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: ckSel.value }; });
     if (ws.querySelector("#ev-open")) ws.querySelector("#ev-open").addEventListener("click", (e) => { e.preventDefault(); openExampleTask(run.example.name).catch((err) => { S.evalJob = { ...ev, error: err.message }; render(); }); });
@@ -2282,7 +2325,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     { step: 0, el: "#workspace", title: "1 · Body", text: "Pick the biomechanical user model: MyoArm or MoBL, with or without hand. Muscles, not motors, move every joint." },
     { step: 1, el: "#workspace", title: "2 · Task", text: "Place targets: spheres to point at, buttons to press. Every episode draws each target's position and size from its ranges; several targets make a sequence. A Figma frame or an image can serve as the screen." },
     { step: 1, el: "#stage", title: "The 3D view", text: "Drag targets and their regions here, switch the camera, show reach and muscles. \"Play example policy\" runs a trained policy on my target ranges, right in the browser." },
-    { step: 1, el: "#scene-bar", title: "What the 3D view shows", text: "The bar names it first: Task setup (my task, arm at rest), Example policy (a trained policy on my targets), Evaluation (an example on its task) or Live (a run on the backend), with Play, Pause and Stop beside it." },
+    { step: 1, el: "#scene-bar", title: "What the 3D view shows", text: "The bar names it first: Task setup (static rest posture), Example policy (a trained policy on my targets), Evaluation (an example on its task) or Live (a run on the backend), with Play, Pause and Stop beside it." },
     { step: 2, el: "#workspace", title: "3 · Sensing", text: "What the agent observes: joint angles and velocities, muscle states, the targets, optionally vision. Fewer signals usually train faster." },
     { step: 3, el: "#workspace", title: "4 · Reward", text: "The trade-off the agent learns: distance drives learning, bonuses make it finish, effort and other penalties shape how it moves." },
     { step: 4, el: "#workspace", title: "5 · Training", text: "The training budget and where it runs: my GPU machine (this computer or a lab server over SSH), Google Colab or a Hugging Face Space. Runs can log to Weights & Biases as well." },
