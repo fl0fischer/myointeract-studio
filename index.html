@@ -278,11 +278,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .mcard { position: absolute; top: 14px; left: 50%; width: 296px; max-height: calc(100% - 96px); overflow: hidden auto; border-radius: 12px; padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; font-size: 0.78rem; z-index: 2; scrollbar-width: thin; }
 /* on wide screens the card heads the right column, above the summary, off the body */
 .summary > .mcard { position: static; width: auto; max-height: none; overflow: visible; }
-.mcard-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mcard-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.mcard-head .seg { margin-left: auto; }
 .mcard-head b { font-family: var(--font-display); font-size: 0.84rem; white-space: nowrap; }
 .mcard.closed .seg { display: none; }
 .mcard .min-btn { width: 24px; height: 24px; font-size: 1rem; flex: none; }
-.mcard .seg button { padding: 3px 8px; font-size: 0.76rem; }
+.mcard .seg button { padding: 3px 6px; font-size: 0.74rem; }
 .mcard.closed .mcard-body { display: none; }
 .mcard-body { display: grid; gap: 7px; }
 .mbar, .mgroup { display: grid; grid-template-columns: minmax(0, 1fr) 84px 32px; gap: 8px; align-items: center; }
@@ -304,10 +305,13 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .tgt-row .mono { text-align: right; color: var(--muted); }
 .ood-box ul { margin: 0; padding-left: 16px; font-size: 0.72rem; display: grid; gap: 2px; overflow-wrap: anywhere; }
 /* joints: the band is a range of angles, the dot the angle now (red at a limit) */
-.mcard-kind { all: unset; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 0.84rem; padding-right: 14px; background: linear-gradient(45deg, transparent 50%, var(--muted) 50%) right 3px center / 5px 5px no-repeat, linear-gradient(-45deg, transparent 50%, var(--muted) 50%) right 0 center / 5px 5px no-repeat; }
-.mcard-kind:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.mcard-kinds { display: inline-flex; align-items: center; gap: 1px; }
+.mcard-kinds b { min-width: 3.7em; text-align: center; }
+.kind-arrow { all: unset; cursor: pointer; width: 14px; height: 18px; display: grid; place-items: center; border-radius: 5px; color: var(--muted); font-size: 0.95rem; line-height: 1; }
+.kind-arrow:hover { color: var(--ink); background: var(--tint); }
+.kind-arrow:focus-visible { outline: 2px solid var(--accent); }
 .jtrack { overflow: visible; }
-.mbar.jrow, .mgroup.jrow { grid-template-columns: minmax(0, 1fr) 64px 34px; }
+.mbar.jrow, .mgroup.jrow { grid-template-columns: minmax(0, 1fr) 84px 34px; }
 .jband { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: color-mix(in srgb, var(--accent) 30%, transparent); }
 .jdot, .jdot-key { position: absolute; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1.5px var(--surface); }
 .jdot.limit { background: var(--warn); }
@@ -358,6 +362,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   .mcard.closed { width: auto; }
   .mbar, .mgroup { grid-template-columns: minmax(0, 1fr) 58px 26px; gap: 6px; }
   .mgroups.with-fatigue .mgroup { grid-template-columns: minmax(0, 1fr) 48px 26px 26px; }
+  .mbar.jrow, .mgroup.jrow { grid-template-columns: minmax(0, 1fr) 58px 30px; }
+  .mcard .seg button { padding: 3px 4px; font-size: 0.68rem; }
+  .mcard-head { gap: 4px; }
+  .mcard-kinds b { min-width: 3.3em; }
 }
 @media (max-width: 480px) { .brand .wide { display: none; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -1273,15 +1281,16 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const kind = kinds.some((k) => k[0] === S.mcard.kind) ? S.mcard.kind : kinds[0][0];
     const unit = S.mus.windowed ? `${MUSCLE_WINDOW_S} s` : "episode";
     const n = matchMedia("(max-width: 1100px)").matches ? 5 : 8;
-    // The header (with the muscles / joints menu) is rebuilt only when it changes, so an open menu
-    // stays open across episode ends; the table below is refreshed then.
+    // The header (muscles / joints arrows, view, fold) is rebuilt only when it changes, so its
+    // buttons keep focus across episode ends; the table below is refreshed then.
     const headKey = [S.mus.hello && S.mus.hello.bodies.length, kinds.map((k) => k[0]).join(), kind, S.mcard.view, S.mcard.open, unit].join("|");
     if (card.hidden || !card.firstChild || card.dataset.head !== headKey) {
       card.dataset.head = headKey;
       card.hidden = false;
       card.classList.toggle("closed", !S.mcard.open);
+      const at = kinds.findIndex((k) => k[0] === kind), other = (d) => kinds[(at + d + kinds.length) % kinds.length][1];
       const title = kinds.length > 1
-        ? `<select class="mcard-kind" aria-label="Show muscles or joints">${kinds.map(([k, l]) => `<option value="${k}" ${k === kind ? "selected" : ""}>${l}</option>`).join("")}</select>`
+        ? `<span class="mcard-kinds"><button class="kind-arrow" type="button" data-mkind="-1" aria-label="Show ${other(-1)}" title="${other(-1)}">&#8249;</button><b>${kinds[at][1]}</b><button class="kind-arrow" type="button" data-mkind="1" aria-label="Show ${other(1)}" title="${other(1)}">&#8250;</button></span>`
         : `<b>${kinds[0][1]}</b>`;
       card.innerHTML = `<div class="mcard-head">${title}<span class="seg" role="group" aria-label="View"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn fold-btn" type="button" data-mcard-min aria-expanded="${S.mcard.open}" aria-label="${S.mcard.open ? "Fold" : "Unfold"} the card" title="${S.mcard.open ? "Fold" : "Unfold"}">${foldIcon(S.mcard.open)}</button></div><div class="mcard-body"></div>`;
       full = true;
@@ -1295,16 +1304,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     }
   }
   $("mcard").addEventListener("click", (ev) => {
-    const v = ev.target.closest("[data-mview]");
+    const v = ev.target.closest("[data-mview]"), step = ev.target.closest("[data-mkind]");
     if (v) S.mcard.view = v.dataset.mview;
     else if (ev.target.closest("[data-mcard-min]")) S.mcard.open = !S.mcard.open;
-    else return;
-    try { localStorage.setItem("studio-mcard", JSON.stringify(S.mcard)); } catch (e) {}
-    renderMuscleCard(true);
-  });
-  $("mcard").addEventListener("change", (ev) => {
-    if (!ev.target.matches(".mcard-kind")) return;
-    S.mcard.kind = ev.target.value;
+    else if (step) {  // previous / next of muscles, joints
+      const kinds = ["muscles", "joints"].filter((k) => (k === "muscles" ? S.mus?.meter : S.mus?.jmeter));
+      const at = Math.max(0, kinds.indexOf(S.mcard.kind));
+      S.mcard.kind = kinds[(at + +step.dataset.mkind + kinds.length) % kinds.length];
+    } else return;
     try { localStorage.setItem("studio-mcard", JSON.stringify(S.mcard)); } catch (e) {}
     renderMuscleCard(true);
   });
@@ -1819,7 +1826,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const ex = S.examples.find((e) => e.name === S.exampleSel) || S.examples.find((e) => e.name === S.preset) || S.examples[0];
     const mine = ex.name === S.preset, exTargets = () => exampleTargets(ex);
     ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
-      <p class="demo-banner">Example policies, trained and evaluated in advance. <button class="link-btn" type="button" data-connect>Connect compute</button> to evaluate your own runs.</p>
+      <p class="demo-banner">Example policies, trained and evaluated in advance. <button class="link-btn" type="button" data-connect>Connect compute</button> to evaluate your own runs, or any policy on the setup in the editor (out of distribution).</p>
       <p class="mode-note"><span class="mode-badge eval">Evaluation</span>${mine ? `The ${esc(ex.title)} policy, on the task it was trained on.` : `The ${esc(ex.title)} example on <b>its own task</b>, not the one in the editor. <a href="#" id="ex-open-note">Open its task in the editor</a> to work on it.`}</p>
       <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${esc(e.name)}" ${e === ex ? "selected" : ""}>${esc(e.title)}</option>`).join("")}</select>
         <span class="hint">${esc(exampleNote(ex))}</span></div>
