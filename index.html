@@ -302,6 +302,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .tgt-box b { font-size: 0.82rem; }
 .tgt-row { display: grid; grid-template-columns: 76px minmax(0, 1fr) 40px; gap: 8px; align-items: center; font-size: 0.76rem; }
 .tgt-row .mono { text-align: right; color: var(--muted); }
+.ood-box ul { margin: 0; padding-left: 16px; font-size: 0.72rem; display: grid; gap: 2px; overflow-wrap: anywhere; }
 /* joints: the band is a range of angles, the dot the angle now (red at a limit) */
 .mcard-kind { all: unset; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 0.84rem; padding-right: 14px; background: linear-gradient(45deg, transparent 50%, var(--muted) 50%) right 3px center / 5px 5px no-repeat, linear-gradient(-45deg, transparent 50%, var(--muted) 50%) right 0 center / 5px 5px no-repeat; }
 .mcard-kind:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
@@ -554,7 +555,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     rl: { steps: 10_000_000, envs: 1024, unroll: 10, minibatches: 8, epochs: 8, ckpt: 30, seed: 14 },
     run: null, preview: null, evalJob: null, runs: [], presets: [], sel: null, clip: null, viewer: null,
     view: "perspective", stepOpen: true, row: null, rowClip: null, clipKind: null, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
-    examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live", evalMetric: "success", paused: false,
+    examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live", evalMetric: "success", evalTask: "trained", paused: false,
   };
   const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl, targets: S.targets });
   // "This machine" and "Lab server" are one option now; wide screens remember a folded step panel, phones open it.
@@ -1873,8 +1874,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const choices = following ? [FOLLOW, ...ckpts] : ckpts;
     const ckpt = ev.checkpoint && choices.includes(ev.checkpoint) ? ev.checkpoint : choices[0];
     // An example shows its stored evaluation until it is evaluated again here.
-    const stored = !!(run && run.example && !ev.busy && !(ev.result && ev.label && ev.label.startsWith(run.id + " ·")));
-    const res = stored ? run.example.evaluation : ev.result;
+    const stored = !!(run && run.example && !ev.busy && S.evalTask === "trained" && !(ev.result && !ev.ood && ev.label && ev.label.startsWith(run.id + " ·")));
+    // a result only stands for the task it ran on (as trained, or the setup in the editor)
+    const res = stored ? run.example.evaluation : ev.result && !!ev.ood === (S.evalTask === "editor") ? ev.result : null;
     const resTargets = () => (res ? targetsHtml(res.targets_reached, (run && run.example ? run.example.replay.hello.targets : S.live ? S.live.targets : []).map((t) => t.rgba), null, `share of ${res.episodes} episodes`) : "");
     const opt = (r) => `<option value="${esc(r.id)}" ${run && r.id === run.id ? "selected" : ""}>${esc(r.name)}${runSummary(r) ? " · " + esc(runSummary(r)) : ""} · ${r.checkpoints.length} checkpoint${r.checkpoints.length === 1 ? "" : "s"}</option>`;
     const group = (label, list) => (list.length ? `<optgroup label="${label}">${list.map(opt).join("")}</optgroup>` : "");
@@ -1884,17 +1886,21 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         <div class="field"><label for="ev-run">Run</label><select id="ev-run">${runs.length ? group("Training now", live) + group("Started in Studio", studio) + group("Other runs (logs/rsl_rl)", other) + group("Example policies", examples) : "<option>No runs with checkpoints yet</option>"}</select>
           <span class="hint">${run && run.example ? `${esc(exampleNote(run.example))} · <a href="#" id="ev-open">open its task in the editor</a>` : run ? esc(`${run.status}${run.log_dir ? " · " + run.log_dir.split("/").slice(-2).join("/") : ""}`) : ""} · <a href="#" id="ev-refresh">refresh</a></span></div>
         <div class="field"><label for="ev-ckpt">Checkpoint</label><select id="ev-ckpt" ${choices.length ? "" : "disabled"}>${choices.length ? choices.map((c, i) => `<option value="${esc(c)}" ${c === ckpt ? "selected" : ""}>${c === FOLLOW ? "Newest · follows training" : esc(ckptLabel(c, run, c === ckpts[0]))}</option>`).join("") : "<option>Waiting for the first checkpoint…</option>"}</select></div>
+        <div class="field"><label for="ev-task">Task</label><select id="ev-task">${[["trained", "As trained"], ["editor", "Setup in the editor (out of distribution)"]].map(([k, l]) => `<option value="${k}" ${S.evalTask === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+          <span class="hint">${S.evalTask === "editor" ? `The targets and episode length from the Task step; the run keeps its body model, timing and observations. <a href="#" data-go-step="1">Edit the targets</a>` : "The task the run was trained on."}</span></div>
         <div class="field"><label for="ev-eps">Episodes</label><select id="ev-eps">${[64, 256, 1024].map((n) => `<option ${n === (ev.episodes || 64) ? "selected" : ""}>${n}</option>`).join("")}</select></div>
         <div class="field"><span class="lab">&nbsp;</span><div class="chips"><button class="btn primary" type="button" id="ev-go" ${ckpts.length && !ev.busy ? "" : "disabled"}>${ev.busy ? "Evaluating…" : "Evaluate"}</button></div><span class="hint">Success rate and effort over many episodes; the 3D view plays the policy live (<a href="#" id="ev-viser">or in the viser viewer</a>).</span></div>
       </div>
       ${ev.error ? `<p class="err">${esc(ev.error)}</p>` : ""}
       ${stored ? `<p class="muted">Stored result of this example; Evaluate runs it again on this machine.</p>` : res && ev.label ? `<p class="muted">Result for ${esc(ev.label)}</p>` : ""}
+      ${res && res.task_changes ? oodHtml(res.task_changes) : ""}
       ${statRow(res, resTargets)}
       ${res && res.video ? `<video class="media" src="${esc(S.backend)}/api/jobs/${encodeURIComponent(ev.id)}/files/${encodeURIComponent(res.video)}" controls autoplay muted loop playsinline></video>` : ""}`));
     const runSel = ws.querySelector("#ev-run"), ckSel = ws.querySelector("#ev-ckpt");
     bindEvalTiles(ws, res, resTargets);
     runSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: null }; S.viewerClosed = false; render(); });
     ckSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: ckSel.value }; });
+    ws.querySelector("#ev-task").addEventListener("change", (e) => { S.evalTask = e.target.value; S.viewerClosed = false; render(); });
     if (ws.querySelector("#ev-open")) ws.querySelector("#ev-open").addEventListener("click", (e) => { e.preventDefault(); openExampleTask(run.example.name).catch((err) => { S.evalJob = { ...ev, error: err.message }; render(); }); });
     ws.querySelector("#ev-refresh").addEventListener("click", (e) => { e.preventDefault(); loadRuns(true); });
     ws.querySelectorAll("[data-go-step]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); go(+a.dataset.goStep); }));
@@ -1914,18 +1920,25 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     clearTimeout(S.evalPoll);
     if (S.runs.some(isLive) || (S.run && S.run.active)) S.evalPoll = setTimeout(() => { if (S.step === 6 && !(S.evalJob && S.evalJob.busy)) loadRuns(true); }, 8000);
   }
-  const viewerBody = (run, ckpt) => (ckpt === FOLLOW || !ckpt ? { run: run.id, follow: true } : { run: run.id, checkpoint: ckpt });
+  // With "Setup in the editor" the run's policy plays on the editor's targets (out of distribution).
+  const viewerBody = (run, ckpt) => ({ ...(ckpt === FOLLOW || !ckpt ? { run: run.id, follow: true } : { run: run.id, checkpoint: ckpt }), ...(S.evalTask === "editor" ? { preset: toPreset() } : {}) });
   function showRunInViewer(run, ckpt) {
-    openViewer(viewerBody(run, ckpt), 6, `${run.name} · ${ckpt === FOLLOW || !ckpt ? "follows training" : ckpt}`, run.name);
+    const where = S.evalTask === "editor" ? " · setup in the editor" : "";
+    openViewer(viewerBody(run, ckpt), 6, `${run.name} · ${ckpt === FOLLOW || !ckpt ? "follows training" : ckpt}${where}`, run.name + where);
+  }
+  // What the editor's setup changes against the run's training (the worker's task_changes).
+  function oodHtml(changes) {
+    const rows = changes.slice(0, 8).map((c) => `<li class="mono">${esc(c)}</li>`).join("") + (changes.length > 8 ? `<li class="muted">and ${changes.length - 8} more</li>` : "");
+    return `<div class="tgt-box ood-box"><div class="group-title"><b>Out of distribution</b><span class="hint">${changes.length ? `the setup in the editor, ${changes.length} change${changes.length === 1 ? "" : "s"} from training` : "the setup in the editor matches the trained one"}</span></div>${changes.length ? `<ul>${rows}</ul>` : ""}</div>`;
   }
   async function evaluateCheckpoint(run, checkpoint, episodes) {
-    const label = `${run} · ${checkpoint}`;
+    const ood = S.evalTask === "editor", label = `${run} · ${checkpoint}${ood ? " · setup in the editor" : ""}`;
     S.evalJob = { run, checkpoint, episodes, busy: true };
     render();
     try {
-      const job = await pollJob((await api("/api/evaluations", { method: "POST", body: { run, checkpoint, episodes, video_seconds: 0 } })).id);
+      const job = await pollJob((await api("/api/evaluations", { method: "POST", body: { run, checkpoint, episodes, video_seconds: 0, ...(ood ? { preset: toPreset() } : {}) } })).id);
       if (job.status !== "done") throw new Error(job.log.split("\n").slice(-3).join(" ") || "evaluation failed");
-      S.evalJob = { run, checkpoint, episodes, id: job.id, result: job.result, label };
+      S.evalJob = { run, checkpoint, episodes, id: job.id, result: job.result, label, ood };
     } catch (e) { S.evalJob = { run, checkpoint, episodes, error: e.message }; }
     if (S.step === 6) render();
   }
