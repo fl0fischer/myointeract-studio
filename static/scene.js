@@ -14,8 +14,31 @@ export const buttonQuat = (t) => (t.quat ? new THREE.Quaternion().fromArray(t.qu
 export const quatToEuler = (q) => { const e = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().fromArray(q), "XYZ"); return [e.x, e.y, e.z].map((v) => Math.round(v * 1e5) / 1e5); };
 const MJ_QUAT = (q) => new THREE.Quaternion(q[1], q[2], q[3], q[0]); // MuJoCo w, x, y, z -> three
 const STEP = 0.005; // 5 mm grid of the target ranges
+const MUSCLE_IDLE = "#c9b3ae", MUSCLE_HOT = "#ff2d14"; // muscle colour at activation 0 and 1 (live view)
 const snap = (v) => Math.round(v / STEP) * STEP;
 const css = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+// Removing an Object3D does not release its GPU resources. A model can share a geometry between
+// several bodies, so collect the whole replacement before disposing each resource once.
+function disposeObjects(objects) {
+  const geometries = new Set(), materials = new Set(), textures = new Set();
+  for (const root of objects) {
+    if (!root) continue;
+    root.removeFromParent();
+    root.traverse((o) => {
+      if (o.geometry) geometries.add(o.geometry);
+      const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+      for (const mat of mats) {
+        materials.add(mat);
+        for (const value of Object.values(mat)) if (value?.isTexture) textures.add(value);
+      }
+      if (o.isInstancedMesh) o.dispose();
+    });
+  }
+  textures.forEach((t) => t.dispose());
+  materials.forEach((m) => m.dispose());
+  geometries.forEach((g) => g.dispose());
+}
 
 export class StudioScene extends EventTarget {
   constructor(container) {
@@ -56,7 +79,7 @@ export class StudioScene extends EventTarget {
     });
     this.scene.add(this.gizmo.getHelper());
 
-    this.models = new Map(); // name -> { json, buffer }
+    this.models = new Map(); // source and name -> { json, buffer }
     this.bodies = []; // body groups of the shown model, by body index
     this.bodyByName = new Map();
     this.origin = new THREE.Vector3(); // shoulder (target origin), MuJoCo frame
@@ -112,24 +135,38 @@ export class StudioScene extends EventTarget {
 
   // ------------------------------------------------------------------ body model
   async loadModel(name, base = "") {
-    if (this.modelName === name && this.bodies.length) return;
-    this.modelName = name;
-    let entry = this.models.get(name);
-    if (!entry) {
-      const json = await fetch(`${base}scenes/${name}.json`).then((r) => { if (!r.ok) throw new Error(`no scene for ${name}`); return r.json(); });
-      // The backend sends the mesh buffer as binary; static copies of the page ship it as base64 text.
-      const res = await fetch(`${base}scenes/${json.buffer}`);
-      if (!res.ok) throw new Error(`no meshes for ${name}`);
-      const buffer = json.buffer.endsWith(".b64.txt") ? Uint8Array.from(atob(await res.text()), (c) => c.charCodeAt(0)).buffer : await res.arrayBuffer();
-      entry = { json, buffer };
-      this.models.set(name, entry);
+    const key = `${base}\0${name}`;
+    if (this.modelKey === key && this.bodies.length) {
+      this._modelRequest = null; // returning to the loaded model cancels a pending switch
+      return true;
     }
-    if (this.modelName !== name) return; // another model was asked for meanwhile
-    this._buildModel(entry.json, entry.buffer);
+    let request = this._modelRequest;
+    if (!request || request.key !== key) {
+      request = { key };
+      this._modelRequest = request;
+      request.promise = (async () => {
+        let entry = this.models.get(key);
+        if (!entry) {
+          const json = await fetch(`${base}scenes/${name}.json`).then((r) => { if (!r.ok) throw new Error(`no scene for ${name}`); return r.json(); });
+          // The backend sends binary meshes; static copies ship them as base64 text.
+          const res = await fetch(`${base}scenes/${json.buffer}`);
+          if (!res.ok) throw new Error(`no meshes for ${name}`);
+          const buffer = json.buffer.endsWith(".b64.txt") ? Uint8Array.from(atob(await res.text()), (c) => c.charCodeAt(0)).buffer : await res.arrayBuffer();
+          entry = { json, buffer };
+          this.models.set(key, entry);
+        }
+        if (this._modelRequest !== request) return false;
+        this._buildModel(entry.json, entry.buffer);
+        this.modelName = name;
+        this.modelKey = key;
+        return true;
+      })().finally(() => { if (this._modelRequest === request) this._modelRequest = null; });
+    }
+    return request.promise;
   }
 
   _buildModel(sc, buffer) {
-    for (const b of this.bodies) this.world.remove(b);
+    disposeObjects(this.bodies);
     this.bodies = [];
     this.bodyByName.clear();
     this.sceneInfo = sc;
@@ -178,8 +215,10 @@ export class StudioScene extends EventTarget {
   }
 
   _buildReach(radius) {
-    if (this._reach) this.world.remove(this._reach), this.world.remove(this._shoulder);
-    const geo = new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(radius, 3));
+    disposeObjects([this._reach, this._shoulder]);
+    const source = new THREE.IcosahedronGeometry(radius, 3);
+    const geo = new THREE.EdgesGeometry(source);
+    source.dispose();
     this._reach = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: css("--scene-reach", "#8a90a6"), transparent: true, opacity: 0.18 }));
     this._reach.position.copy(this.origin);
     this._reach.visible = this.showReach !== false;
@@ -194,19 +233,39 @@ export class StudioScene extends EventTarget {
   // Every muscle is drawn site to site as thin cylinders; the sites ride on their bodies, so the paths
   // follow the pose (also in the live view). One instanced mesh holds all segments.
   _buildMuscles(muscles) {
-    if (this._muscles) { this.world.remove(this._muscles); this._muscles.geometry.dispose(); this._muscles = null; }
+    if (this._muscles) { disposeObjects([this._muscles]); this._muscles = null; }
     this._segments = [];
-    for (const m of muscles) {
-      for (let k = 1; k < m.points.length; k++) this._segments.push([m.points[k - 1], m.points[k], m.radius]);
-    }
+    this._muscleNames = muscles.map((m) => m.name.split("/").pop());
+    this._activityMap = null;
+    muscles.forEach((m, j) => {
+      for (let k = 1; k < m.points.length; k++) this._segments.push([m.points[k - 1], m.points[k], m.radius, j]);
+    });
     if (!this._segments.length) return;
     const geo = new THREE.CylinderGeometry(1, 1, 1, 8, 1, true);  // unit cylinder along y, scaled per segment
-    const mat = new THREE.MeshStandardMaterial({ color: css("--scene-muscle", "#c4473d"), roughness: 0.55 });
+    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55 });  // the colour is per segment
     this._muscles = new THREE.InstancedMesh(geo, mat, this._segments.length);
     this._muscles.frustumCulled = false;
     this._muscles.visible = this.showMuscles !== false;
     this.world.add(this._muscles);
+    this._musclesDirty = true;
+    this.setMuscleActivity(null);
     this._updateMuscles(true);
+  }
+
+  // Muscles coloured by activation (0..1, in the order of `names`), or all in their rest colour (null).
+  setMuscleActivity(values, names = null) {
+    if (!this._muscles) return;
+    const rest = new THREE.Color(css("--scene-muscle", "#c4473d")), idle = new THREE.Color(MUSCLE_IDLE), hot = new THREE.Color(MUSCLE_HOT), c = new THREE.Color();
+    if (values && names !== this._activityNames) {  // scene muscle -> index into `values`
+      this._activityNames = names;
+      const at = new Map(names.map((n, k) => [n, k]));
+      this._activityMap = this._muscleNames.map((n) => (at.has(n) ? at.get(n) : -1));
+    }
+    this._segments.forEach((s, i) => {
+      const k = values && this._activityMap ? this._activityMap[s[3]] : -1;
+      this._muscles.setColorAt(i, k < 0 ? rest : c.copy(idle).lerp(hot, Math.min(1, Math.max(0, values[k]))));
+    });
+    this._muscles.instanceColor.needsUpdate = true;
   }
 
   setMusclesVisible(on) { this.showMuscles = on; if (this._muscles) this._muscles.visible = on; }
@@ -219,19 +278,23 @@ export class StudioScene extends EventTarget {
   get hasSkin() { return (this.sceneInfo?.geoms || []).some((g) => g.volume); }
 
   _updateMuscles(force = false) {
-    if (!this._muscles || (!this._muscles.visible && !force)) return;
-    const a = new THREE.Vector3(), b = new THREE.Vector3(), dir = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
-    const q = new THREE.Quaternion(), m = new THREE.Matrix4(), scale = new THREE.Vector3();
-    const at = (p, out) => { const body = this.bodies[p[0]]; return out.set(p[1], p[2], p[3]).applyQuaternion(body.quaternion).add(body.position); };
-    this._segments.forEach(([p0, p1, r], i) => {
-      at(p0, a); at(p1, b);
+    if (!this._muscles || (!force && (!this._muscles.visible || !this._musclesDirty))) return;
+    const { a, b, dir, up, q, m, scale } = this._muscleScratch || (this._muscleScratch = {
+      a: new THREE.Vector3(), b: new THREE.Vector3(), dir: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0),
+      q: new THREE.Quaternion(), m: new THREE.Matrix4(), scale: new THREE.Vector3(),
+    });
+    for (let i = 0; i < this._segments.length; i++) {
+      const [p0, p1, r] = this._segments[i], body0 = this.bodies[p0[0]], body1 = this.bodies[p1[0]];
+      a.set(p0[1], p0[2], p0[3]).applyQuaternion(body0.quaternion).add(body0.position);
+      b.set(p1[1], p1[2], p1[3]).applyQuaternion(body1.quaternion).add(body1.position);
       dir.subVectors(b, a);
       const len = dir.length();
       q.setFromUnitVectors(up, len > 1e-9 ? dir.divideScalar(len) : up);
       m.compose(a.add(b).multiplyScalar(0.5), q, scale.set(r, len, r));
       this._muscles.setMatrixAt(i, m);
-    });
+    }
     this._muscles.instanceMatrix.needsUpdate = true;
+    this._musclesDirty = false;
   }
 
   // ------------------------------------------------------------------ cameras
@@ -271,7 +334,8 @@ export class StudioScene extends EventTarget {
   setTargets(targets, selected) {
     this.targetData = targets;
     // Only the targets are rebuilt: a screen shares their group and stays until it is removed.
-    (this.targets || []).forEach((g) => this.targetGroup.remove(g));
+    this.gizmo.detach();
+    disposeObjects(this.targets || []);
     this.targets = targets.map((t, i) => this._buildTarget(t, i));
     this.select(selected ?? null, true);
   }
@@ -287,7 +351,7 @@ export class StudioScene extends EventTarget {
     // The region: where the target centre is drawn each episode (a proxy the handles move and scale).
     const region = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.12, depthWrite: false }));
     region.scale.set(...ext.map((e) => Math.max(e, 0.002)));
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), new THREE.LineBasicMaterial({ color }));
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(region.geometry), new THREE.LineBasicMaterial({ color }));
     region.add(edges);
     region.userData.target = i;
     grp.add(region);
@@ -421,7 +485,7 @@ export class StudioScene extends EventTarget {
   // ------------------------------------------------------------------ screen (e.g. a Figma frame)
   // Pose relative to the shoulder; the image faces the user (normal -x), its left edge on the user's left (+y).
   setScreen(sc) {
-    if (this.screen) { this.gizmo.detach(); this.targetGroup.remove(this.screen); this.screen = null; }
+    if (this.screen) { this.gizmo.detach(); disposeObjects([this.screen]); this.screen = null; }
     if (!sc) return;
     const tex = new THREE.TextureLoader().load(sc.image);
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -459,10 +523,12 @@ export class StudioScene extends EventTarget {
   // hello: { bodies: [names], targets: [{ rgba, radius }] }; then frames from applyFrame.
   setLive(hello) {
     this.live = hello;
-    while (this.liveGroup.children.length) this.liveGroup.remove(this.liveGroup.children[0]);
+    disposeObjects([...this.liveGroup.children]);
     this.targetGroup.visible = !hello;
     if (!hello) {
       this.bodies.forEach((b) => { b.position.fromArray(b.userData.rest.pos); b.quaternion.copy(MJ_QUAT(b.userData.rest.quat)); });
+      this._musclesDirty = true;
+      this.setMuscleActivity(null);
       return;
     }
     this.setEditable(false);
@@ -497,6 +563,7 @@ export class StudioScene extends EventTarget {
     }
     const t0 = 7 * nb;
     L.targetMeshes.forEach((m, k) => m.position.set(f[t0 + 3 * k], f[t0 + 3 * k + 1], f[t0 + 3 * k + 2]));
+    this._musclesDirty = true;
   }
 
   // ------------------------------------------------------------------ export

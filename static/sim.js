@@ -8,11 +8,14 @@ const gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * M
 export class TaskSim {
   // base: folder of an example (sim.json, sim_model.xml, sim_policy.bin); mujocoUrl: the vendored module.
   static async load(base, mujocoUrl = new URL("./vendor/mujoco/mujoco.js", import.meta.url).href) {
-    const [{ default: loadMujoco }, info] = await Promise.all([import(mujocoUrl), fetch(`${base}/sim.json`).then((r) => r.json())]);
+    const [{ default: loadMujoco }, info] = await Promise.all([import(mujocoUrl), fetch(`${base}/sim.json`).then((r) => {
+      if (!r.ok) throw new Error(`could not load simulation metadata: HTTP ${r.status}`);
+      return r.json();
+    })]);
     const [mujoco, xml, weights] = await Promise.all([
-      TaskSim.runtime || (TaskSim.runtime = loadMujoco()),
-      fetch(`${base}/${info.model}`).then((r) => r.text()),
-      fetch(`${base}/${info.policy}`).then((r) => r.arrayBuffer()),
+      TaskSim.runtime || (TaskSim.runtime = loadMujoco().catch((e) => { TaskSim.runtime = null; throw e; })),
+      fetch(`${base}/${info.model}`).then((r) => { if (!r.ok) throw new Error(`could not load simulation model: HTTP ${r.status}`); return r.text(); }),
+      fetch(`${base}/${info.policy}`).then((r) => { if (!r.ok) throw new Error(`could not load simulation policy: HTTP ${r.status}`); return r.arrayBuffer(); }),
     ]);
     return new TaskSim(mujoco, info, xml, new Float32Array(weights));
   }
@@ -33,6 +36,14 @@ export class TaskSim {
     this.vadr = joints.map((j) => m.jnt_dofadr[j]);
     this.range = joints.map((j) => [m.jnt_range[2 * j], m.jnt_range[2 * j + 1]]);
     this.site = id(mujoco.mjtObj.mjOBJ_SITE, this.task.ee_site);
+    // muscles: actuators with an activation state, named without the entity prefix ("universal_robot/DELT1" -> "DELT1")
+    this.actAdr = [];
+    this.muscleNames = [];
+    for (let a = 0; a < m.nu; a++) {
+      if (m.actuator_actadr[a] < 0) continue;
+      this.actAdr.push(m.actuator_actadr[a]);
+      this.muscleNames.push(mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_ACTUATOR.value, a).split("/").pop());
+    }
     // per target: its body and geom, and for a button the address of its touch sensor's reading
     this.targets = this.task.targets.map((t) => ({
       ...t,
@@ -51,6 +62,9 @@ export class TaskSim {
       return layer;
     });
     this.obs = new Float32Array(n);
+    this._normalized = new Float32Array(n);
+    this._layerOutputs = this.layers.map((l) => new Float32Array(l.nOut));
+    this._excitation = new Float32Array(m.nu);
     // muscle fatigue (3CC-r): active, fatigued and resting share per muscle; fresh muscles without it
     this.fatigue = this.task.fatigue || null;
     this.MA = new Float32Array(m.nu);
@@ -137,10 +151,10 @@ export class TaskSim {
   }
 
   act(obs) {
-    let x = new Float32Array(obs.length);
+    let x = this._normalized;
     for (let k = 0; k < obs.length; k++) x[k] = (obs[k] - this.mean[k]) / this.std[k];
     this.layers.forEach(({ nIn, nOut, w, b }, l) => {
-      const y = new Float32Array(nOut), last = l === this.layers.length - 1;
+      const y = this._layerOutputs[l], last = l === this.layers.length - 1;
       for (let i = 0; i < nOut; i++) {
         let s = b[i];
         for (let j = 0, row = i * nIn; j < nIn; j++) s += w[row + j] * x[j];
@@ -155,7 +169,8 @@ export class TaskSim {
   step() {
     const { mj, model: m, data: d, task } = this;
     const action = this.act(this.observe());
-    const excitation = Float32Array.from(action, sigmoid);
+    const excitation = this._excitation;
+    for (let k = 0; k < action.length; k++) excitation[k] = sigmoid(action[k]);
     if (task.noise && this.noisy) {
       // motor noise as in training: clip(u + signal_dependent * u * n1 + constant * n2, 0, 1)
       for (let k = 0; k < excitation.length; k++) {
@@ -168,9 +183,10 @@ export class TaskSim {
     const n = this.targets.length, t = this.targets[Math.min(this.current, n - 1)];
     let dist = 0;
     for (let k = 0; k < 3; k++) dist += (d.site_xpos[3 * this.site + k] - d.xipos[3 * t.bodyId + k]) ** 2;
-    if (Math.sqrt(dist) < m.geom_size[3 * t.geomId]) this.inside++;
+    const inside = Math.sqrt(dist) < m.geom_size[3 * t.geomId];
+    if (inside) this.inside++;
     // a sphere counts once the fingertip dwelt inside, a button once its touch sensor reads the force
-    const pressed = t.sensorAdr < 0 || d.sensordata[t.sensorAdr] >= t.min_force;
+    const pressed = t.sensorAdr < 0 ? inside : d.sensordata[t.sensorAdr] >= t.min_force;
     if (this.inside >= t.dwell_steps && pressed) { this.current++; this.inside = 0; }
     this.steps++;
     return this.current >= n;
@@ -178,15 +194,20 @@ export class TaskSim {
 
   get timedOut() { return this.steps >= this.task.max_steps; }
 
-  // The scene's live frame: per body position (3), then orientation (w, x, y, z), then each target's position.
-  frame() {
-    const { model: m, data: d } = this, nb = m.nbody;
-    const f = new Float32Array(7 * nb + 3 * this.targets.length);
+  // The scene's live frame: per body position (3), then orientation (w, x, y, z), then each target's
+  // position, then each muscle's activation (as the backend's live feed, studio/worker.py).
+  frame(out) {
+    const { model: m, data: d } = this, nb = m.nbody, nt = this.targets.length;
+    const f = out || new Float32Array(7 * nb + 3 * nt + this.actAdr.length);
     f.set(d.xpos.subarray(0, 3 * nb), 0);
     f.set(d.xquat.subarray(0, 4 * nb), 3 * nb);
     this.targets.forEach((t, i) => f.set(d.xipos.subarray(3 * t.bodyId, 3 * t.bodyId + 3), 7 * nb + 3 * i));
+    this.actAdr.forEach((a, k) => { f[7 * nb + 3 * nt + k] = d.act[a]; });
     return f;
   }
+
+  // Fatigued share (MF) per actuator, or null for a task without fatigue.
+  get muscleFatigue() { return this.fatigue ? this.MF : null; }
 
   dispose() { this.data.delete(); this.model.delete(); }
 }

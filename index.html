@@ -8,14 +8,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: product landing on top, then a three-column studio (steps · step workspace · live summary). */
+/* Layout: a short intro, then the studio. Wide screens: the 3D scene fills the studio and the steps,
+   the step panel and the summary float over it. Narrow screens: the scene on top, the step panel in a
+   sheet below it. */
 :root {
   --bg: #f4f4f1;
   --surface: #ffffff;
   --ink: #14161b;
   --muted: #5e6168;
-  --line: #dddcd6;
-  --tint: #ecebe5;
+  --line: #e1e0da;
+  --tint: #efeee9;
   --accent: #d9432a;
   --accent-ink: #ffffff;
   --link: #b5321c;
@@ -31,200 +33,280 @@
   --scene-bg: #e6e5df;
   --scene-grid: #c9c7be;
   --scene-reach: #8a8880;
-  --glass: rgba(255, 255, 255, 0.84);
+  --glass: rgba(255, 255, 255, 0.86);
   --scene-dim: rgba(244, 244, 241, 0.5);
+  --shadow: 0 1px 2px rgba(20, 22, 27, 0.05), 0 12px 32px rgba(20, 22, 27, 0.09);
+  --radius: 14px;
   --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
   --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #101114; --surface: #191a1f; --ink: #eeeeea; --muted: #a0a2a8; --line: #2c2d33; --tint: #212228;
+    --bg: #101114; --surface: #191a1f; --ink: #eeeeea; --muted: #a0a2a8; --line: #2c2d33; --tint: #222329;
     --accent: #ef5b41; --accent-ink: #14161b; --link: #f47a63; --ok: #6cc58f; --warn: #f47a63;
     --hero-a: #0c0d10; --hero-b: #1a1814; --hero-ink: #f4f2ec; --hero-muted: #c4c1b8; --hero-hi: #f26b4f; --hero-line: #3a3832; --logo-target: #14161b;
-    --scene-bg: #131417; --scene-grid: #2f3037; --scene-reach: #96979c; --glass: rgba(25, 26, 31, 0.84); --scene-dim: rgba(16, 17, 20, 0.5);
+    --scene-bg: #131417; --scene-grid: #2f3037; --scene-reach: #96979c; --glass: rgba(25, 26, 31, 0.86); --scene-dim: rgba(16, 17, 20, 0.5);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #101114; --surface: #191a1f; --ink: #eeeeea; --muted: #a0a2a8; --line: #2c2d33; --tint: #212228;
-    --accent: #ef5b41; --accent-ink: #14161b; --link: #f47a63; --ok: #6cc58f; --warn: #f47a63;
-    --hero-a: #0c0d10; --hero-b: #1a1814; --hero-ink: #f4f2ec; --hero-muted: #c4c1b8; --hero-hi: #f26b4f; --hero-line: #3a3832; --logo-target: #14161b;
-    --scene-bg: #131417; --scene-grid: #2f3037; --scene-reach: #96979c; --glass: rgba(25, 26, 31, 0.84); --scene-dim: rgba(16, 17, 20, 0.5);
+  --bg: #101114; --surface: #191a1f; --ink: #eeeeea; --muted: #a0a2a8; --line: #2c2d33; --tint: #222329;
+  --accent: #ef5b41; --accent-ink: #14161b; --link: #f47a63; --ok: #6cc58f; --warn: #f47a63;
+  --hero-a: #0c0d10; --hero-b: #1a1814; --hero-ink: #f4f2ec; --hero-muted: #c4c1b8; --hero-hi: #f26b4f; --hero-line: #3a3832; --logo-target: #14161b;
+  --scene-bg: #131417; --scene-grid: #2f3037; --scene-reach: #96979c; --glass: rgba(25, 26, 31, 0.86); --scene-dim: rgba(16, 17, 20, 0.5);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 a { color: var(--link); }
-h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.015em; }
+h3 { font-size: 0.98rem; }
 p { margin: 0; }
 .mono { font-family: var(--font-mono); font-size: 0.85em; font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
-.eyebrow { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+.eyebrow { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
 
 /* nav */
-.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
-.nav-in { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 12px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.brand { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
-.brand-mark { width: 26px; height: 26px; flex: none; }
-.nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; }
+.nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
+.nav-in { max-width: 1440px; margin: 0 auto; padding: 9px 20px; display: flex; align-items: center; gap: 16px; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.brand-mark { width: 24px; height: 24px; flex: none; }
+.nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.92rem; }
 .nav a.link:hover { color: var(--ink); }
 .spacer { flex: 1; }
-.pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 0.85rem; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
-.pill.on .dot { background: var(--ok); }
-.btn { font: inherit; font-weight: 600; text-decoration: none; display: inline-block; border-radius: 10px; padding: 9px 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
-.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.btn:focus-visible, input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 0.8rem; white-space: nowrap; min-width: 0; }
+#conn-text { overflow: hidden; text-overflow: ellipsis; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+.pill.on .dot { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent); }
+.btn { font: inherit; font-weight: 600; font-size: 0.9rem; line-height: 1.3; text-decoration: none; display: inline-block; border-radius: 10px; padding: 7px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; transition: border-color 0.15s, filter 0.15s, background 0.15s; white-space: nowrap; }
+.btn:hover:not(:disabled) { border-color: color-mix(in srgb, var(--ink) 28%, var(--line)); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.07); }
+.btn.small { padding: 5px 10px; font-size: 0.82rem; border-radius: 8px; }
+.btn:focus-visible, input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* hero */
+/* intro */
 .hero { background: linear-gradient(135deg, var(--hero-a), var(--hero-b)); color: var(--hero-ink); }
-.hero-in { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 56px 48px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 40px; align-items: center; }
-.hero h1 { font-size: clamp(2rem, 4vw, 3.1rem); line-height: 1.1; }
+.hero-in { max-width: 1440px; margin: 0 auto; padding: 40px 20px 36px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 40px; align-items: center; }
+.hero h1 { font-size: clamp(1.7rem, 3.3vw, 2.6rem); line-height: 1.12; }
 .hero h1 em { font-style: normal; color: var(--hero-hi); }
-.hero p.lead { font-size: 1.15rem; color: var(--hero-muted); margin-top: 16px; max-width: 54ch; }
-.hero .cta { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+.hero p.lead { font-size: 1.05rem; color: var(--hero-muted); margin-top: 12px; max-width: 48ch; }
+.hero .cta { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .hero .btn { border-color: var(--hero-line); background: transparent; color: var(--hero-ink); }
 .hero .btn.primary { background: var(--hero-hi); color: var(--hero-a); border-color: var(--hero-hi); }
-.steps-strip { display: grid; gap: 12px; }
-.strip-item { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
-.strip-item b { font-family: var(--font-display); }
-.strip-num { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-family: var(--font-mono); background: rgba(242, 107, 79, 0.16); color: var(--hero-hi); }
-.strip-item span { color: var(--hero-muted); font-size: 0.93rem; }
-.facts { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
-.fact b { font-family: var(--font-display); font-size: 1.05rem; display: block; }
-.fact span { color: var(--muted); font-size: 0.93rem; }
+.steps-strip { display: grid; gap: 8px; }
+.strip-item { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.9rem; }
+.strip-item b { font-family: var(--font-display); font-size: 0.92rem; }
+.strip-num { flex: none; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.8rem; background: rgba(242, 107, 79, 0.16); color: var(--hero-hi); }
+.strip-item span { color: var(--hero-muted); }
+.facts { max-width: 1440px; margin: 0 auto; padding: 16px 20px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.fact b { font-family: var(--font-display); font-size: 0.95rem; display: block; }
+.fact span { color: var(--muted); font-size: 0.84rem; }
 
 /* studio */
-.studio { position: relative; height: calc(100vh - 62px); min-height: 640px; overflow: hidden; border-top: 1px solid var(--line); background: var(--scene-bg); }
-/* The 3D scene fills the studio; steps, the step panel and the summary float over it. */
+.studio { position: relative; height: calc(100vh - 51px); min-height: 620px; overflow: hidden; border-top: 1px solid var(--line); background: var(--scene-bg); }
 #stage { position: absolute; inset: 0; }
 #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 #stage::after { content: ""; position: absolute; inset: 0; background: var(--scene-dim); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
 #stage.dim::after { opacity: 1; }
 .stage-msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
-.overlay { position: absolute; inset: 16px 16px 76px; display: grid; grid-template-columns: 188px minmax(0, 470px) minmax(0, 1fr) 320px; grid-template-rows: minmax(0, 1fr); gap: 16px; align-items: start; pointer-events: none; }
-.overlay > * { pointer-events: auto; max-height: 100%; overflow: auto; }
+.overlay { position: absolute; inset: 14px 14px 68px; display: grid; grid-template-columns: 168px minmax(0, 440px) minmax(0, 1fr) 296px; grid-template-rows: minmax(0, 1fr); gap: 14px; align-items: start; pointer-events: none; }
+.overlay > * { pointer-events: auto; max-height: 100%; overflow: auto; scrollbar-width: thin; }
 .overlay > .gap { pointer-events: none; }
-.overlay .panel, .stepper, .scene-bar { background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
-.stepper { display: grid; gap: 4px; padding: 8px; border-radius: 16px; border: 1px solid var(--line); }
-.scene-bar { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 32px); padding: 6px 8px; border-radius: 14px; border: 1px solid var(--line); }
-.scene-bar .sep { width: 1px; align-self: stretch; background: var(--line); margin-inline: 2px; }
-.scene-bar .chip { padding: 5px 11px; }
-.live-pill { font-size: 0.86rem; color: var(--muted); padding-inline: 6px; }
-.live-pill.on::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 6px; }
-.live-pill.err { color: var(--warn); }
-.stepper button { all: unset; cursor: pointer; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 10px; color: var(--muted); }
-.stepper button .n { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.8rem; background: var(--tint); }
-.stepper button[aria-current="step"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.overlay .panel, .stepper, .scene-bar, .mcard { background: var(--glass); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); border: 1px solid color-mix(in srgb, var(--line) 85%, transparent); box-shadow: var(--shadow); }
+.stepper { display: grid; gap: 2px; padding: 6px; border-radius: var(--radius); }
+.stepper button { all: unset; cursor: pointer; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: center; padding: 7px 8px; border-radius: 9px; color: var(--muted); font-size: 0.92rem; font-weight: 500; }
+.stepper button:hover { color: var(--ink); background: color-mix(in srgb, var(--surface) 55%, transparent); }
+.stepper button .n { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.72rem; background: var(--tint); }
+.stepper button[aria-current="step"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, 0.05); }
 .stepper button[aria-current="step"] .n { background: var(--accent); color: var(--accent-ink); }
-.stepper button.done .n { background: color-mix(in srgb, var(--ink) 14%, var(--tint)); color: var(--ink); }
+.stepper button.done .n { background: color-mix(in srgb, var(--ok) 16%, var(--tint)); color: var(--ok); }
 .stepper button:focus-visible { outline: 2px solid var(--accent); }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: grid; gap: 20px; min-width: 0; }
-.panel h2 { font-size: 1.45rem; }
-.why { border-left: 3px solid var(--accent); background: var(--tint); border-radius: 0 10px 10px 0; padding: 10px 14px; font-size: 0.95rem; color: var(--muted); }
-.why b { color: var(--ink); }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-.field { display: grid; gap: 6px; min-width: 0; }
-.field label, .field .lab { font-weight: 600; font-size: 0.95rem; }
-.field .hint { font-size: 0.85rem; color: var(--muted); }
-input[type="number"], input[type="text"], input[type="url"], select { font: inherit; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
+.scene-bar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 28px); padding: 5px; border-radius: 12px; }
+.scene-bar .sep { width: 1px; align-self: stretch; background: var(--line); margin-inline: 2px; }
+.scene-bar > * { flex: none; }
+.scene-bar .act { display: flex; gap: 6px; align-items: center; justify-content: center; flex: 1 1 100%; }
+.live-pill { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--tint); flex: none; }
+.seg button { all: unset; cursor: pointer; font-size: 0.8rem; font-weight: 500; padding: 4px 10px; border-radius: 7px; color: var(--muted); white-space: nowrap; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.seg button:focus-visible { outline: 2px solid var(--accent); }
+.live-pill { font-size: 0.8rem; color: var(--muted); padding-inline: 6px; max-width: 100%; }
+.live-pill.on::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
+.live-pill.err { color: var(--warn); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.panel h2 { font-size: 1.22rem; }
+.panel-head { display: grid; gap: 3px; padding-right: 28px; }
+.lede { color: var(--muted); font-size: 0.92rem; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 14px; }
+.field { display: grid; gap: 5px; min-width: 0; align-content: start; }
+.field label, .field .lab { font-weight: 600; font-size: 0.86rem; }
+.field .hint, .hint { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+input[type="number"], input[type="text"], input[type="url"], input[type="password"], select { font: inherit; font-size: 0.9rem; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; min-height: 34px; }
 input[type="range"] { width: 100%; accent-color: var(--accent); }
-.toggle-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
-.toggle-row input { margin-top: 4px; accent-color: var(--accent); width: 18px; height: 18px; }
-.toggle-row b { display: block; }
-.toggle-row span { color: var(--muted); font-size: 0.9rem; }
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
-.card { all: unset; cursor: pointer; border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 6px; background: var(--surface); }
+.toggle-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.toggle-row input { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+.toggle-row b { display: block; font-size: 0.88rem; }
+.toggle-row span { color: var(--muted); font-size: 0.8rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.card { all: unset; cursor: pointer; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 4px; align-content: start; background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; }
+.card:hover { border-color: color-mix(in srgb, var(--ink) 28%, var(--line)); }
 .card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.card b { font-family: var(--font-display); }
-.card span { color: var(--muted); font-size: 0.88rem; }
-.card .tag { justify-self: start; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: var(--tint); color: var(--muted); font-weight: 600; }
+.card b { font-family: var(--font-display); font-size: 0.9rem; }
+.card span { color: var(--muted); font-size: 0.8rem; line-height: 1.4; }
+.card .tag { justify-self: start; font-size: 0.66rem; padding: 1px 7px; border-radius: 999px; background: var(--tint); color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { font: inherit; font-size: 0.88rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { font: inherit; font-size: 0.8rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; white-space: nowrap; }
+.chip:hover:not(:disabled) { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 25%, var(--line)); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip.tog[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--ink); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.chip:disabled { opacity: 0.5; cursor: not-allowed; }
 .group-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.target { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 12px; }
+.target { position: relative; cursor: pointer; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
 .target-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-.swatch { width: 14px; height: 14px; border-radius: 4px; display: inline-block; vertical-align: -2px; margin-right: 6px; }
-.name-edit { border: 1px solid transparent; background: transparent; color: var(--muted); font-size: 0.85rem; width: 12ch; padding: 2px 4px; border-radius: 4px; }
+.target-head b { font-size: 0.92rem; }
+.swatch { width: 12px; height: 12px; border-radius: 4px; display: inline-block; vertical-align: -1px; margin-right: 6px; }
+.name-edit { border: 1px solid transparent; background: transparent; color: var(--muted); font-size: 0.82rem; width: 14ch; padding: 2px 4px; border-radius: 4px; }
 .name-edit:hover, .name-edit:focus { border-color: var(--line); color: inherit; background: var(--bg); outline: none; }
 .range2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .bound { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.bound > span { color: var(--muted); font-size: 0.78rem; }
+.bound > span { color: var(--muted); font-size: 0.74rem; }
 .bound input { flex: 1; min-width: 0; }
-.target { cursor: pointer; }
 .target.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.target { position: relative; }
 .target.off { opacity: 0.55; background: rgba(127, 127, 127, 0.06); }
 /* two blocks of small icons at a card's top right: copy and paste, then order, on/off and remove */
-.target-tools { display: flex; gap: 12px; flex-wrap: nowrap; margin: -6px -6px 0 0; }
+.target-tools { display: flex; gap: 10px; flex-wrap: nowrap; margin: -4px -4px 0 0; }
 .tool-block { display: flex; gap: 1px; }
-.icon-btn { border: 0; background: none; color: var(--muted, #8a8f98); font-size: 0.95rem; line-height: 1; width: 22px; height: 22px; border-radius: 6px; cursor: pointer; opacity: 0.75; }
+.icon-btn { border: 0; background: none; color: var(--muted); font-size: 0.95rem; line-height: 1; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; opacity: 0.75; display: inline-grid; place-items: center; padding: 0; }
 .icon-btn:hover:not(:disabled), .icon-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.18); }
 .icon-btn:disabled { opacity: 0.3; cursor: default; }
-.icon-btn { display: inline-grid; place-items: center; padding: 0; }
 .target [data-row] { border-radius: 8px; outline: 1px solid transparent; outline-offset: 4px; }
 .target [data-row][data-rowsel] { outline-color: var(--accent); background: rgba(127, 127, 127, 0.07); }
-.screen-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
-.screen-box summary { cursor: pointer; }
-input[type="password"] { font: inherit; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
-.foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.save-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-.save-row p { margin: 4px 0 0; font-size: 0.88rem; max-width: 52ch; }
+.screen-box, .tips, .wandb-box { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.screen-box summary, .tips summary, .panel details > summary { cursor: pointer; font-size: 0.88rem; }
+.tips { font-size: 0.82rem; color: var(--muted); }
+.tips ul { margin: 8px 0 2px; padding-left: 18px; display: grid; gap: 4px; }
+.foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 4px; }
+.save-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.save-row p { margin: 2px 0 0; font-size: 0.8rem; max-width: 46ch; }
+.wandb-box { display: grid; gap: 10px; }
+.wandb-head { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
+.wandb-head b { font-size: 0.9rem; }
+.wb-mark { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: #ffcc33; color: #1a1c1f; font-size: 0.62rem; font-weight: 800; font-family: var(--font-mono); margin-right: 8px; vertical-align: -5px; }
 
 /* summary */
 .summary { display: grid; gap: 12px; align-content: start; }
 /* a hidden step panel keeps its grid cell, so the summary stays where it is */
-.overlay.step-closed #workspace { visibility: hidden; pointer-events: none; }  /* only the steps and the scene bar stay over the 3D view */
-.summary.closed > .panel:not(:first-child), .summary.closed #summary-kv { display: none; }
-.summary .panel { padding: 18px; gap: 12px; }
+.overlay.step-closed #workspace { visibility: hidden; pointer-events: none; }
+.summary.closed .summary-body { display: none; }
+.summary .panel { padding: 16px; gap: 12px; position: relative; }
+.summary .panel > .group-title { padding-right: 24px; }
+.summary-sec { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.summary-body { display: grid; gap: 12px; }
 /* the small grey hyphen that minimises a panel */
-.min-btn { border: 0; background: none; color: var(--muted, #8a8f98); font: inherit; font-size: 1.3rem; line-height: 1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
+.min-btn { border: 0; background: none; color: var(--muted); font: inherit; font-size: 1.25rem; line-height: 1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
 .min-btn:hover, .min-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.15); }
 #workspace { position: relative; }
 #workspace > .min-btn, #summary-toggle, .dialog-close { position: absolute; top: 10px; right: 10px; z-index: 1; }
-.summary .panel:first-child { position: relative; }
-.summary .panel:first-child .group-title { padding-right: 24px; }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 0.92rem; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 0.84rem; margin: 0; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
-pre.code { margin: 0; font-family: var(--font-mono); font-size: 0.78rem; background: var(--tint); border-radius: 10px; padding: 12px; max-height: 260px; overflow: auto; white-space: pre; }
-.est { font-family: var(--font-display); font-size: 1.6rem; }
+pre.code { margin: 0; font-family: var(--font-mono); font-size: 0.74rem; background: var(--tint); border-radius: 10px; padding: 10px 12px; max-height: 240px; overflow: auto; white-space: pre; }
+.est { font-family: var(--font-display); font-size: 1.15rem; }
+details.json > summary { cursor: pointer; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
 
 /* run & evaluate */
 .chart { width: 100%; height: auto; display: block; }
 .chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
 .chart .grid { stroke: var(--line); }
-.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-.stat { border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
-.stat b { font-family: var(--font-display); font-size: 1.35rem; display: block; }
-.stat span { color: var(--muted); font-size: 0.85rem; }
-.log { font-family: var(--font-mono); font-size: 0.78rem; background: var(--tint); border-radius: 10px; padding: 10px 12px; max-height: 140px; overflow: auto; }
-.demo-banner { font-size: 0.88rem; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; }
+.stat { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: color-mix(in srgb, var(--tint) 45%, var(--surface)); }
+.stat b { font-family: var(--font-display); font-size: 1.2rem; display: block; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 0.78rem; }
+.log { font-family: var(--font-mono); font-size: 0.74rem; background: var(--tint); border-radius: 10px; padding: 10px 12px; max-height: 140px; overflow: auto; }
+.demo-banner { font-size: 0.82rem; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; }
 .handoff { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
-.handoff h4 { margin: 0; font-family: var(--font-display); font-size: 1rem; }
-.handoff-note { font-size: 0.92rem; color: var(--ink); }
-dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); padding: 22px; max-width: 520px; width: calc(100% - 32px); }
+.handoff h4 { margin: 0; font-family: var(--font-display); font-size: 0.95rem; }
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); padding: 22px; max-width: 520px; width: calc(100% - 32px); box-shadow: var(--shadow); }
 dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .media { width: 100%; border-radius: 12px; background: var(--tint); display: block; }
-.err { color: var(--warn); font-size: 0.88rem; }
-.video-ph { aspect-ratio: 4 / 3; max-width: 100%; border-radius: 12px; background: linear-gradient(160deg, var(--tint), var(--line)); display: grid; place-items: center; color: var(--muted); font-size: 0.9rem; text-align: center; padding: 16px; }
+.err { color: var(--warn); font-size: 0.84rem; }
+.video-ph { aspect-ratio: 4 / 3; max-width: 100%; border-radius: 12px; background: linear-gradient(160deg, var(--tint), var(--line)); display: grid; place-items: center; color: var(--muted); font-size: 0.88rem; text-align: center; padding: 16px; }
+
+/* muscle activity card over the 3D view */
+.mcard { position: absolute; top: 14px; left: 50%; width: 296px; max-height: calc(100% - 96px); overflow: hidden auto; border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; font-size: 0.78rem; z-index: 2; scrollbar-width: thin; }
+.mcard-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mcard-head b { font-family: var(--font-display); font-size: 0.84rem; white-space: nowrap; }
+.mcard.closed .seg { display: none; }
+.mcard .min-btn { width: 22px; height: 22px; font-size: 1rem; }
+.mcard.closed .mcard-body { display: none; }
+.mcard-body { display: grid; gap: 7px; }
+.mbar, .mgroup { display: grid; grid-template-columns: minmax(0, 1fr) 84px 32px; gap: 8px; align-items: center; }
+.mgroups { display: grid; gap: 6px; }
+.mgroups.with-fatigue .mgroup { grid-template-columns: minmax(0, 1fr) 70px 32px 32px; }
+.mbar-name, .mgroup-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mbar-track { position: relative; height: 8px; border-radius: 4px; background: var(--tint); }
+.mbar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; max-width: 100%; transition: width 0.08s linear; }
+.mbar-tick, .tick-key { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--ink); opacity: 0.5; border-radius: 1px; }
+.tick-key { position: static; display: inline-block; height: 9px; margin: 0 1px; vertical-align: -1px; }
+.mbar-val { text-align: right; font-size: 0.72rem; color: var(--muted); }
+.mgroup-head { font-size: 0.68rem; }
+.mgroup-head > span:nth-child(2) { white-space: nowrap; }
+.mcard-note { font-size: 0.7rem; color: var(--muted); }
 
 @media (max-width: 1100px) {
-  .studio { height: auto; min-height: 0; overflow: visible; }
-  #stage { position: relative; height: 56vh; }
-  .scene-bar { position: static; transform: none; margin: 8px 16px; max-width: none; }
-  .overlay { position: static; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; padding: 0 16px 24px; }
-  .overlay > * { max-height: none; overflow: visible; }
+  .nav { position: static; }
+  .nav-in { padding: 8px 12px; gap: 8px; }
+  .nav a.link, #connect-btn .wide { display: none; }
+  .brand { font-size: 0.95rem; gap: 7px; }
+  .brand-mark { width: 22px; height: 22px; }
+  .pill { padding: 3px 9px; font-size: 0.74rem; }
+  #conn-text { max-width: 36vw; }
+  #connect-btn { padding: 5px 10px; font-size: 0.8rem; }
+  .hero-in { grid-template-columns: 1fr; padding: 22px 16px 20px; gap: 16px; }
+  .hero h1 { font-size: 1.5rem; }
+  .hero p.lead { font-size: 0.94rem; margin-top: 8px; }
+  .hero .cta { margin-top: 14px; }
+  .hero .btn { padding: 7px 12px; font-size: 0.85rem; }
+  .steps-strip { display: none; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px 16px; gap: 8px 14px; }
+  .fact b { font-size: 0.84rem; }
+  .fact span { display: none; }
+  /* the scene keeps the top of the screen; the steps live in a sheet below it */
+  .studio { height: 100svh; min-height: 480px; display: flex; flex-direction: column; }
+  #stage { position: relative; inset: auto; flex: 1 1 0; min-height: 30svh; }
+  .scene-bar { position: relative; left: auto !important; bottom: auto; transform: none; max-width: none !important; margin: 0; border-radius: 0; border-width: 1px 0 0; box-shadow: none; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 6px 10px; scrollbar-width: none; flex: none; }
+  .scene-bar::-webkit-scrollbar, .stepper::-webkit-scrollbar { display: none; }
+  .overlay { position: relative; inset: auto; display: flex; flex-direction: column; gap: 0; flex: 0 1 auto; max-height: 50svh; overflow-y: auto; padding: 0; background: var(--surface); border-top: 1px solid var(--line); pointer-events: auto; overscroll-behavior: contain; }
+  .overlay > * { max-height: none; overflow: visible; flex: none; }
   .overlay > .gap { display: none; }
-  .overlay.step-closed #workspace { display: none; }
-  .stepper { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
-  .hero-in { grid-template-columns: 1fr; }
+  .overlay .panel, .stepper { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--surface); box-shadow: none; }
+  .stepper { position: sticky; top: 0; z-index: 2; display: flex; gap: 2px; overflow-x: auto; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 6px 8px; scrollbar-width: none; }
+  .stepper button { grid-template-columns: auto auto; gap: 6px; padding: 5px 9px; font-size: 0.82rem; white-space: nowrap; }
+  .stepper button .n { width: 20px; height: 20px; font-size: 0.66rem; border-radius: 6px; }
+  #workspace { border: 0; border-radius: 0; padding: 14px 16px 18px; gap: 14px; }
+  .overlay.step-closed #workspace, .overlay.step-closed .summary { display: none; }
+  .summary { padding: 0 12px 14px; }
+  .summary .panel { border-radius: 12px; }
+  .panel h2 { font-size: 1.06rem; }
+  .lede { font-size: 0.84rem; }
+  .target .hint, .toggle-row > span > span { display: none; }
+  .cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .card span:not(.tag) { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .scene-bar .act { order: -1; flex: none; }
+  .mcard { top: 8px; left: auto !important; right: 8px; width: min(64vw, 260px); max-height: calc(100% - 16px); padding: 7px 9px; gap: 6px; font-size: 0.7rem; }
+  .mcard.closed { width: auto; }
+  .mbar, .mgroup { grid-template-columns: minmax(0, 1fr) 58px 26px; gap: 6px; }
+  .mgroups.with-fatigue .mgroup { grid-template-columns: minmax(0, 1fr) 48px 26px 26px; }
 }
+@media (max-width: 480px) { .brand .wide { display: none; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
@@ -233,74 +315,88 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
 <nav class="nav" aria-label="Main">
   <div class="nav-in">
-    <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 23 L14 13 L21 16" fill="none" stroke="var(--accent-ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="23" r="2.4" fill="var(--accent-ink)"/><circle cx="14" cy="13" r="2.4" fill="var(--accent-ink)"/><circle cx="25" cy="9" r="3.2" fill="none" stroke="var(--logo-target, #14161b)" stroke-width="2.2"/><circle cx="25" cy="9" r="0.9" fill="var(--logo-target, #14161b)"/></svg>MyoInteract Studio</span>
+    <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 23 L14 13 L21 16" fill="none" stroke="var(--accent-ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="23" r="2.4" fill="var(--accent-ink)"/><circle cx="14" cy="13" r="2.4" fill="var(--accent-ink)"/><circle cx="25" cy="9" r="3.2" fill="none" stroke="var(--logo-target, #14161b)" stroke-width="2.2"/><circle cx="25" cy="9" r="0.9" fill="var(--logo-target, #14161b)"/></svg><span>MyoInteract<span class="wide"> Studio</span></span></span>
     <a class="link" href="#studio">Studio</a>
     <a class="link" href="https://github.com/fl0fischer/myointeract">GitHub</a>
     <span class="spacer"></span>
-    <span class="pill" id="conn-pill"><span class="dot"></span><span id="conn-text">Demo mode · no backend</span></span>
-    <button class="btn" id="connect-btn" type="button">Connect compute</button>
+    <span class="pill" id="conn-pill"><span class="dot"></span><span id="conn-text">Demo mode</span></span>
+    <button class="btn" id="connect-btn" type="button">Connect<span class="wide"> compute</span></button>
   </div>
 </nav>
 
 <header class="hero">
   <div class="hero-in">
     <div>
-      <span class="eyebrow" style="color:var(--hero-muted)">Musculoskeletal interaction, trained in minutes</span>
       <h1>Teach a <em>muscle-driven arm</em> to point, press and type.</h1>
-      <p class="lead">Pick a body, place targets, choose what the agent senses and what it is rewarded for, then train thousands of simulated arms in parallel on a GPU, on your machine, on Colab or in the cloud.</p>
+      <p class="lead">Design an interaction task, train it on a GPU, and watch the policy move in your browser.</p>
       <div class="cta">
         <a class="btn primary" href="#studio">Open the studio</a>
-        <button class="btn" type="button" id="hero-preset">Start from the pointing example</button>
+        <button class="btn" type="button" id="hero-preset">Try the pointing example</button>
       </div>
     </div>
     <div class="steps-strip" aria-label="How it works">
-      <div class="strip-item"><span class="strip-num">1</span><div><b>Design the task</b><br><span>Body model, targets in reach, sensing and reward, with an explanation for every choice.</span></div></div>
-      <div class="strip-item"><span class="strip-num">2</span><div><b>Train where the GPU is</b><br><span>Your workstation, a free Colab T4, a Hugging Face Space or a lab server.</span></div></div>
-      <div class="strip-item"><span class="strip-num">3</span><div><b>Evaluate and compare</b><br><span>Success rate, time to target and effort for every checkpoint, side by side.</span></div></div>
+      <div class="strip-item"><span class="strip-num">1</span><div><b>Design</b> <span>· body, targets, sensing, reward</span></div></div>
+      <div class="strip-item"><span class="strip-num">2</span><div><b>Train</b> <span>· your GPU, Colab, a Space or a lab server</span></div></div>
+      <div class="strip-item"><span class="strip-num">3</span><div><b>Evaluate</b> <span>· success, speed, effort and muscle activity</span></div></div>
     </div>
   </div>
 </header>
 
 <section class="facts" aria-label="Highlights">
-  <div class="fact"><b>4 arm models</b><span>MyoArm (myo_sim 0.2.3) with or without hand, MoBL arm with index finger or full hand.</span></div>
-  <div class="fact"><b>Any number of targets</b><span>Spheres sampled from regions in reach, or buttons that must be pressed with force.</span></div>
-  <div class="fact"><b>Runs in your browser</b><span>Example policies play live in the page: MuJoCo in WebAssembly, nothing to install.</span></div>
-  <div class="fact"><b>~50 000 steps / s</b><span>Pointing with 4096 parallel environments on one RTX 5090 (mjlab, MuJoCo Warp).</span></div>
+  <div class="fact"><b>5 arm models</b><span>MyoArm and MoBL, with or without hand</span></div>
+  <div class="fact"><b>Any number of targets</b><span>Spheres to point at, buttons to press</span></div>
+  <div class="fact"><b>Runs in your browser</b><span>MuJoCo in WebAssembly, nothing to install</span></div>
+  <div class="fact"><b>~50 000 steps/s</b><span>4096 environments on one RTX 5090</span></div>
 </section>
 
 <main class="studio" id="studio">
   <div id="stage" role="img" aria-label="3D view of the body model and the targets"><div class="stage-msg" id="stage-msg">Loading the 3D view…</div></div>
   <div class="scene-bar" id="scene-bar" role="toolbar" aria-label="3D view"></div>
+  <section class="mcard" id="mcard" aria-label="Muscle activity" hidden></section>
   <div class="overlay">
   <nav class="stepper" aria-label="Studio steps" id="stepper"></nav>
   <section class="panel" id="workspace" aria-live="polite"></section>
   <div class="gap"></div>
   <aside class="summary" id="summary" aria-label="Configuration summary">
     <div class="panel">
-      <button class="min-btn" type="button" id="summary-toggle" aria-expanded="true" aria-label="Minimise the summary" title="Minimise">&ndash;</button><div class="group-title"><h3>Your setup</h3><span class="chips"><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"><button class="chip" type="button" id="reset-setup" title="Back to the default setup (the browser keeps your setup otherwise)">Reset configuration</button></span></div>
-      <div class="chips" id="reset-confirm" hidden><span class="muted">Reset every setting to the defaults? Runs and presets stay.</span><button class="chip" type="button" id="reset-yes">Reset</button><button class="chip" type="button" id="reset-no">Cancel</button></div>
-      <dl class="kv" id="summary-kv"></dl>
-    </div>
-    <div class="panel">
-      <div class="group-title"><h3>Training estimate</h3><span class="muted" id="est-target">this machine</span></div>
-      <span class="est" id="est-time">–</span>
-      <span class="muted" style="font-size:0.88rem" id="est-note"></span>
-    </div>
-    <div class="panel">
-      <div class="field" id="preset-row" hidden><label for="preset-select">Presets on the backend</label>
-        <div class="chips"><select id="preset-select" style="flex:1"></select><button class="chip" type="button" id="preset-load">Load</button><button class="chip" type="button" id="preset-save">Save as…</button></div>
-        <span class="err" id="preset-msg"></span></div>
-      <div class="group-title"><h3>Configuration</h3></div>
-      <div class="chips"><button class="btn primary" type="button" data-save-cfg>Save configuration</button><label class="btn" for="import-cfg" style="cursor:pointer">Upload configuration</label></div>
-      <input type="file" id="import-cfg" accept="application/json,.json" hidden>
-      <span class="muted" style="font-size:0.82rem" id="cfg-note">One JSON file with the task and the learning hyperparameters. Edit it by hand, upload it here again, train from it with <span class="mono">myo_train --config &lt;file&gt;</span>, open it in the Gradio UI (it is the format of <span class="mono">myo_config/gradio_tasks/</span>), or read it in your own learning framework.</span>
-      <span class="err" id="cfg-msg" role="status"></span>
-      <pre class="code" id="cfg-json"></pre>
-      <p class="demo-banner" id="cfg-warn" role="status" hidden></p>
+      <button class="min-btn" type="button" id="summary-toggle" aria-expanded="true" aria-label="Minimise the summary" title="Minimise">&ndash;</button>
+      <div class="group-title"><h3>Your setup</h3><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"></div>
+      <div class="summary-body">
+        <dl class="kv" id="summary-kv"></dl>
+        <div class="summary-sec">
+          <div class="group-title"><span class="muted" style="font-size:0.84rem">Training time · <span id="est-target">This machine</span></span><span class="est" id="est-time">–</span></div>
+          <span class="hint" id="est-note"></span>
+        </div>
+        <div class="summary-sec">
+          <div class="field" id="preset-row" hidden><label for="preset-select">Presets on the backend</label>
+            <div class="chips"><select id="preset-select" style="flex:1; width:auto"></select><button class="chip" type="button" id="preset-load">Load</button><button class="chip" type="button" id="preset-save">Save as…</button></div>
+            <span class="err" id="preset-msg"></span></div>
+          <div class="chips"><button class="btn small primary" type="button" data-save-cfg>Save configuration</button><label class="btn small" for="import-cfg" style="cursor:pointer">Upload</label><button class="chip" type="button" id="reset-setup" title="Back to the default setup (the browser keeps your setup otherwise)">Reset</button></div>
+          <div class="chips" id="reset-confirm" hidden><span class="muted" style="font-size:0.82rem">Reset every setting to the defaults? Runs and presets stay.</span><button class="chip" type="button" id="reset-yes">Reset</button><button class="chip" type="button" id="reset-no">Cancel</button></div>
+          <input type="file" id="import-cfg" accept="application/json,.json" hidden>
+          <span class="hint" id="cfg-note">One JSON file with the task and the learning settings: train from it with <span class="mono">myo_train --config &lt;file&gt;</span>, open it in the Gradio UI, or upload it here again.</span>
+          <span class="err" id="cfg-msg" role="status"></span>
+          <p class="demo-banner" id="cfg-warn" role="status" hidden></p>
+          <details class="json"><summary>Show the JSON</summary><pre class="code" id="cfg-json"></pre></details>
+        </div>
+      </div>
     </div>
   </aside>
   </div>
 </main>
+
+<dialog id="wandb-dialog" aria-labelledby="wandb-title">
+  <form method="dialog" style="display:grid; gap:14px">
+    <button class="min-btn dialog-close" value="cancel" type="submit" aria-label="Close" title="Close">&times;</button>
+    <h3 id="wandb-title"><span class="wb-mark">W&amp;B</span>Connect Weights &amp; Biases</h3>
+    <p class="muted" style="font-size:0.9rem">Training curves and checkpoints of the runs you start here also go to your W&amp;B account. The key goes only to your backend, which checks it with W&amp;B; this page does not keep it.</p>
+    <div class="field"><label for="wandb-key">API key</label><input type="password" id="wandb-key" autocomplete="off" spellcheck="false" placeholder="paste the key">
+      <span class="hint">Copy it from <a href="https://wandb.ai/authorize" target="_blank" rel="noopener">wandb.ai/authorize</a>.</span></div>
+    <label class="toggle-row"><input type="checkbox" id="wandb-remember"><span><b>Remember on the backend machine</b><span>Saves the key with <span class="mono">wandb login</span> (in ~/.netrc), so it outlasts a restart of the server. Otherwise the server forgets it when it stops.</span></span></label>
+    <div class="foot" style="justify-content:flex-end"><button class="btn primary" type="button" id="wandb-go">Connect</button></div>
+    <span class="muted" id="wandb-status" role="status" style="font-size:0.88rem"></span>
+  </form>
+</dialog>
 
 <dialog id="connect-dialog" aria-labelledby="connect-title">
   <form method="dialog" id="connect-form" style="display:grid; gap:14px">
@@ -338,6 +434,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     ["range_uniform", "Anywhere in the joint ranges (random)"],
     ["initpose001", "Ready-to-touch pose (fixed)"],
     ["initpose001_epsilon_uniform", "Ready-to-touch pose with small random offsets"],
+    ["None", "Model's default pose"],
   ];
   const OBS = {
     body: [["qpos", "joint angles"], ["qvel", "joint velocities"], ["qacc", "joint accelerations"], ["ee_pos", "fingertip position"], ["act", "muscle activations"]],
@@ -360,10 +457,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   // Reward terms the Gradio task builder has no control for: stored in presets as Hydra overrides.
   const EXTRA_REWARDS = REWARDS.filter((r) => r[6]).map((r) => r[0]);
   const TARGETS = {
-    "Google Colab": { key: "colab", speed: 9000, note: "Free T4 GPU, about 5x slower than an RTX 5090; sessions end after inactivity. Studio runs inside the Colab session: open the notebook, run its two cells and follow the link it prints.", cmd: "# open in Colab and run the two cells:\n# https://colab.research.google.com/github/fl0fischer/myointeract/blob/main/tutorials/myointeract/studio_colab.ipynb\nfrom myoInteract.studio.colab import launch\nlaunch()  # prints the link that opens Studio" },
-    "This machine": { key: "local", speed: 48000, note: "Your own NVIDIA GPU (measured on an RTX 5090).", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages" },
-    "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Docker Space in your own Hugging Face account, on the hardware you pick there (training needs a GPU). Studio runs inside the Space: create it from the template and open it.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
-    "Lab server": { key: "remote", speed: 30000, note: "Any Linux or Windows machine with an NVIDIA GPU, reached through SSH.", cmd: "ssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser  # then open http://localhost:8000" },
+    "Google Colab": { key: "colab", speed: 9000, note: "Free T4 GPU, about 5x slower than an RTX 5090. Studio runs inside the Colab session.", cmd: "# open in Colab and run the two cells:\n# https://colab.research.google.com/github/fl0fischer/myointeract/blob/main/tutorials/myointeract/studio_colab.ipynb\nfrom myoInteract.studio.colab import launch\nlaunch()  # prints the link that opens Studio" },
+    "This machine": { key: "local", speed: 48000, note: "Your own NVIDIA GPU.", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages" },
+    "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Space in your Hugging Face account, on the GPU you pick there.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
+    "Lab server": { key: "remote", speed: 30000, note: "Any machine with an NVIDIA GPU, reached through SSH.", cmd: "ssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser  # then open http://localhost:8000" },
   };
   const COLORS = ["#d9432a", "#3b4250", "#c98a2b", "#7a4a8c", "#2f7d6d", "#8a8f98"];
 
@@ -380,7 +477,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     view: "perspective", stepOpen: true, row: null, rowClip: null, clipKind: null, showReach: true, showMuscles: true, showSkin: true, mode: "translate", screen: null, live: null, liveSocket: null, liveStatus: "",
     examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live",
   };
-  const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl });
+  const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl, targets: S.targets });
   try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
 
   const EXPORT_3D = false;  // the "Export 3D (glTF)" chip in the scene bar
@@ -389,7 +486,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     ["Training", renderTraining], ["Run", renderRun], ["Evaluate", renderEvaluate],
   ];
   const $ = (id) => document.getElementById(id);
+  const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const h = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content; };
+  // A step panel's header: where in the flow, the title and one line on what the choice decides.
+  const head = (title, lede = "") => `<div class="panel-head"><span class="eyebrow">Step ${S.step + 1} of ${STEPS.length}</span><h2>${title}</h2>${lede ? `<p class="lede">${lede}</p>` : ""}</div>`;
+  const touch = window.matchMedia("(pointer: coarse)").matches;
   /* ---------------------------------------------------------------- backend */
   // A page served elsewhere (e.g. the hosted Studio) proves with the server's pairing code that its user may use it.
   const authHeaders = (h = {}) => (S.token ? { ...h, "X-Studio-Token": S.token } : h);
@@ -410,10 +511,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     }
   }
   function setConnected(url, label) {
+    if (S.backend !== url) S.run = null; // monitoring belongs to the backend that started the run
     S.backend = url;
     $("conn-pill").classList.add("on");
     $("conn-text").textContent = label;
-    api("/api/presets").then((ps) => { S.presets = ps; renderPresetList(); }).catch(() => {});
+    api("/api/presets").then((ps) => { if (S.backend === url) { S.presets = ps; renderPresetList(); } }).catch(() => {});
+    loadWandb();
   }
   const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(n % 1e6 ? 1 : 0) + " M" : n >= 1e3 ? (n / 1e3).toFixed(0) + " k" : String(n);
 
@@ -430,6 +533,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       b.addEventListener("click", () => { if (i === S.step) setStepOpen(!S.stepOpen); else { S.stepOpen = true; go(i); } });
       nav.append(b);
     });
+    // Narrow screens scroll the steps sideways: keep the current one in view.
+    const cur = nav.querySelector('[aria-current="step"]');
+    if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
   }
   function go(i) {
     S.done.add(S.step);
@@ -464,7 +570,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const obj = group === "t" ? S.targets[+key] : S[group];
       const prop = group === "t" ? idx : key;
       const sub = group === "t" ? el.dataset.sub : null;
-      const read = () => el.type === "checkbox" ? el.checked : el.type === "number" || el.type === "range" ? parseFloat(el.value) : el.value;
+      const read = () => el.type === "checkbox" ? el.checked : el.type === "number" || el.type === "range" || (group === "rl" && prop === "envs") ? parseFloat(el.value) : el.value;
       el.addEventListener("input", () => {
         if (sub != null) {
           obj[prop][+sub] = read();
@@ -484,11 +590,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
   /* ---------------------------------------------------------------- 1 body */
   function renderBody(ws) {
-    ws.append(h(`<div><span class="eyebrow">Step 1 of 7</span><h2>Choose the body</h2></div>
-      <p class="why"><b>Why it matters:</b> the model decides which muscles the agent controls and what it can reach. Start with the MyoArm without hand for pointing; switch to a model with a hand for buttons or keys.</p>
+    ws.append(h(`${head("Choose the body", "Which muscles the agent controls and what it can reach. No hand for pointing; a hand for buttons and keys.")}
       <div class="cards" id="model-cards"></div>
       <div class="grid2">
-        <div class="field"><label for="ctrl_dt">Control step</label><input id="ctrl_dt" type="number" min="0.01" max="0.2" step="0.01" value="${S.bm.ctrl_dt}" data-bind="bm.ctrl_dt"><span class="hint">Seconds between two muscle commands. 0.05 s (20 Hz) is a good default; smaller is slower to train.</span></div>
+        <div class="field"><label for="ctrl_dt">Control step</label><input id="ctrl_dt" type="number" min="0.01" max="0.2" step="0.01" value="${esc(S.bm.ctrl_dt)}" data-bind="bm.ctrl_dt"><span class="hint">Seconds between two muscle commands. 0.05 s (20 Hz) is a good default; smaller is slower to train.</span></div>
         <div class="field"><label for="reset_type">Start pose</label><select id="reset_type" data-bind="bm.reset_type">${RESETS.map(([v, l]) => `<option value="${v}" ${S.bm.reset_type === v ? "selected" : ""}>${l}</option>`).join("")}</select><span class="hint">Random start poses make the policy more robust.</span></div>
       </div>
       <div class="grid2">
@@ -550,13 +655,13 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function targetHtml(t, i) {
     const row = (key) => `data-row="${i}.${key}"${S.row && S.row.i === i && S.row.key === key ? ' data-rowsel="1"' : ""}`;
     const r = (key, label, hint, min, max, step) => `<div class="field" ${row(key)}><span class="lab">${label}</span><div class="range2">
-      <span class="bound"><span>min</span><input type="number" aria-label="${label} minimum" min="${min}" max="${max}" step="${step}" value="${t[key][0]}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1"></span>
-      <span class="bound"><span>max</span><input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${t[key][1]}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></span></div><span class="hint">${hint}</span></div>`;
+      <span class="bound"><span>min</span><input type="number" aria-label="${label} minimum" min="${min}" max="${max}" step="${step}" value="${esc(t[key][0])}" data-bind="t.${i}.${key}" data-sub="0" data-redraw="1"></span>
+      <span class="bound"><span>max</span><input type="number" aria-label="${label} maximum" min="${min}" max="${max}" step="${step}" value="${esc(t[key][1])}" data-bind="t.${i}.${key}" data-sub="1" data-redraw="1"></span></div><span class="hint">${hint}</span></div>`;
     const num = targetNumber(i);
     const only = S.targets.length <= 1, lastOn = !t.disabled && liveTargets().length <= 1;
     const icon = (attr, title, glyph, off = false, cls = "") => `<button class="icon-btn${cls}" type="button" ${attr} title="${title}" aria-label="${title}" ${off ? "disabled" : ""}>${glyph}</button>`;
     return `<div class="target${S.sel === i ? " selected" : ""}${t.disabled ? " off" : ""}" data-target="${i}">
-      <div class="target-head"><b><span class="swatch" style="background:${t.disabled ? "#9aa0a6" : t.color}"></span>${num ? "Target " + num : "Target (off)"}</b>
+      <div class="target-head"><b><span class="swatch" style="background:${esc(t.disabled ? "#9aa0a6" : t.color)}"></span>${num ? "Target " + num : "Target (off)"}</b>
         <span class="target-tools">
           <span class="tool-block">${icon(`data-copy="${i}"`, "Copy this target's settings (Ctrl+C)", "&#x29C9;")}${icon(`data-paste="${i}"`, "Paste the copied settings into this target (Ctrl+V)", "&#x2398;", !S.clip)}</span>
           <span class="tool-block">${icon(`data-move="${i},-1"`, "Earlier in the sequence", "&uarr;", only || i === 0)}${icon(`data-move="${i},1"`, "Later in the sequence", "&darr;", only || i === S.targets.length - 1)}${icon(`data-toggle="${i}" aria-pressed="${!t.disabled}"`, t.disabled ? "Switched off: left out of the task, but kept in its place. Click to switch it on" : "Part of the task. Click to switch it off for now", t.disabled ? EYE_OFF : EYE, lastOn, " eye")}${icon(`data-remove="${i}"`, "Remove this target", "&times;", only || lastOn)}</span>
@@ -566,20 +671,23 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         ${r("x", "Forward (m)", "Distance in front of the shoulder (x).", -1, 1, 0.005)}
         ${r("y", "Sideways (m)", "Right (–) to left (+) of the shoulder (y).", -1, 1, 0.005)}
         ${r("z", "Vertical (m)", "Below (–) or above (+) the shoulder (z).", -1, 1, 0.005)}
-        ${t.type === "Sphere" ? r("size", "Radius (m)", "Each episode draws a size from this range.", 0.005, 0.2, 0.005) + `<div class="field" ${row("dwell")}><label>Dwell time (s)</label><input type="number" min="0" max="2" step="0.05" value="${t.dwell}" data-bind="t.${i}.dwell"><span class="hint">How long the fingertip must stay inside to count as a hit.</span></div>`
-          : `<div class="field" ${row("force")}><label>Minimum force (N)</label><input type="number" min="0" max="20" step="0.5" value="${t.force}" data-bind="t.${i}.force"><span class="hint">How hard the button must be pressed.</span></div><div class="field" ${row("angle")}><label>Angle (°)</label><input type="number" min="0" max="180" step="5" value="${t.angle}" data-bind="t.${i}.angle"><span class="hint">Tilt of the button surface.</span></div>`}
+        ${t.type === "Sphere" ? r("size", "Radius (m)", "Each episode draws a size from this range.", 0.005, 0.2, 0.005) + `<div class="field" ${row("dwell")}><label>Dwell time (s)</label><input type="number" min="0" max="2" step="0.05" value="${esc(t.dwell)}" data-bind="t.${i}.dwell"><span class="hint">How long the fingertip must stay inside to count as a hit.</span></div>`
+          : `<div class="field" ${row("force")}><label>Minimum force (N)</label><input type="number" min="0" max="20" step="0.5" value="${esc(t.force)}" data-bind="t.${i}.force"><span class="hint">How hard the button must be pressed.</span></div><div class="field" ${row("angle")}><label>Angle (°)</label><input type="number" min="0" max="180" step="5" value="${esc(t.angle)}" data-bind="t.${i}.angle"><span class="hint">Tilt of the button surface.</span></div>`}
       </div></div>`;
   }
   function renderTask(ws) {
-    ws.append(h(`<div><span class="eyebrow">Step 2 of 7</span><h2>Place the targets</h2></div>
-      <p class="why"><b>Why it matters:</b> each episode draws every target from its region, so the policy learns to reach anywhere inside, not one point. Several targets are visited in order. Keep regions inside the arm's reach (the faint sphere around the shoulder) or enable rejection below.</p>
-      <p class="hint">In the scene, click a target and drag its arrows to move it; <b>Resize</b> (S) stretches its region instead. Double-click to add a target where you point, Delete removes the selected one. Ctrl+C copies the selected target; Ctrl+V over the 3D view adds a copy there, elsewhere it pastes the settings into the selected target. Click a row below to copy and paste just that row. <b>User View</b> shows the task as the simulated user sees it.</p>
+    ws.append(h(`${head("Place the targets", "Each episode draws every target from its region; several targets are visited in order.")}
+      <details class="tips"><summary>Editing tips</summary><ul>
+        <li>${touch ? "Tap" : "Click"} a target in the scene and drag its arrows to move it; <b>Resize</b> stretches its region instead.</li>
+        ${touch ? "" : "<li>Double-click adds a target where you point; Delete removes the selected one.</li><li>Ctrl+C copies the selected target; Ctrl+V over the scene adds a copy there, elsewhere it pastes the settings into the selected target. Click a row below to copy just that row.</li>"}
+        <li>Keep regions inside the faint reach sphere around the shoulder, or let out-of-reach targets be rejected.</li>
+        <li><b>User View</b> shows the task as the simulated user sees it.</li></ul></details>
       <span class="err" id="sketch-msg" role="status"></span>
       <div id="targets" style="display:grid; gap:12px"></div>
       <div class="chips"><button class="btn" type="button" id="add-target">Add a target</button></div>
       ${screenHtml()}
       <div class="grid2">
-        <div class="field"><label for="max_duration">Episode length (s)</label><input id="max_duration" type="number" min="1" max="60" step="0.5" value="${S.task.max_duration}" data-bind="task.max_duration"><span class="hint">Time to finish all targets before the episode ends.</span></div>
+        <div class="field"><label for="max_duration">Episode length (s)</label><input id="max_duration" type="number" min="1" max="60" step="0.5" value="${esc(S.task.max_duration)}" data-bind="task.max_duration"><span class="hint">Time to finish all targets before the episode ends.</span></div>
         <label class="toggle-row"><input type="checkbox" data-bind="task.reject_unreachable" ${S.task.reject_unreachable ? "checked" : ""}><span><b>Reject out-of-reach targets</b><span>Redraw a target that the arm cannot reach.</span></span></label>
       </div>`));
     const box = ws.querySelector("#targets");
@@ -654,14 +762,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     return `<details class="screen-box" ${sc ? "open" : ""}><summary><b>Screen in front of the user</b> <span class="muted">· from Figma or an image</span></summary>
       <div style="display:grid; gap:12px; margin-top:12px">
         <p class="hint">Place a user interface in the scene. From a Figma frame, its buttons and other controls can become targets that stay on the screen when you move it.</p>
-        <div class="field"><label for="figma-url">Figma frame link</label><input type="url" id="figma-url" placeholder="https://www.figma.com/design/…?node-id=…" value="${(S.figma && S.figma.url) || ""}"><span class="hint">In Figma, select the frame and use "Copy link to selection".</span></div>
-        <div class="field"><label for="figma-token">Personal access token</label><input type="password" id="figma-token" autocomplete="off" placeholder="figd_…" value="${figmaToken()}">
+        <div class="field"><label for="figma-url">Figma frame link</label><input type="url" id="figma-url" placeholder="https://www.figma.com/design/…?node-id=…" value="${esc((S.figma && S.figma.url) || "")}"><span class="hint">In Figma, select the frame and use "Copy link to selection".</span></div>
+        <div class="field"><label for="figma-token">Personal access token</label><input type="password" id="figma-token" autocomplete="off" placeholder="figd_…" value="${esc(figmaToken())}">
           <label class="hint" style="display:flex; gap:6px; align-items:center"><input type="checkbox" id="figma-remember" ${figmaRemembered() ? "checked" : ""}> Remember the token in this browser</label>
           <span class="hint">Sent only to Figma (api.figma.com). Unticked, it is kept until this tab closes; ticked, it stays in this browser's storage for this site, readable by anyone using this browser profile. Use a read-only token.</span></div>
         <div class="chips"><button class="btn" type="button" id="figma-go">Import from Figma</button></div>
         <div class="chips"><label class="chip" for="screen-file" style="cursor:pointer">Or use an image</label><input type="file" id="screen-file" accept="image/png,image/jpeg,image/webp" hidden></div>
-        ${sc ? `<div class="field"><label for="screen-width">Screen width (m)</label><input type="number" id="screen-width" min="0.05" max="2" step="0.01" value="${sc.widthM}"><span class="hint">${sc.name || "Screen"} · ${Math.round(sc.width)} × ${Math.round(sc.height)} px. Click the screen in the 3D view to move it (M) or rotate it (R).</span></div>
-          ${sc.elements && sc.elements.length ? `<div class="chips"><button class="btn" type="button" data-screen-targets="Sphere">Its ${sc.elements.length} elements become sphere targets</button><button class="btn" type="button" data-screen-targets="Button">… or button targets</button></div>${sc.more ? `<span class="hint">${sc.more} more elements were left out: a task has at most 15 targets.</span>` : ""}` : ""}
+        ${sc ? `<div class="field"><label for="screen-width">Screen width (m)</label><input type="number" id="screen-width" min="0.05" max="2" step="0.01" value="${esc(sc.widthM)}"><span class="hint">${esc(sc.name || "Screen")} · ${Math.round(sc.width)} × ${Math.round(sc.height)} px. Click the screen in the 3D view to move it (M) or rotate it (R).</span></div>
+          ${sc.elements && sc.elements.length ? `<div class="chips"><button class="btn" type="button" data-screen-targets="Sphere">Its ${sc.elements.length} elements become sphere targets</button><button class="btn" type="button" data-screen-targets="Button">… or button targets</button></div>${sc.more ? `<span class="hint">${esc(sc.more)} more elements were left out.</span>` : ""}` : ""}
           <div class="chips"><button class="chip" type="button" id="screen-remove">Remove the screen</button></div>` : ""}
         <span class="muted" id="screen-msg" role="status"></span>
         <p class="hint">The screen is a visual aid for placing targets. It is not part of the training configuration, so a vision policy does not see it yet.</p>
@@ -766,6 +874,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
   /* ---------------------------------------------------------------- 3D scene */
   let SC = null;
+  let sceneSyncVersion = 0;
   const sceneKeys = {};
   const sceneBase = () => (S.backend ? S.backend + "/" : "");
   const LIVE_STEPS = [5, 6];
@@ -816,7 +925,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const msg = $("stage-msg");
     if (msg) msg.textContent = `The 3D view could not load (${e.message}). Everything else works; edit targets with the numbers.`;
   });
-  const screenKey = () => (S.screen ? JSON.stringify([S.screen.image.length, S.screen.widthM, S.screen.pos, S.screen.quat]) : "");
+  const screenKey = () => (S.screen ? JSON.stringify([S.screen.width, S.screen.height, S.screen.widthM, S.screen.pos, S.screen.quat]) : "");
   // The scene centres itself in the gap between the step panel and the summary (wide layouts only).
   function sceneFocus() {
     if (!SC) return;
@@ -831,6 +940,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const bar = $("scene-bar");
     bar.style.left = span ? `${(span[0] + span[1]) / 2}px` : "";
     bar.style.maxWidth = span ? `${span[1] - span[0] - 16}px` : "";
+    // The muscle card sits at the top right of the same gap.
+    $("mcard").style.left = span ? `${Math.max(span[0] + 8, span[1] - $("mcard").offsetWidth - 12)}px` : "";
   }
   window.addEventListener("resize", sceneFocus);
   function setStepOpen(open) {
@@ -849,23 +960,28 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (liveWanted() && !S.liveSocket) connectLive(S.viewer.key);
     if (!liveWanted() && S.liveSocket) closeLive();
     if (S.sim && !simWanted()) stopSim();
+    const version = ++sceneSyncVersion;
     const live = (liveWanted() && S.live) || (simWanted() && S.sim.hello) || (replayWanted() && S.replay.hello) || null;
     const model = live && live.model ? live.model : S.bm.bm_model;
     if (replayWanted() && S.replay.hello && !S.replayTimer) S.replayTimer = setInterval(tickReplay, 1000 * S.replay.hello.ctrl_dt);
-    SC.loadModel(model, sceneBase()).then(() => {
+    SC.loadModel(model, sceneBase()).then((loaded) => {
+      if (!loaded || version !== sceneSyncVersion) return;
       S.sceneError = null;
       if (live && (sceneKeys.live !== live || sceneKeys.liveModel !== SC.sceneInfo)) {
         SC.setLive(live);
         sceneKeys.live = live;
         sceneKeys.liveModel = SC.sceneInfo;
       }
-    }).catch((e) => { S.sceneError = e.message; renderSceneBar(); });
+    }).catch((e) => { if (version === sceneSyncVersion) { S.sceneError = e.message; renderSceneBar(); } });
     if (live) return;
     if (sceneKeys.live) { SC.setLive(null); sceneKeys.live = null; }
+    if (S.mus) { S.mus = null; renderMuscleCard(); }
     SC.setEditable(S.step === 1);
     const tk = JSON.stringify(S.targets);
     if (tk !== sceneKeys.targets) { sceneKeys.targets = tk; SC.setTargets(S.targets, S.sel); }
-    if (screenKey() !== sceneKeys.screen) { sceneKeys.screen = screenKey(); SC.setScreen(S.screen); }
+    if (screenKey() !== sceneKeys.screen || S.screen?.image !== sceneKeys.screenImage) {
+      sceneKeys.screen = screenKey(); sceneKeys.screenImage = S.screen?.image; SC.setScreen(S.screen);
+    }
   }
   function renderSceneBar() {
     const bar = $("scene-bar");
@@ -873,32 +989,35 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     bar.hidden = false;
     const v = S.viewer;
     const views = [["perspective", "Default"], ["top", "Top"], ["side", "Side"], ["user", "User View"]];
-    let html = views.map(([k, l]) => `<button class="chip" type="button" data-view="${k}" aria-pressed="${S.view === k}">${l}</button>`).join("");
-    html += `<span class="sep"></span><button class="chip" type="button" data-reach aria-pressed="${S.showReach}" title="The reach used by out-of-reach rejection">Reach</button>`;
-    html += `<button class="chip" type="button" data-muscles aria-pressed="${S.showMuscles}" title="Show or hide the muscles and tendons">Muscles</button>`;
-    if (SC.hasSkin) html += `<button class="chip" type="button" data-skin aria-pressed="${S.showSkin}" title="Show or hide the skin (the body volumes around the bones)">Skin</button>`;
+    let html = `<span class="seg" role="group" aria-label="Camera">${views.map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="${S.view === k}">${l}</button>`).join("")}</span>`;
+    html += `<button class="chip tog" type="button" data-reach aria-pressed="${S.showReach}" title="The reach used by out-of-reach rejection">Reach</button>`;
+    html += `<button class="chip tog" type="button" data-muscles aria-pressed="${S.showMuscles}" title="Show or hide the muscles and tendons">Muscles</button>`;
+    if (SC.hasSkin) html += `<button class="chip tog" type="button" data-skin aria-pressed="${S.showSkin}" title="Show or hide the skin (the body volumes around the bones)">Skin</button>`;
     if (S.step === 1 && S.sel != null) {
       const button = typeof S.sel === "number" && S.targets[S.sel] && S.targets[S.sel].type === "Button";
-      const modes = S.sel === "screen" ? [["translate", "Move (M)"], ["rotate", "Rotate (R)"]] : [["translate", "Move (M)"], ["scale", "Resize (S)"], ...(button ? [["rotate", "Rotate (R)"]] : [])];
-      html += `<span class="sep"></span>` + modes.map(([k, l]) => `<button class="chip" type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${l}</button>`).join("");
+      const key = (k) => (touch ? "" : ` (${k})`);
+      const modes = S.sel === "screen" ? [["translate", "Move" + key("M")], ["rotate", "Rotate" + key("R")]] : [["translate", "Move" + key("M")], ["scale", "Resize" + key("S")], ...(button ? [["rotate", "Rotate" + key("R")]] : [])];
+      html += `<span class="sep"></span><span class="seg" role="group" aria-label="Edit mode">` + modes.map(([k, l]) => `<button type="button" data-mode="${k}" aria-pressed="${S.mode === k}">${l}</button>`).join("") + `</span>`;
     }
+    let act = "";  // what plays in the scene and its controls: one group, first on narrow screens
     if (v && LIVE_STEPS.includes(S.step)) {
       const secs = v.t0 ? Math.round((Date.now() - v.t0) / 1000) : 0;
       const state = v.error ? ["err", `Live view failed: ${v.error}`]
         : v.busy ? ["", `Starting the live view: building the task and loading the policy… ${secs} s`]
         : v.kind === "viser" ? ["", "Playing in the viser tab"]
         : S.live ? ["on", `${v.name || v.label} · ${S.liveStatus}`] : ["", "Connecting to the live view…"];
-      html += `<span class="sep"></span><span class="live-pill ${state[0]}" role="status">${state[1]}</span>`;
-      html += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">Stop</button>`;
+      act += `<span class="live-pill ${state[0]}" role="status">${esc(state[1])}</span>`;
+      act += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">Stop</button>`;
     }
-    if (simWanted()) html += `<span class="sep"></span><span class="live-pill ${S.sim.error ? "err" : S.sim.hello ? "on" : ""}" role="status">${S.sim.error ? "The simulation could not start: " + S.sim.error : S.sim.hello ? `Simulated in your browser · ${S.sim.title} · ${S.sim.wins}/${S.sim.episodes} solved` : "Loading MuJoCo and the policy…"}</span>${S.sim.step === 1 ? `<button class="chip" type="button" data-sim-stop>Stop</button>` : ""}`;
-    else if (S.step === 1 && simExample()) html += `<span class="sep"></span><button class="chip" type="button" data-sim-play title="Runs the ${simExample().title} example policy in your browser on the target ranges set here">Play example policy</button>`;
-    else if (replayWanted()) html += `<span class="sep"></span><span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…"}</span>`;
+    if (simWanted()) act += `<span class="live-pill ${S.sim.error ? "err" : S.sim.hello ? "on" : ""}" role="status">${esc(S.sim.error ? "The simulation could not start: " + S.sim.error : S.sim.hello ? `Simulated in your browser · ${S.sim.title} · ${S.sim.wins}/${S.sim.episodes} solved` : "Loading MuJoCo and the policy…")}</span>${S.sim.step === 1 ? `<button class="chip" type="button" data-sim-stop>Stop</button>` : ""}`;
+    else if (S.step === 1 && simExample()) act += `<button class="chip" type="button" data-sim-play title="Runs the ${esc(simExample().title)} example policy in your browser on the target ranges set here">Play example policy</button>`;
+    else if (replayWanted()) act += `<span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${esc(S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…")}</span>`;
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
     // The glTF export is switched off for now (EXPORT_3D); its code stays, to be re-enabled later.
-    if (EXPORT_3D && !window.claude) html += `<span class="sep"></span><button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
+    if (EXPORT_3D && !window.claude) html += `<button class="chip" type="button" data-export="glb" title="Download the 3D scene (arm, targets, screen) as a glTF file, for Blender, Unity, Figma plug-ins and web pages">Export 3D (glTF)</button>`;
     if (S.backend) html += `<button class="chip" type="button" data-export="mjcf" title="The task as a MuJoCo model with its meshes (zip), e.g. for MuJoCo's Unity plug-in">MuJoCo</button>`;
-    if (S.sceneError) html += `<span class="live-pill err">${S.sceneError}</span>`;
+    if (act) html += `<span class="act">${act}</span>`;
+    if (S.sceneError) html += `<span class="live-pill err">${esc(S.sceneError)}</span>`;
     bar.innerHTML = html;
     bar.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => { S.view = b.dataset.view; SC.setView(S.view); renderSceneBar(); }));
     bar.querySelector("[data-reach]").addEventListener("click", () => { S.showReach = !S.showReach; SC.setReachVisible(S.showReach); renderSceneBar(); });
@@ -981,7 +1100,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         else if (m.type === "status") S.liveStatus = m.status;
         renderSceneBar();
       } else if (SC && sceneKeys.live && sceneKeys.live === S.live) {
-        SC.applyFrame(new Float32Array(ev.data));
+        showFrame(new Float32Array(ev.data), S.live, true);
       }
     };
     ws.onclose = () => {
@@ -993,6 +1112,57 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       if (tries < 5) setTimeout(() => { if (S.viewer && S.viewer.key === key && liveWanted() && !S.liveSocket) connectLive(key, tries + 1); }, 2000);
     };
   }
+  /* ---------------------------------------------------------------- muscle activity of a playing policy */
+  // Every live frame ends with the muscles' activations (page simulation, backend live view, and
+  // recordings made since): the 3D muscles take their colour, the card shows the busiest ones live
+  // and the muscle groups' means per episode. Feeds without episode ends are cut into windows.
+  let MM = null;  // static/muscles.js, once loaded
+  import("./static/muscles.js").then((m) => { MM = m; }).catch(() => {});
+  const MUSCLE_WINDOW_S = 4;
+  // Minimised at first on narrow screens, where it would cover much of the scene.
+  const mcardDefault = { view: "live", open: !matchMedia("(max-width: 1100px)").matches };
+  try { S.mcard = { ...mcardDefault, ...JSON.parse(localStorage.getItem("studio-mcard") || "{}") }; } catch (e) { S.mcard = mcardDefault; }
+  function showFrame(f, hello, windowed) {
+    SC.applyFrame(f);
+    const names = hello && hello.muscles;
+    if (!MM || !names || !names.length) return;
+    const at = 7 * hello.bodies.length + 3 * hello.targets.length;
+    if (f.length < at + names.length) return;
+    if (!S.mus || S.mus.hello !== hello) { S.mus = { hello, meter: new MM.MuscleMeter(names), windowed, n: 0 }; renderMuscleCard(true); }
+    const act = f.subarray(at, at + names.length);
+    S.mus.meter.push(act);
+    SC.setMuscleActivity(act, names);
+    const ends = windowed && ++S.mus.n % Math.max(1, Math.round(MUSCLE_WINDOW_S / hello.ctrl_dt)) === 0;
+    if (ends) S.mus.meter.endEpisode();
+    renderMuscleCard(ends);
+  }
+  // The card: built when a feed starts or the view changes; afterwards only the live bars are redrawn
+  // every frame, and the group table when an episode (or window) ends.
+  function renderMuscleCard(full = false) {
+    const card = $("mcard");
+    if (!S.mus || !MM) { card.hidden = true; card.innerHTML = ""; return; }
+    const unit = S.mus.windowed ? `${MUSCLE_WINDOW_S} s` : "episode";
+    if (full || card.hidden || !card.firstChild) {
+      card.hidden = false;
+      card.classList.toggle("closed", !S.mcard.open);
+      card.innerHTML = `<div class="mcard-head"><b>Muscle activity</b><span class="seg" role="group" aria-label="Muscle view"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn" type="button" data-mcard-min aria-label="${S.mcard.open ? "Minimise" : "Show"} the muscle activity" title="${S.mcard.open ? "Minimise" : "Show"}">${S.mcard.open ? "&ndash;" : "+"}</button></div><div class="mcard-body"></div>`;
+      if (S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = MM.groupsHtml(S.mus.meter, unit);
+      sceneFocus();
+    }
+    if (S.mcard.view === "live" && S.mcard.open) {
+      const n = matchMedia("(max-width: 1100px)").matches ? 5 : 8;
+      card.querySelector(".mcard-body").innerHTML = MM.barsHtml(S.mus.meter, n) + `<span class="mcard-note">Bar: activation now · <span class="tick-key"></span> mean so far · busiest first</span>`;
+    }
+  }
+  $("mcard").addEventListener("click", (ev) => {
+    const v = ev.target.closest("[data-mview]");
+    if (v) S.mcard.view = v.dataset.mview;
+    else if (ev.target.closest("[data-mcard-min]")) S.mcard.open = !S.mcard.open;
+    else return;
+    try { localStorage.setItem("studio-mcard", JSON.stringify(S.mcard)); } catch (e) {}
+    renderMuscleCard(true);
+  });
+
   /* ---------------------------------------------------------------- example policies without a backend */
   // The hosted page ships each example's stored evaluation and a recorded live feed (same frames as
   // the live view), which the 3D scene replays in a loop.
@@ -1001,7 +1171,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- example policies simulated in the page */
   // MuJoCo (WebAssembly) and the policy run here: static/sim.js, tested against native MuJoCo.
   // Evaluate plays the example's own task; the Task step plays it on the target ranges set there.
-  const simWanted = () => !!S.sim && S.step === S.sim.step;
+  const simWanted = () => !!S.sim && S.step === S.sim.step && (S.sim.step !== 1 || simExample()?.name === S.sim.name);
   // The example whose policy fits the setup in the editor: same body, one sphere target, no fatigue.
   // (Buttons sit at fixed places in their examples, so only sphere tasks are offered for free exploration.)
   const simExample = () => (liveTargets().length === 1 && liveTargets()[0].type === "Sphere" && S.examples.find((e) => e.sim && e.replay.hello.model === S.bm.bm_model && e.summary && e.summary.targets === 1 && e.sim_kind === "sphere" && !!e.summary.fatigue === !!S.bm.fatigue_enabled)) || null;
@@ -1018,9 +1188,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     try {
       const { TaskSim } = await import("./static/sim.js");
       const engine = await TaskSim.load(`examples/${ex.name}`);
-      if (S.sim !== mine) { engine.dispose(); return; }
+      if (S.sim !== mine || !simWanted()) { engine.dispose(); if (S.sim === mine) stopSim(); return; }
       mine.engine = engine;
-      mine.hello = { model: ex.replay.hello.model, bodies: engine.info.bodies.map((n) => n.split("/").pop()), targets: ex.replay.hello.targets.map((t) => ({ ...t })), ctrl_dt: engine.task.ctrl_dt };
+      mine.frame = new Float32Array(7 * engine.model.nbody + 3 * engine.targets.length + engine.actAdr.length);
+      mine.hello = { model: ex.replay.hello.model, bodies: engine.info.bodies.map((n) => n.split("/").pop()), targets: ex.replay.hello.targets.map((t) => ({ ...t })), muscles: engine.muscleNames, ctrl_dt: engine.task.ctrl_dt };
       simReset(mine);
       mine.timer = setInterval(() => simTick(mine), 1000 * engine.task.ctrl_dt);
     } catch (e) { mine.error = e.message; }
@@ -1040,8 +1211,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (sim.wait > 0) { if (--sim.wait === 0) simReset(sim); else return; }
     const done = sim.engine.step();
     sim.radii.forEach((r, k) => { if (sim.hello.targets[k].shape !== "box") SC.setLiveTargetRadius(k, r); });
-    SC.applyFrame(sim.engine.frame());
+    showFrame(sim.engine.frame(sim.frame), sim.hello, false);
     if (done || sim.engine.timedOut) {
+      if (S.mus && S.mus.hello === sim.hello) { S.mus.meter.endEpisode(sim.engine.muscleFatigue); renderMuscleCard(true); }
       sim.episodes++;
       sim.wins += done ? 1 : 0;
       sim.wait = 8;  // hold the final pose for a moment
@@ -1067,7 +1239,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function tickReplay() {
     const r = S.replay;
     if (!replayWanted() || !r.hello) { clearInterval(S.replayTimer); S.replayTimer = null; return; }
-    if (SC && sceneKeys.live === r.hello) { SC.applyFrame(r.frames.subarray(r.i * r.floats, (r.i + 1) * r.floats)); r.i = (r.i + 1) % r.n; }
+    if (SC && sceneKeys.live === r.hello) { showFrame(r.frames.subarray(r.i * r.floats, (r.i + 1) * r.floats), r.hello, true); r.i = (r.i + 1) % r.n; }
   }
   async function openExampleTask(name) {
     const preset = S.backend ? await api("/api/presets/" + encodeURIComponent(name)) : await (await fetch(`examples/${name}/preset.json`)).json();
@@ -1147,8 +1319,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   /* ---------------------------------------------------------------- 3 sensing */
   function renderSensing(ws) {
     const group = (key, title, hint, disabled) => `<div class="field"><span class="lab">${title}</span><span class="hint">${hint}</span><div class="chips">${OBS[key].map(([k, l]) => `<button type="button" class="chip" data-obs="${k}" aria-pressed="${S.obs[k]}" ${disabled ? "disabled" : ""}><span class="mono">${k}</span> · ${l}</button>`).join("")}</div></div>`;
-    ws.append(h(`<div><span class="eyebrow">Step 3 of 7</span><h2>What the agent senses</h2></div>
-      <p class="why"><b>Why it matters:</b> the policy only reacts to what it observes. Body and task signals are enough for pointing; fatigue signals let it pace itself; vision replaces the target position with what a camera sees (slower to train).</p>
+    ws.append(h(`${head("What the agent senses", "The policy reacts only to what it observes. Body and task signals are enough for pointing.")}
       ${group("body", "Body", "Proprioception: where the arm is and how it moves.")}
       ${group("task", "Task", "Where the current target is and how far the task has progressed.")}
       ${group("fatigue", "Fatigue", S.bm.fatigue_enabled ? "The state of every muscle's fatigue compartments." : "Turn on muscle fatigue in step 1 to use these.", !S.bm.fatigue_enabled)}
@@ -1158,31 +1329,31 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
   /* ---------------------------------------------------------------- 4 reward */
   function renderReward(ws) {
-    ws.append(h(`<div><span class="eyebrow">Step 4 of 7</span><h2>What the agent is rewarded for</h2></div>
-      <p class="why"><b>Why it matters:</b> the weights set the trade-off the agent learns. A strong distance term learns fast; bonuses make it finish the task; effort and contact penalties shape how it moves.</p>
-      <div style="display:grid; gap:14px">${REWARDS.map(([k, , min, max, step, note, studioOnly]) => `<div class="field"><div class="group-title"><label for="rw-${k}"><span class="mono">${k}</span>${studioOnly ? ' <span class="hint" title="Not adjustable in the Gradio UI">Studio only</span>' : ""}</label><span class="mono" id="rwv-${k}">${S.reward[k]}</span></div>
-        <input id="rw-${k}" type="range" min="${min}" max="${max}" step="${step}" value="${S.reward[k]}" data-bind="reward.${k}" data-live="rwv-${k}"><span class="hint">${note}</span></div>`).join("")}</div>`));
+    ws.append(h(`${head("What the agent is rewarded for", "The weights set the trade-off it learns: distance drives learning, penalties shape how it moves.")}
+      <div style="display:grid; gap:14px">${REWARDS.map(([k, , min, max, step, note, studioOnly]) => `<div class="field"><div class="group-title"><label for="rw-${k}"><span class="mono">${k}</span>${studioOnly ? ' <span class="hint" title="Not adjustable in the Gradio UI">Studio only</span>' : ""}</label><span class="mono" id="rwv-${k}">${esc(S.reward[k])}</span></div>
+        <input id="rw-${k}" type="range" min="${min}" max="${max}" step="${step}" value="${esc(S.reward[k])}" data-bind="reward.${k}" data-live="rwv-${k}"><span class="hint">${note}</span></div>`).join("")}</div>`));
     bindInputs(ws);
   }
 
   /* ---------------------------------------------------------------- 5 training */
   function renderTraining(ws) {
-    ws.append(h(`<div><span class="eyebrow">Step 5 of 7</span><h2>Training budget and compute</h2></div>
-      <p class="why"><b>Why it matters:</b> pointing tasks usually learn within 10–50 M steps. More parallel environments use the GPU better; the defaults are a good start.</p>
+    ws.append(h(`${head("Training budget and compute", "Pointing usually learns within 10–50 M steps; the defaults are a good start.")}
       <div class="cards" id="target-cards"></div>
       <div class="grid2">
-        <div class="field"><label for="rl-steps">Total steps</label><input id="rl-steps" type="number" min="100000" step="1000000" value="${S.rl.steps}" data-bind="rl.steps"><span class="hint">Simulated control steps over all environments.</span></div>
+        <div class="field"><label for="rl-steps">Total steps</label><input id="rl-steps" type="number" min="100000" step="1000000" value="${esc(S.rl.steps)}" data-bind="rl.steps"><span class="hint">Simulated control steps over all environments.</span></div>
         <div class="field"><label for="rl-envs">Parallel environments</label><select id="rl-envs" data-bind="rl.envs">${[256, 512, 1024, 2048, 4096, 8192].map((n) => `<option ${n === S.rl.envs ? "selected" : ""}>${n}</option>`).join("")}</select><span class="hint">Simulated arms trained at once on the GPU.</span></div>
       </div>
       <details><summary>PPO settings</summary><div class="grid2" style="margin-top:12px">
-        <div class="field"><label for="rl-unroll">Unroll length</label><input id="rl-unroll" type="number" min="4" max="256" value="${S.rl.unroll}" data-bind="rl.unroll"><span class="hint">Steps per environment between updates.</span></div>
-        <div class="field"><label for="rl-mb">Minibatches</label><input id="rl-mb" type="number" min="1" max="64" value="${S.rl.minibatches}" data-bind="rl.minibatches"></div>
-        <div class="field"><label for="rl-ep">Epochs per update</label><input id="rl-ep" type="number" min="1" max="20" value="${S.rl.epochs}" data-bind="rl.epochs"></div>
-        <div class="field"><label for="rl-ck">Checkpoint every (iterations)</label><input id="rl-ck" type="number" min="1" value="${S.rl.ckpt}" data-bind="rl.ckpt"></div>
-        <div class="field"><label for="rl-seed">Target seed</label><input id="rl-seed" type="number" value="${S.rl.seed}" data-bind="rl.seed"></div>
+        <div class="field"><label for="rl-unroll">Unroll length</label><input id="rl-unroll" type="number" min="4" max="256" value="${esc(S.rl.unroll)}" data-bind="rl.unroll"><span class="hint">Steps per environment between updates.</span></div>
+        <div class="field"><label for="rl-mb">Minibatches</label><input id="rl-mb" type="number" min="1" max="64" value="${esc(S.rl.minibatches)}" data-bind="rl.minibatches"></div>
+        <div class="field"><label for="rl-ep">Epochs per update</label><input id="rl-ep" type="number" min="1" max="20" value="${esc(S.rl.epochs)}" data-bind="rl.epochs"></div>
+        <div class="field"><label for="rl-ck">Checkpoint every (iterations)</label><input id="rl-ck" type="number" min="1" value="${esc(S.rl.ckpt)}" data-bind="rl.ckpt"></div>
+        <div class="field"><label for="rl-seed">Target seed</label><input id="rl-seed" type="number" value="${esc(S.rl.seed)}" data-bind="rl.seed"></div>
       </div></details>
-      <div class="save-row"><div><b>Keep this setup</b><p class="muted">The task and these learning hyperparameters as one JSON file: edit it by hand, upload it here again, train from it with <span class="mono">myo_train --config &lt;file&gt;</span>, or use it in your own learning framework.</p></div>
-        <div class="chips"><button class="btn primary" type="button" data-save-cfg>Save configuration</button><label class="btn" for="import-cfg" style="cursor:pointer">Upload configuration</label></div></div>`));
+      ${wandbHtml()}
+      <div class="save-row"><div><b>Keep this setup</b><p class="muted">Task and learning settings as one JSON file, for <span class="mono">myo_train --config</span> or your own framework.</p></div>
+        <div class="chips"><button class="btn small primary" type="button" data-save-cfg>Save configuration</button><label class="btn small" for="import-cfg" style="cursor:pointer">Upload</label></div></div>`));
+    bindWandb(ws);
     const cards = ws.querySelector("#target-cards");
     for (const [name, t] of Object.entries(TARGETS)) {
       const b = document.createElement("button");
@@ -1195,13 +1366,78 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     bindInputs(ws);
   }
 
+  /* ---------------------------------------------------------------- Weights & Biases */
+  // Runs started here can also log to W&B. The backend holds the login (a key sent once from the
+  // dialog, or the machine's own `wandb login`); the page keeps only the switch, project and entity.
+  try { S.wb = { enabled: false, project: "myointeract", entity: "", ...JSON.parse(localStorage.getItem("studio-wandb") || "{}") }; } catch (e) { S.wb = { enabled: false, project: "myointeract", entity: "" }; }
+  const saveWb = () => { try { localStorage.setItem("studio-wandb", JSON.stringify(S.wb)); } catch (e) {} };
+  const wandbOn = () => !!(S.backend && S.wandb && S.wandb.connected && S.wb.enabled);
+  const wandbEntity = () => (S.wandb && (S.wandb.teams || []).includes(S.wb.entity) ? S.wb.entity : S.wandb && S.wandb.entity);
+  const wandbTarget = () => `${wandbEntity()}/${S.wb.project}`;
+  async function loadWandb() {
+    S.wandb = null;
+    try { S.wandb = await api("/api/wandb"); } catch (e) { S.wandb = { error: e.message }; }
+    renderSummary();
+    if (S.step === 4 || S.step === 5) render();
+  }
+  function wandbHtml() {
+    const st = S.wandb, wb = S.wb;
+    let body;
+    if (!S.backend) body = `<span class="hint">Connect compute first: the backend that trains also logs to W&amp;B.</span>`;
+    else if (!st) body = `<span class="hint">Checking the backend's W&amp;B login…</span>`;
+    else if (st.error) body = `<span class="err">${esc(st.error)}</span>`;
+    else if (!st.installed) body = `<span class="hint">wandb is not installed on the backend: <span class="mono">pip install wandb</span>.</span>`;
+    else if (!st.connected) body = `<span class="hint">Log the training curves and checkpoints to your W&amp;B account as well.</span><div class="chips"><button class="btn small" type="button" data-wb-connect>Connect W&amp;B</button></div>`;
+    else {
+      const ents = st.teams && st.teams.length ? st.teams : [st.entity];
+      body = `<label class="toggle-row"><input type="checkbox" id="wb-on" ${wb.enabled ? "checked" : ""}><span><b>Log runs to W&amp;B</b><span>As <b style="display:inline">${esc(st.user)}</b>${st.source === "studio" ? "" : ", the backend machine's own login"}. The curves here stay as they are.</span></span></label>
+        <div class="grid2"><div class="field"><label for="wb-project">Project</label><input type="text" id="wb-project" value="${esc(wb.project)}" spellcheck="false" maxlength="128"></div>
+        <div class="field"><label for="wb-entity">Entity</label><select id="wb-entity">${ents.map((e) => `<option ${e === wandbEntity() ? "selected" : ""}>${esc(e)}</option>`).join("")}</select></div></div>
+        <div class="chips">${st.source === "studio" ? `<button class="chip" type="button" data-wb-forget>Disconnect</button>` : `<button class="chip" type="button" data-wb-connect>Use another key</button>`}</div>`;
+    }
+    const state = st && st.connected ? (wb.enabled ? "on" : "off") : "optional";
+    return `<div class="wandb-box"><div class="wandb-head"><b><span class="wb-mark">W&amp;B</span>Weights &amp; Biases</b><span class="muted" style="font-size:0.8rem">${state}</span></div>${body}</div>`;
+  }
+  function bindWandb(ws) {
+    ws.querySelectorAll("[data-wb-connect]").forEach((b) => b.addEventListener("click", openWandb));
+    ws.querySelector("[data-wb-forget]")?.addEventListener("click", async () => { try { S.wandb = await api("/api/wandb", { method: "DELETE" }); } catch (e) { S.wandb = { error: e.message }; } render(); });
+    ws.querySelector("#wb-on")?.addEventListener("change", (e) => { S.wb.enabled = e.target.checked; saveWb(); render(); });
+    ws.querySelector("#wb-entity")?.addEventListener("change", (e) => { S.wb.entity = e.target.value; saveWb(); renderSummary(); });
+    ws.querySelector("#wb-project")?.addEventListener("change", (e) => {
+      S.wb.project = e.target.value.trim().replace(/[^A-Za-z0-9_.-]+/g, "-").replace(/^-+|-+$/g, "") || "myointeract";  // as W&B names projects
+      e.target.value = S.wb.project;
+      saveWb();
+      renderSummary();
+    });
+  }
+  function openWandb() {
+    const dlg = $("wandb-dialog");
+    $("wandb-key").value = "";
+    $("wandb-status").textContent = "";
+    $("wandb-go").onclick = async () => {
+      const key = $("wandb-key").value.trim();
+      if (!key) { $("wandb-status").textContent = "Paste your API key first."; return; }
+      $("wandb-status").textContent = "Checking the key with W&B…";
+      try {
+        S.wandb = await api("/api/wandb", { method: "POST", body: { api_key: key, remember: $("wandb-remember").checked } });
+        Object.assign(S.wb, { enabled: true, entity: S.wandb.entity });
+        saveWb();
+        $("wandb-key").value = "";
+        dlg.close();
+        render();
+      } catch (e) { $("wandb-status").textContent = e.message; }
+    };
+    dlg.showModal();
+  }
+
   /* ---------------------------------------------------------------- 6 run */
   function renderRun(ws) {
     const connected = !!S.backend;
-    ws.append(h(`<div><span class="eyebrow">Step 6 of 7</span><h2>Train</h2></div>
-      ${connected ? `<p class="muted">Backend: <span class="mono">${S.backend}</span></p>` : `<p class="demo-banner">Demo mode: no backend is connected, so this run is simulated. Use "Connect compute" to train for real, or start <span class="mono">myo_studio serve</span> and <a href="${handoffUrl()}" target="_blank" rel="noopener">continue on your machine with this setup</a>.</p>`}
-      <div class="chips"><button class="btn primary" type="button" id="start-run">${S.run && S.run.active ? "Running…" : "Start training"}</button><button class="btn" type="button" id="stop-run" ${S.run && S.run.active ? "" : "disabled"}>Stop</button>${S.run && S.run.id ? `<span class="muted mono" style="font-size:0.82rem">${S.run.id} · ${S.run.status || ""}</span>` : ""}</div>
-      ${S.run && S.run.error ? `<p class="err">${S.run.error}</p>` : ""}
+    ws.append(h(`${head("Train")}
+      ${connected ? `<p class="muted">Backend: <span class="mono">${esc(S.backend)}</span></p>` : `<p class="demo-banner">Demo mode: no backend is connected, so this run is simulated. Use "Connect compute" to train for real, or start <span class="mono">myo_studio serve</span> and <a href="${esc(handoffUrl())}" target="_blank" rel="noopener">continue on your machine with this setup</a>.</p>`}
+      <div class="chips"><button class="btn primary" type="button" id="start-run" ${S.run?.active ? "disabled" : ""}>${S.run?.active ? S.run.status === "stopping" || S.run.stopRequested ? "Stopping…" : "Running…" : "Start training"}</button><button class="btn" type="button" id="stop-run" ${S.run?.active && !S.run.stopRequested && S.run.status !== "stopping" && (!S.backend || S.run.id) ? "" : "disabled"}>${S.run?.status === "stopping" || S.run?.stopRequested ? "Stopping…" : "Stop"}</button>${S.run && S.run.id ? `<span class="muted mono" style="font-size:0.82rem">${esc(S.run.id)} · ${esc(S.run.status || "")}</span>` : ""}</div>
+      ${S.run && S.run.error ? `<p class="err">${esc(S.run.error)}</p>` : ""}
+      ${S.run && S.run.wandb_url ? `<p class="hint"><span class="wb-mark">W&amp;B</span><a href="${esc(S.run.wandb_url)}" target="_blank" rel="noopener">Open this run in Weights &amp; Biases</a></p>` : wandbOn() ? `<p class="hint"><span class="wb-mark">W&amp;B</span>Logs to W&amp;B as well: <span class="mono">${esc(wandbTarget())}</span> (<a href="#" data-go-step="4">change</a>)</p>` : ""}
       ${gradioWarning() ? `<p class="demo-banner" id="run-warn">${gradioWarning()}</p>` : ""}
       <div class="stat-row">
         <div class="stat"><b id="st-steps">0</b><span>steps</span></div>
@@ -1212,15 +1448,32 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <svg class="chart" id="run-chart" viewBox="0 0 640 220" role="img" aria-label="Training curves"></svg>
       <div class="log" id="run-log" aria-live="polite">No run yet.</div>
       ${S.backend ? `<p class="hint">While it trains, switch to <a href="#" data-go-step="6">Evaluate</a> to try the newest checkpoint (success rate, video, 3D viewer) and come back here for the curves; training keeps running in the background.</p>` : ""}
-      ${S.backend && S.run && S.run.id ? `<span class="hint"><a href="${S.backend}/api/runs/${encodeURIComponent(S.run.id)}/log" target="_blank" rel="noopener">Open the full training log</a> (refresh the tab for new lines)</span>` : ""}`));
+      ${S.backend && S.run && S.run.id ? `<span class="hint"><a href="${esc(S.backend)}/api/runs/${encodeURIComponent(S.run.id)}/log" target="_blank" rel="noopener">Open the full training log</a> (refresh the tab for new lines)</span>` : ""}`));
     ws.querySelector("#start-run").addEventListener("click", () => (S.backend ? startBackendRun() : startRun()));
     ws.querySelectorAll("[data-go-step]").forEach((el) => el.addEventListener("click", (e) => { e.preventDefault(); go(+el.dataset.goStep); }));
-    ws.querySelector("#stop-run").addEventListener("click", async () => {
-      if (S.run && S.run.id && S.backend) { try { await api("/api/runs/" + S.run.id, { method: "DELETE" }); } catch (e) { S.run.error = e.message; } }
-      if (S.run) S.run.active = false;
-      render();
-    });
+    ws.querySelector("#stop-run").addEventListener("click", stopRun);
     drawRun();
+  }
+  async function stopRun() {
+    const run = S.run, backend = S.backend;
+    if (!run?.active || run.stopRequested || run.status === "stopping" || (backend && !run.id)) return;
+    if (!backend) { run.active = false; render(); return; }
+    run.stopRequested = true;
+    run.stopError = null;
+    run.error = null;
+    render();
+    try {
+      await api("/api/runs/" + run.id, { method: "DELETE" });
+      if (S.run !== run || S.backend !== backend) return;
+      if (!run.active) return; // the final poll may have arrived while DELETE was in flight
+      run.stopAcknowledged = true;
+      run.status = "stopping";
+      run.active = true; // final checkpoint publication and process exit are reported by followRun
+    } catch (e) {
+      if (S.run === run && S.backend === backend) run.error = run.stopError = "Could not stop training: " + e.message;
+    } finally {
+      if (S.run === run && S.backend === backend) { run.stopRequested = false; render(); }
+    }
   }
   function startRun() {
     if (S.run && S.run.active) return;
@@ -1243,25 +1496,39 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   }
   async function startBackendRun() {
     if (S.run && S.run.active) return;
-    S.run = { active: true, pts: [], log: ["Starting myo_train on the backend…"] };
+    const mine = (S.run = { active: true, status: "starting", pts: [], log: ["Starting myo_train on the backend…"] }), backend = S.backend;
     render();
     try {
-      const run = await api("/api/runs", { method: "POST", body: { preset: toPreset(), name: S.preset } });
-      S.run.id = run.id;
+      const wandb = wandbOn() ? { project: S.wb.project, entity: wandbEntity() } : undefined;
+      const run = await api("/api/runs", { method: "POST", body: { preset: toPreset(), name: S.preset, wandb } });
+      if (S.run !== mine || S.backend !== backend) return;
+      mine.id = run.id;
       followRun(run.id);
-    } catch (e) { S.run = { active: false, pts: [], log: [], error: e.message }; render(); }
+    } catch (e) { if (S.run === mine && S.backend === backend) { S.run = { active: false, pts: [], log: [], error: e.message }; render(); } }
   }
   async function followRun(id) {
-    while (S.run && S.run.id === id) {
+    const run = S.run, backend = S.backend;
+    const current = () => S.run === run && run.id === id && S.backend === backend;
+    while (current()) {
       let r;
-      try { r = await api("/api/runs/" + id); } catch (e) { S.run.error = e.message; break; }
-      S.run.status = r.status;
+      try { r = await api("/api/runs/" + id); }
+      catch (e) {
+        if (!current()) return;
+        run.error = "Could not refresh training status: " + e.message + ". Retrying…";
+        if (S.step === 5) render();
+        await sleep(3000);
+        continue;
+      }
+      if (!current()) return;
+      run.error = run.stopError || null;
+      S.run.status = run.stopAcknowledged && ["running", "starting"].includes(r.status) ? "stopping" : r.status;
+      S.run.wandb_url = r.wandb_url || null;
       S.run.log = (r.log || "").split("\n");
       S.run.checkpoints = r.checkpoints;
       const pts = (r.metrics && r.metrics.points) || [];
       S.run.pts = pts.filter((q) => q.steps != null).map((q) => [q.steps, q.success ?? 0, q.reward ?? 0, q.episode_s]);
-      S.run.active = r.status === "running" || r.status === "starting";
-      if (r.status === "running" && !S.run.viewerStarted && !(S.viewer && S.viewer.step === S.step)) {
+      S.run.active = ["running", "starting", "stopping"].includes(S.run.status);
+      if (S.run.status === "running" && !S.run.viewerStarted && !(S.viewer && S.viewer.step === S.step)) {
         S.run.viewerStarted = true;
         openViewer({ run: id, follow: true }, 6, `${r.name || id} · follows training`, r.name || id);
       }
@@ -1302,45 +1569,41 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (S.examples.length) return renderEvaluateExamples(ws);
     const has = S.run && S.run.pts.length;
     const last = has ? S.run.pts[S.run.pts.length - 1] : null;
-    ws.append(h(`<div><span class="eyebrow">Step 7 of 7</span><h2>Evaluate</h2></div>
-      <p class="why"><b>Why it matters:</b> training curves use exploration noise. Evaluation runs the deterministic policy on fresh episodes and reports what you would publish: success rate, time to target, effort and fatigue.</p>
+    ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
       <p class="demo-banner">Demo mode: these numbers are simulated. Connect a backend to evaluate real checkpoints.</p>
       <div class="stat-row">
-        <div class="stat"><b>${has ? Math.round(last[1] * 100 * 0.97) + "%" : "–"}</b><span>success (deterministic policy)</span></div>
+        <div class="stat"><b>${has ? Math.round(last[1] * 100 * 0.97) + "%" : "–"}</b><span>success rate</span></div>
         <div class="stat"><b>${has ? (2.5 - 1.3 * last[1]).toFixed(2) + " s" : "–"}</b><span>time to target</span></div>
-        <div class="stat"><b>${has ? (0.31 - 0.08 * last[1]).toFixed(2) : "–"}</b><span>mean muscle excitation</span></div>
+        <div class="stat"><b>${has ? (0.31 - 0.08 * last[1]).toFixed(2) : "–"}</b><span>mean excitation</span></div>
         <div class="stat"><b>${S.bm.fatigue_enabled ? (has ? "0.21" : "–") : "off"}</b><span>final fatigue (MF)</span></div>
       </div>
       <div class="video-ph">Rollout video of the deterministic policy<br>(rendered by the backend)</div>`));
   }
   const pct = (v) => (v == null ? "–" : Math.round(v * 100) + "%");
   const statRow = (res) => `<div class="stat-row">
-        <div class="stat"><b>${res ? pct(res.success_rate) : "–"}</b><span>success (deterministic policy)</span></div>
+        <div class="stat" title="Deterministic policy on fresh episodes"><b>${res ? pct(res.success_rate) : "–"}</b><span>success rate</span></div>
         <div class="stat"><b>${res && res.time_to_success_s != null ? res.time_to_success_s.toFixed(2) + " s" : "–"}</b><span>time to success</span></div>
-        <div class="stat"><b>${res ? res.mean_excitation.toFixed(2) : "–"}</b><span>mean muscle excitation</span></div>
+        <div class="stat"><b>${res ? res.mean_excitation.toFixed(2) : "–"}</b><span>mean excitation</span></div>
         <div class="stat"><b>${res ? (res.final_mf == null ? "off" : res.final_mf.toFixed(2)) : "–"}</b><span>final fatigue (MF)</span></div>
       </div>`;
   const exampleNote = (ex) => [(MODELS.find((m) => m.id === ex.replay.hello.model) || {}).name, ex.summary && `${ex.summary.targets} target${ex.summary.targets === 1 ? "" : "s"}`, ex.training_steps && `trained for ${Math.round(ex.training_steps / 1e6)} M steps`, `evaluated on ${ex.evaluation.episodes} episodes`].filter(Boolean).join(" · ");
   function renderEvaluateExamples(ws) {
     const ex = S.examples.find((e) => e.name === S.exampleSel) || S.examples[0];
-    ws.append(h(`<div><span class="eyebrow">Step 7 of 7</span><h2>Evaluate</h2></div>
-      <p class="why"><b>Why it matters:</b> training curves use exploration noise. Evaluation runs the deterministic policy on fresh episodes and reports what you would publish: success rate, time to target, effort and fatigue.</p>
-      <p class="demo-banner">No backend is connected, so these are example policies, trained and evaluated in advance (one per task example). With a backend the same examples can be loaded, run live and evaluated again, next to your own runs.</p>
-      <div class="grid2">
-        <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${e.name}" ${e === ex ? "selected" : ""}>${e.title}</option>`).join("")}</select>
-          <span class="hint">${exampleNote(ex)}</span></div>
-        <div class="field"><span class="lab">&nbsp;</span><div class="chips"><button class="btn" type="button" id="ex-open">Open this task in the editor</button></div>
-          <span class="hint">${ex.sim ? `<span class="chips"><button class="chip" type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in your browser</button><button class="chip" type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : "The 3D view replays a recorded rollout of this policy."}</span></div>
-      </div>
+    ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
+      <p class="demo-banner">Example policies, trained and evaluated in advance. Connect compute to evaluate your own runs.</p>
+      <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${esc(e.name)}" ${e === ex ? "selected" : ""}>${esc(e.title)}</option>`).join("")}</select>
+        <span class="hint">${esc(exampleNote(ex))}</span></div>
+      <div class="chips">${ex.sim ? `<span class="seg" role="group" aria-label="Playback"><button type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in your browser</button><button type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : `<span class="hint">The 3D view replays a recorded rollout.</span>`}<button class="btn small" type="button" id="ex-open">Open the task in the editor</button></div>
       <p class="err" id="ex-msg" hidden></p>
       ${statRow(ex.evaluation)}
-      ${ex.sim && S.evalMode === "live" ? `<p class="muted">The policy runs in this page: MuJoCo simulates the muscles${ex.summary && ex.summary.fatigue ? " and their fatigue (every episode starts from a random fatigue state, as in training)" : ""}, and every episode starts from a new pose with targets drawn as in training. <span id="sim-stats">${S.sim ? simStats(S.sim) : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">(reset)</a></p><p class="muted">In the Task step, "Play example policy" runs it on the target ranges you set there, also outside what it was trained on.</p>` : ""}`));
+      ${ex.sim && S.evalMode === "live" ? `<p class="hint">Simulated in this page with MuJoCo: a new start pose and new targets every episode${ex.summary && ex.summary.fatigue ? ", from a random fatigue state" : ""}. <span id="sim-stats">${S.sim ? simStats(S.sim) : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">Reset</a></p><p class="hint">The card over the 3D view shows the muscles: the busiest ones live, the muscle groups per episode. "Play example policy" in the Task step runs it on your own target ranges.</p>` : ""}`));
     if (ws.querySelector("#sim-reset")) ws.querySelector("#sim-reset").addEventListener("click", (e) => {
       e.preventDefault();
       const sim = S.sim;
       if (!sim || !sim.engine) return;
       Object.assign(sim, { wins: 0, episodes: 0, wait: 0 });
       simReset(sim);
+      if (S.mus) { S.mus.meter.reset(); renderMuscleCard(true); }
       $("sim-stats").textContent = "0 of 0 episodes solved in this session";
       renderSceneBar();
     });
@@ -1357,7 +1620,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     return [m.model, `${m.targets} target${m.targets === 1 ? "" : "s"}`, m.fatigue && "fatigue", m.vision && "vision"].filter(Boolean).join(", ");
   };
   const FOLLOW = "__follow__";
-  const isLive = (r) => r.status === "running" || r.status === "starting";
+  const isLive = (r) => ["running", "starting", "stopping"].includes(r.status);
   const ckptLabel = (c, r, newest) => {
     const it = c.match(/model_(\d+|final)/);
     return [it ? (it[1] === "final" ? "final" : "iteration " + it[1]) : c, r.source !== "examples" && ago(r.checkpoint_age_s && r.checkpoint_age_s[c]), newest && r.source !== "examples" && "newest"].filter(Boolean).join(" · ");
@@ -1382,22 +1645,21 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     // An example shows its stored evaluation until it is evaluated again here.
     const stored = !!(run && run.example && !ev.busy && !(ev.result && ev.label && ev.label.startsWith(run.id + " ·")));
     const res = stored ? run.example.evaluation : ev.result;
-    const opt = (r) => `<option value="${r.id}" ${run && r.id === run.id ? "selected" : ""}>${r.name}${runSummary(r) ? " · " + runSummary(r) : ""} · ${r.checkpoints.length} checkpoint${r.checkpoints.length === 1 ? "" : "s"}</option>`;
+    const opt = (r) => `<option value="${esc(r.id)}" ${run && r.id === run.id ? "selected" : ""}>${esc(r.name)}${runSummary(r) ? " · " + esc(runSummary(r)) : ""} · ${r.checkpoints.length} checkpoint${r.checkpoints.length === 1 ? "" : "s"}</option>`;
     const group = (label, list) => (list.length ? `<optgroup label="${label}">${list.map(opt).join("")}</optgroup>` : "");
-    ws.append(h(`<div><span class="eyebrow">Step 7 of 7</span><h2>Evaluate</h2></div>
-      <p class="why"><b>Why it matters:</b> training curves use exploration noise. Evaluation runs the deterministic policy on fresh episodes and reports what you would publish: success rate, time to target, effort and fatigue.</p>
-      ${live.length ? `<p class="muted">Training now: <b>${live.map((r) => r.name).join(", ")}</b>. Its newest checkpoint appears here within seconds of being saved; switch to <a href="#" data-go-step="5">Train</a> for the curves.</p>` : ""}
+    ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
+      ${live.length ? `<p class="muted">Training now: <b>${esc(live.map((r) => r.name).join(", "))}</b>. Its newest checkpoint appears here within seconds of being saved; switch to <a href="#" data-go-step="5">Train</a> for the curves.</p>` : ""}
       <div class="grid2">
         <div class="field"><label for="ev-run">Run</label><select id="ev-run">${runs.length ? group("Training now", live) + group("Started in Studio", studio) + group("Other runs (logs/rsl_rl)", other) + group("Example policies", examples) : "<option>No runs with checkpoints yet</option>"}</select>
-          <span class="hint">${run && run.example ? `${exampleNote(run.example)} · <a href="#" id="ev-open">open its task in the editor</a>` : run ? `${run.status}${run.log_dir ? " · " + run.log_dir.split("/").slice(-2).join("/") : ""}` : ""} · <a href="#" id="ev-refresh">refresh</a></span></div>
-        <div class="field"><label for="ev-ckpt">Checkpoint</label><select id="ev-ckpt" ${choices.length ? "" : "disabled"}>${choices.length ? choices.map((c, i) => `<option value="${c}" ${c === ckpt ? "selected" : ""}>${c === FOLLOW ? "Newest · follows training" : ckptLabel(c, run, c === ckpts[0])}</option>`).join("") : "<option>Waiting for the first checkpoint…</option>"}</select></div>
+          <span class="hint">${run && run.example ? `${esc(exampleNote(run.example))} · <a href="#" id="ev-open">open its task in the editor</a>` : run ? esc(`${run.status}${run.log_dir ? " · " + run.log_dir.split("/").slice(-2).join("/") : ""}`) : ""} · <a href="#" id="ev-refresh">refresh</a></span></div>
+        <div class="field"><label for="ev-ckpt">Checkpoint</label><select id="ev-ckpt" ${choices.length ? "" : "disabled"}>${choices.length ? choices.map((c, i) => `<option value="${esc(c)}" ${c === ckpt ? "selected" : ""}>${c === FOLLOW ? "Newest · follows training" : esc(ckptLabel(c, run, c === ckpts[0]))}</option>`).join("") : "<option>Waiting for the first checkpoint…</option>"}</select></div>
         <div class="field"><label for="ev-eps">Episodes</label><select id="ev-eps">${[64, 256, 1024].map((n) => `<option ${n === (ev.episodes || 64) ? "selected" : ""}>${n}</option>`).join("")}</select></div>
         <div class="field"><span class="lab">&nbsp;</span><div class="chips"><button class="btn primary" type="button" id="ev-go" ${ckpts.length && !ev.busy ? "" : "disabled"}>${ev.busy ? "Evaluating…" : "Evaluate"}</button></div><span class="hint">Success rate and effort over many episodes; the 3D view plays the policy live (<a href="#" id="ev-viser">or in the viser viewer</a>).</span></div>
       </div>
-      ${ev.error ? `<p class="err">${ev.error}</p>` : ""}
-      ${stored ? `<p class="muted">Stored result of this example; Evaluate runs it again on this machine.</p>` : res && ev.label ? `<p class="muted">Result for ${ev.label}</p>` : ""}
+      ${ev.error ? `<p class="err">${esc(ev.error)}</p>` : ""}
+      ${stored ? `<p class="muted">Stored result of this example; Evaluate runs it again on this machine.</p>` : res && ev.label ? `<p class="muted">Result for ${esc(ev.label)}</p>` : ""}
       ${statRow(res)}
-      ${res && res.video ? `<video class="media" src="${S.backend}/api/jobs/${ev.id}/files/${res.video}" controls autoplay muted loop playsinline></video>` : ""}`));
+      ${res && res.video ? `<video class="media" src="${esc(S.backend)}/api/jobs/${encodeURIComponent(ev.id)}/files/${encodeURIComponent(res.video)}" controls autoplay muted loop playsinline></video>` : ""}`));
     const runSel = ws.querySelector("#ev-run"), ckSel = ws.querySelector("#ev-ckpt");
     runSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: null }; S.viewerClosed = false; render(); });
     ckSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: ckSel.value }; });
@@ -1463,48 +1725,156 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       extra_overrides: EXTRA_REWARDS.filter((k) => S.reward[k] > 0).map((k) => `++env.task_config.weighted_reward_keys.${k}=${S.reward[k]}`),
     };
   }
+  function presetObject(value, path) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${path} must be an object`);
+    return value;
+  }
+  function presetNumber(value, path, min = -Infinity, integer = false, max = Infinity) {
+    if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max || (integer && !Number.isSafeInteger(value))) {
+      throw new Error(`${path} must be a finite ${integer ? "integer" : "number"}${min !== -Infinity ? ` >= ${min}` : ""}${max !== Infinity ? ` and <= ${max}` : ""}`);
+    }
+    return value;
+  }
+  function presetBoolean(value, path) {
+    if (typeof value !== "boolean") throw new Error(`${path} must be true or false`);
+    return value;
+  }
+  function presetText(value, path) {
+    if (typeof value !== "string") throw new Error(`${path} must be text`);
+    return value;
+  }
+  function presetVector(value, length, path) {
+    if (!Array.isArray(value) || value.length !== length) throw new Error(`${path} must contain ${length} numbers`);
+    return value.map((v, i) => presetNumber(v, `${path}[${i}]`));
+  }
+  function presetRange(value, path, positive = false) {
+    const range = presetVector(value, 2, path);
+    if (range[0] > range[1] || (positive && range[0] <= 0)) throw new Error(`${path} must be ordered${positive ? " and positive" : ""}`);
+    return range;
+  }
+  function presetQuaternion(value, path) {
+    const q = presetVector(value, 4, path), norm = Math.hypot(...q);
+    if (!Number.isFinite(norm) || norm === 0) throw new Error(`${path} must be a nonzero finite quaternion`);
+    return q.map((v) => v / norm);
+  }
+  function normalizeTarget(value, path, index) {
+    const t = presetObject(value, path);
+    if (!["Sphere", "Button"].includes(t.type)) throw new Error(`${path}.type must be Sphere or Button`);
+    const color = t.color === undefined ? COLORS[index % COLORS.length] : rgbaToHex(t.color);
+    if (!color) throw new Error(`${path}.color must be #RRGGBB, rgb(...) or rgba(...) with valid channel values`);
+    const out = {
+      type: t.type, x: presetRange(t.x, `${path}.x`), y: presetRange(t.y, `${path}.y`), z: presetRange(t.z, `${path}.z`),
+      size: presetRange(t.size === undefined ? [0.01, 0.03] : t.size, `${path}.size`, true),
+      dwell: presetNumber(t.dwell === undefined ? 0.25 : t.dwell, `${path}.dwell`, 0), force: presetNumber(t.force === undefined ? 1 : t.force, `${path}.force`, 0),
+      angle: presetNumber(t.angle === undefined ? 90 : t.angle, `${path}.angle`), color,
+    };
+    for (const k of ["bw", "bh", "bt"]) if (t[k] !== undefined) out[k] = presetNumber(t[k], `${path}.${k}`, Number.MIN_VALUE);
+    if (t.quat !== undefined) out.quat = presetQuaternion(t.quat, `${path}.quat`);
+    for (const k of ["disabled", "turned"]) if (t[k] !== undefined) out[k] = presetBoolean(t[k], `${path}.${k}`);
+    if (t.screenEl !== undefined) out.screenEl = presetNumber(t.screenEl, `${path}.screenEl`, 0, true);
+    return out;
+  }
+  function normalizeScreen(value) {
+    const s = presetObject(value, "screen"), image = presetText(s.image, "screen.image");
+    if (!/^data:image\/[a-z0-9.+-]+[;,]/i.test(image)) throw new Error("screen.image must be an image data URL");
+    if (s.elements !== undefined && !Array.isArray(s.elements)) throw new Error("screen.elements must be an array");
+    return {
+      name: presetText(s.name === undefined ? "Screen" : s.name, "screen.name"), image,
+      width: presetNumber(s.width, "screen.width", Number.MIN_VALUE), height: presetNumber(s.height, "screen.height", Number.MIN_VALUE),
+      widthM: presetNumber(s.widthM, "screen.widthM", Number.MIN_VALUE), pos: presetVector(s.pos, 3, "screen.pos"),
+      quat: presetQuaternion(s.quat === undefined ? [0, 0, 0, 1] : s.quat, "screen.quat"), more: presetNumber(s.more === undefined ? 0 : s.more, "screen.more", 0, true),
+      elements: (s.elements ?? []).map((el, i) => {
+        const e = presetObject(el, `screen.elements[${i}]`), p = `screen.elements[${i}]`;
+        return { name: presetText(e.name === undefined ? "" : e.name, `${p}.name`), x: presetNumber(e.x, `${p}.x`), y: presetNumber(e.y, `${p}.y`),
+          w: presetNumber(e.w, `${p}.w`, Number.MIN_VALUE), h: presetNumber(e.h, `${p}.h`, Number.MIN_VALUE) };
+      }),
+    };
+  }
+  function normalizePreset(value) {
+    const p = presetObject(value, "preset"), out = structuredClone(DEFAULTS);
+    // A partial preset resets omitted fields, including targets, to defaults. Parse everything
+    // before touching S: a bad final target must not erase a user's already edited setup.
+    out.task.reject_unreachable = false;
+    if (p.bm !== undefined) {
+      const b = presetObject(p.bm, "bm");
+      for (const key of Object.keys(out.bm)) {
+        if (b[key] === undefined) continue;
+        if (typeof out.bm[key] === "boolean") out.bm[key] = presetBoolean(b[key], `bm.${key}`);
+        else if (key === "ctrl_dt") out.bm[key] = presetNumber(b[key], "bm.ctrl_dt", Number.MIN_VALUE);
+        else out.bm[key] = presetText(b[key], `bm.${key}`);
+      }
+      if (!MODELS.some((m) => m.id === out.bm.bm_model)) throw new Error(`bm.bm_model is not offered in Studio: ${out.bm.bm_model}`);
+      if (!RESETS.some(([r]) => r === out.bm.reset_type)) throw new Error(`bm.reset_type is not supported: ${out.bm.reset_type}`);
+      if (!["mjlab", "warp", "mjx", "mujoco"].includes(out.bm.mj_impl_type)) throw new Error("bm.mj_impl_type is not supported");
+    }
+    if (p.task !== undefined) {
+      const t = presetObject(p.task, "task");
+      if (t.max_duration !== undefined) out.task.max_duration = presetNumber(t.max_duration, "task.max_duration", Number.MIN_VALUE);
+      if (t.reject_oor !== undefined) out.task.reject_unreachable = presetBoolean(t.reject_oor, "task.reject_oor");
+    }
+    if (p.rl !== undefined) {
+      const r = presetObject(p.rl, "rl"), fields = {
+        steps: "Number of Total Training Steps", envs: "Number of Parallel Environments", unroll: "Unroll Length",
+        minibatches: "Number of Minibatches", epochs: "Number of Epochs Per Update", ckpt: "Checkpoint Interval (in Number of Training Iterations)", seed: "Target Initial Seed",
+      };
+      for (const [key, label] of Object.entries(fields)) {
+        let v = r[label] === undefined ? (key === "steps" ? r["Number of Training Steps"] : undefined) : r[label];
+        // Older Studio selects saved parallel environment counts as decimal strings.
+        if (key === "envs" && typeof v === "string" && /^\d+$/.test(v)) v = Number(v);
+        if (v !== undefined) out.rl[key] = presetNumber(v, `rl.${label}`, ["steps", "seed"].includes(key) ? 0 : 1, true, key === "seed" ? 4294967295 : Infinity);
+      }
+    }
+    if (p.reward !== undefined) {
+      const r = presetObject(p.reward, "reward");
+      for (const key of Object.keys(out.reward)) if (r[key] !== undefined) out.reward[key] = presetNumber(r[key], `reward.${key}`);
+    }
+    if (p.extra_overrides !== undefined && !Array.isArray(p.extra_overrides)) throw new Error("extra_overrides must be an array of text");
+    for (const [i, override] of (p.extra_overrides ?? []).entries()) {
+      const o = presetText(override, `extra_overrides[${i}]`), m = o.match(/^(?:\+\+?)?env\.task_config\.weighted_reward_keys\.(\w+)=([-+\d.eE]+)$/);
+      if (m && EXTRA_REWARDS.includes(m[1])) out.reward[m[1]] = presetNumber(Number(m[2]), `extra_overrides[${i}]`);
+    }
+    if (p.obs !== undefined) {
+      const obs = presetObject(p.obs, "obs");
+      for (const [key, group] of [["qpos", "body"], ["qvel", "fatigue"], ["qacc", "vision"], ["ee_pos", "task"]]) {
+        if (obs[key] === undefined) continue;
+        if (!Array.isArray(obs[key]) || obs[key].length > OBS[group].length) throw new Error(`obs.${key} must be an array of at most ${OBS[group].length} booleans`);
+        obs[key].forEach((v, i) => { out.obs[OBS[group][i][0]] = presetBoolean(v, `obs.${key}[${i}]`); });
+      }
+    }
+    if (p.num_targets !== undefined || p.target_1 !== undefined) {
+      const n = presetNumber(p.num_targets === undefined ? 1 : p.num_targets, "num_targets", 1, true);
+      out.targets = [];
+      for (let i = 0; i < n; i++) {
+        const path = `target_${i + 1}`, t = presetObject(p[path], path);
+        if (!["Sphere", "Box", "Button"].includes(t.radio)) throw new Error(`${path}.radio must be Sphere, Box or Button`);
+        const isBox = t.radio !== "Sphere", sp = t.sphere === undefined ? {} : presetObject(t.sphere, `${path}.sphere`), bx = t.box === undefined ? {} : presetObject(t.box, `${path}.box`);
+        out.targets.push(normalizeTarget({
+          type: isBox ? "Button" : "Sphere", x: isBox ? bx.box_position_x : sp.x_range,
+          y: isBox ? bx.box_position_y : sp.y_range, z: isBox ? bx.box_position_z : sp.z_range,
+          size: sp.size_range, dwell: sp.dwell_duration, force: bx.min_touch_force, angle: bx.orientation_angle,
+          ...(isBox && bx.box_size_x !== undefined ? { bw: presetRange(bx.box_size_x, `${path}.box.box_size_x`, true)[0] } : {}),
+          ...(isBox && bx.box_size_y !== undefined ? { bh: presetRange(bx.box_size_y, `${path}.box.box_size_y`, true)[0] } : {}),
+          ...(isBox && bx.box_thickness !== undefined ? { bt: bx.box_thickness } : {}), ...(isBox && bx.quat !== undefined ? { quat: bx.quat } : {}),
+          color: isBox ? bx.rgb : sp.rgb,
+        }, path, i));
+      }
+    }
+    return out;
+  }
   function fromPreset(p) {
-    // A preset is a whole setup: what it does not mention goes back to the defaults, not to whatever
-    // was set before. Without "reject_oor" a preset means no rejection of out-of-reach targets.
-    for (const k of Object.keys(DEFAULTS)) S[k] = structuredClone(DEFAULTS[k]);
-    S.task.reject_unreachable = false;
-    if (p.bm) Object.assign(S.bm, p.bm);
-    if (!MODELS.some((m) => m.id === S.bm.bm_model)) S.bm.bm_model = MODELS[0].id;  // a body model Studio no longer offers
-    if (p.task && p.task.max_duration) S.task.max_duration = p.task.max_duration;
-    if (p.task && "reject_oor" in p.task) S.task.reject_unreachable = !!p.task.reject_oor;
-    if (p.rl) {
-      const r = p.rl;
-      S.rl = { steps: r["Number of Total Training Steps"] ?? S.rl.steps, envs: r["Number of Parallel Environments"] ?? S.rl.envs, unroll: r["Unroll Length"] ?? S.rl.unroll, minibatches: r["Number of Minibatches"] ?? S.rl.minibatches, epochs: r["Number of Epochs Per Update"] ?? S.rl.epochs, ckpt: r["Checkpoint Interval (in Number of Training Iterations)"] ?? S.rl.ckpt, seed: r["Target Initial Seed"] ?? S.rl.seed };
-    }
-    if (p.reward) for (const k of Object.keys(S.reward)) if (k in p.reward) S.reward[k] = p.reward[k];
-    for (const o of p.extra_overrides || []) {
-      const m = o.match(/weighted_reward_keys\.(\w+)=([-\d.eE]+)$/);
-      if (m && EXTRA_REWARDS.includes(m[1])) S.reward[m[1]] = +m[2];
-    }
-    if (p.obs) {
-      const groups = [["qpos", "body"], ["qvel", "fatigue"], ["qacc", "vision"], ["ee_pos", "task"]];
-      for (const [key, g] of groups) if (Array.isArray(p.obs[key])) OBS[g].forEach(([k], i) => { if (i < p.obs[key].length) S.obs[k] = !!p.obs[key][i]; });
-    }
-    const n = Math.max(1, p.num_targets || 1);
-    const ts = [];
-    for (let i = 0; i < n; i++) {
-      const t = p[`target_${i + 1}`];
-      if (!t) break;
-      const sp = t.sphere || {}, bx = t.box || {};
-      const isBox = t.radio === "Box" || t.radio === "Button";
-      ts.push({
-        type: isBox ? "Button" : "Sphere",
-        x: isBox ? bx.box_position_x : sp.x_range, y: isBox ? bx.box_position_y : sp.y_range, z: isBox ? bx.box_position_z : sp.z_range,
-        size: sp.size_range || [0.01, 0.03], dwell: sp.dwell_duration ?? 0.25, force: bx.min_touch_force ?? 1, angle: bx.orientation_angle ?? 90,
-        ...(isBox && bx.box_size_x && bx.box_size_x[0] !== 0.05 ? { bw: bx.box_size_x[0] } : {}), ...(isBox && bx.box_size_y && bx.box_size_y[0] !== 0.05 ? { bh: bx.box_size_y[0] } : {}),
-        ...(isBox && bx.box_thickness ? { bt: bx.box_thickness } : {}), ...(isBox && bx.quat ? { quat: bx.quat } : {}),
-        color: rgbaToHex((isBox ? bx.rgb : sp.rgb) || "") || COLORS[i % COLORS.length],
-      });
-    }
-    if (ts.length) S.targets = ts;
+    const parsed = normalizePreset(p);
+    Object.assign(S, parsed, { screen: null, sel: null, row: null, importError: null });
   }
   function hexToRgba(hex) { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},1)`; }
-  function rgbaToHex(s) { const m = s.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/); if (!m) return null; return "#" + [m[1], m[2], m[3]].map((v) => Math.round(+v).toString(16).padStart(2, "0")).join(""); }
+  function rgbaToHex(s) {
+    if (typeof s !== "string") return null;
+    if (/^#[0-9a-f]{6}$/i.test(s)) return s.toLowerCase();
+    const m = s.match(/^(rgb|rgba)\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/);
+    if (!m || (m[1] === "rgba") !== (m[5] !== undefined)) return null;
+    const channels = m.slice(2, 5).map(Number), alpha = m[5] === undefined ? 1 : Number(m[5]);
+    if (channels.some((v) => !Number.isFinite(v) || v < 0 || v > 255) || !Number.isFinite(alpha) || alpha < 0 || alpha > 1) return null;
+    return "#" + channels.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("");
+  }
 
   // The Gradio task builder takes at most 15 targets; Studio and the command line take any number.
   const GRADIO_MAX_TARGETS = 15;
@@ -1525,11 +1895,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       ["Targets", liveTargets().map((t) => t.type).join(", ")], ["Episode", S.task.max_duration + " s"],
       ["Observations", obsOn.length + " signals"], ["Reward", rw.join(", ") || "none"],
       ["Budget", fmt(S.rl.steps) + " steps · " + S.rl.envs + " envs"],
+      ...(wandbOn() ? [["W&B", wandbTarget()]] : []),
     ];
-    $("summary-kv").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+    $("summary-kv").innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
     if (document.activeElement !== $("preset-name")) $("preset-name").value = S.preset;
     $("preset-name").title = S.imported ? "From your link · click to rename" : "Click to rename this setup";
-    if (S.importError) $("preset-msg").textContent = S.importError;
+    $("cfg-msg").textContent = S.importError || "";
     $("cfg-json").textContent = JSON.stringify(toPreset(), null, 1).slice(0, 4000);
     saveDraft();
     const t = TARGETS[S.target];
@@ -1558,12 +1929,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function importSetupFromHash() {
     if (!location.hash.startsWith("#setup=")) return false;
     try {
-      const data = JSON.parse(unb64url(location.hash.slice(7)));
-      fromPreset(data.preset);
-      S.preset = data.name || "untitled";
-      if (Number.isInteger(data.step)) S.step = data.step;
-      S.imported = true;
-    } catch (e) { S.importError = "The setup in this link could not be read."; }
+      const data = presetObject(JSON.parse(unb64url(location.hash.slice(7))), "setup"), parsed = normalizePreset(data.preset);
+      const name = data.name === undefined ? "untitled" : presetText(data.name, "setup.name");
+      const step = data.step === undefined ? 0 : presetNumber(data.step, "setup.step", 0, true, STEPS.length - 1);
+      Object.assign(S, parsed, { preset: name, step, imported: true, importError: null, screen: null, sel: null, row: null });
+    } catch (e) { S.importError = "The setup in this link could not be read: " + e.message; }
     history.replaceState(null, "", location.pathname + location.search);
     return true;
   }
@@ -1577,13 +1947,22 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     try {
       const raw = localStorage.getItem("studio-draft");
       if (!raw) return;
-      const data = JSON.parse(raw);
-      fromPreset(data.preset);
-      S.preset = data.name || "untitled";
+      const data = presetObject(JSON.parse(raw), "draft"), parsed = normalizePreset(data.preset);
+      const name = data.name === undefined ? "untitled" : presetText(data.name, "draft.name");
+      const screen = data.screen === undefined || data.screen === null ? null : normalizeScreen(data.screen);
       // the list as it was edited: targets that are switched off and those pinned to a screen included
-      if (Array.isArray(data.targets) && data.targets.length && data.targets.filter((t) => !t.disabled).length === S.targets.length) S.targets = data.targets;
-      if (data.screen) S.screen = data.screen; else S.targets.forEach((t) => delete t.screenEl);
-    } catch (e) {}
+      if (data.targets !== undefined) {
+        if (!Array.isArray(data.targets) || !data.targets.length) throw new Error("draft.targets must be a nonempty array");
+        const targets = data.targets.map((t, i) => normalizeTarget(t, `draft.targets[${i}]`, i));
+        if (targets.filter((t) => !t.disabled).length !== parsed.targets.length) throw new Error("draft.targets does not match the preset's active target count");
+        parsed.targets = targets;
+      }
+      parsed.targets.forEach((t) => {
+        if (!screen) delete t.screenEl;
+        else if (t.screenEl !== undefined && t.screenEl >= screen.elements.length) throw new Error("draft target refers to a missing screen element");
+      });
+      Object.assign(S, parsed, { preset: name, screen, importError: null, sel: null, row: null });
+    } catch (e) { S.importError = "The saved draft could not be restored: " + e.message; }
   }
   function openConnect() {
     const dlg = $("connect-dialog"), cards = $("conn-cards");
@@ -1678,7 +2057,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     sceneFocus();
     try { localStorage.setItem("studio-summary-closed", closed ? "1" : ""); } catch (e) {}
   });
-  try { if (localStorage.getItem("studio-summary-closed")) $("summary-toggle").click(); } catch (e) {}
+  // The summary starts minimised on narrow screens, where it sits below the step panel.
+  try { if (localStorage.getItem("studio-summary-closed") ?? (matchMedia("(max-width: 1100px)").matches ? "1" : "")) $("summary-toggle").click(); } catch (e) {}
   // Save configuration: the setup as <name>.json, the preset format the backend, the Gradio UI and myo_train read.
   function saveConfiguration() {
     const blob = new Blob([JSON.stringify(toPreset(), null, 2) + "\n"], { type: "application/json" });
@@ -1687,9 +2067,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   }
   document.addEventListener("click", (ev) => { if (ev.target.closest("[data-save-cfg]")) saveConfiguration(); });
-  $("import-cfg").addEventListener("change", (ev) => {
+  $("import-cfg").addEventListener("change", async (ev) => {
     const f = ev.target.files[0]; if (!f) return;
-    f.text().then((txt) => { try { fromPreset(JSON.parse(txt)); S.preset = f.name.replace(/\.json$/, ""); $("cfg-msg").textContent = ""; render(); } catch (e) { $("cfg-msg").textContent = "Could not read " + f.name + " as a configuration."; } ev.target.value = ""; });
+    try { fromPreset(JSON.parse(await f.text())); S.preset = f.name.replace(/\.json$/, ""); $("cfg-msg").textContent = ""; render(); }
+    catch (e) { S.importError = "Could not read " + f.name + ": " + e.message; $("cfg-msg").textContent = S.importError; }
+    finally { ev.target.value = ""; }
   });
   // Loads the pointing task example (its preset: body, target, sensing, reward, budget) and opens the Task step.
   $("hero-preset").addEventListener("click", async (ev) => {
@@ -1701,7 +2083,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   });
   function renderPresetList() {
     $("preset-row").hidden = !S.backend;
-    $("preset-select").innerHTML = S.presets.map((p) => `<option value="${p.name}">${p.name}${p.source === "user" ? " (yours)" : ""}</option>`).join("");
+    $("preset-select").innerHTML = S.presets.map((p) => `<option value="${esc(p.name)}">${esc(p.name)}${p.source === "user" ? " (yours)" : ""}</option>`).join("");
   }
   $("preset-load").addEventListener("click", async () => {
     const name = $("preset-select").value;
