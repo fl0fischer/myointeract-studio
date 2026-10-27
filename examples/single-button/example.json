@@ -12,14 +12,17 @@
   "checkpoint": "model_final.onnx",
   "episodes": 1024,
   "vision": false,
-  "success_rate": 0.9873046875,
-  "time_to_success_s": 0.9042037129402161,
-  "mean_excitation": 0.10300572216510773,
-  "final_mf": null
+  "success_rate": 0.9892578125,
+  "time_to_success_s": 0.8408688306808472,
+  "mean_excitation": 0.11275121569633484,
+  "final_mf": null,
+  "targets_reached": [
+   0.9892578125
+  ]
  },
  "replay": {
   "file": "replay.bin",
-  "floats": 442,
+  "floats": 469,
   "frames": 400,
   "hello": {
    "type": "hello",
@@ -135,6 +138,197 @@
     "BRD",
     "PT",
     "PQ"
+   ],
+   "joints": [
+    {
+     "name": "elv_angle",
+     "range": [
+      -1.658,
+      2.269
+     ]
+    },
+    {
+     "name": "shoulder_elv",
+     "range": [
+      0.0,
+      3.142
+     ]
+    },
+    {
+     "name": "shoulder_rot",
+     "range": [
+      -1.571,
+      2.094
+     ]
+    },
+    {
+     "name": "elbow_flexion",
+     "range": [
+      0.0,
+      2.269
+     ]
+    },
+    {
+     "name": "pro_sup",
+     "range": [
+      -1.5708,
+      1.5708
+     ]
+    },
+    {
+     "name": "deviation_r",
+     "range": [
+      -0.174533,
+      0.436332
+     ]
+    },
+    {
+     "name": "flexion_r",
+     "range": [
+      -0.785398,
+      0.785398
+     ]
+    },
+    {
+     "name": "cmc_flexion",
+     "range": [
+      -0.78,
+      0.7
+     ]
+    },
+    {
+     "name": "cmc_abduction",
+     "range": [
+      -0.5,
+      0.78
+     ]
+    },
+    {
+     "name": "mp_flexion_r",
+     "range": [
+      -0.785398,
+      0.698132
+     ]
+    },
+    {
+     "name": "ip_flexion_r",
+     "range": [
+      -1.309,
+      0.436332
+     ]
+    },
+    {
+     "name": "mcp2_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "mcp2_abduction_r",
+     "range": [
+      -0.261799,
+      0.261799
+     ]
+    },
+    {
+     "name": "pm2_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "md2_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "mcp3_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "mcp3_abduction_r",
+     "range": [
+      -0.261799,
+      0.261799
+     ]
+    },
+    {
+     "name": "pm3_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "md3_flexion",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "mcp4_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "mcp4_abduction_r",
+     "range": [
+      -0.261799,
+      0.261799
+     ]
+    },
+    {
+     "name": "pm4_flexion",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "md4_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "mcp5_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "mcp5_abduction_r",
+     "range": [
+      -0.261799,
+      0.261799
+     ]
+    },
+    {
+     "name": "pm5_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    },
+    {
+     "name": "md5_flexion_r",
+     "range": [
+      0.0,
+      1.5708
+     ]
+    }
    ],
    "ctrl_dt": 0.05
   }

@@ -44,6 +44,18 @@ export class TaskSim {
       this.actAdr.push(m.actuator_actadr[a]);
       this.muscleNames.push(mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_ACTUATOR.value, a).split("/").pop());
     }
+    // joints the scene reports (as studio/worker.py shown_joints): limited hinges and slides, not driven
+    // by another joint through an equality constraint and not on a mocap body
+    const driven = new Set();
+    for (let e = 0; e < m.neq; e++) if (m.eq_type[e] === mujoco.mjtEq.mjEQ_JOINT.value) driven.add(m.eq_obj1id[e]);
+    this.jointAdr = [];
+    this.jointInfo = [];
+    for (let j = 0; j < m.njnt; j++) {
+      const kind = m.jnt_type[j];
+      if ((kind !== mujoco.mjtJoint.mjJNT_HINGE.value && kind !== mujoco.mjtJoint.mjJNT_SLIDE.value) || !m.jnt_limited[j] || driven.has(j) || m.body_mocapid[m.jnt_bodyid[j]] >= 0) continue;
+      this.jointAdr.push(m.jnt_qposadr[j]);
+      this.jointInfo.push({ name: mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT.value, j).split("/").pop(), range: [m.jnt_range[2 * j], m.jnt_range[2 * j + 1]] });
+    }
     // per target: its body and geom, and for a button the address of its touch sensor's reading
     this.targets = this.task.targets.map((t) => ({
       ...t,
@@ -195,16 +207,22 @@ export class TaskSim {
   get timedOut() { return this.steps >= this.task.max_steps; }
 
   // The scene's live frame: per body position (3), then orientation (w, x, y, z), then each target's
-  // position, then each muscle's activation (as the backend's live feed, studio/worker.py).
+  // position, then each muscle's activation, then each joint's angle (as the backend's live feed, studio/worker.py).
   frame(out) {
-    const { model: m, data: d } = this, nb = m.nbody, nt = this.targets.length;
-    const f = out || new Float32Array(7 * nb + 3 * nt + this.actAdr.length);
+    const { model: m, data: d } = this, nb = m.nbody, nt = this.targets.length, na = this.actAdr.length;
+    const f = out || new Float32Array(this.frameLength);
     f.set(d.xpos.subarray(0, 3 * nb), 0);
     f.set(d.xquat.subarray(0, 4 * nb), 3 * nb);
     this.targets.forEach((t, i) => f.set(d.xipos.subarray(3 * t.bodyId, 3 * t.bodyId + 3), 7 * nb + 3 * i));
     this.actAdr.forEach((a, k) => { f[7 * nb + 3 * nt + k] = d.act[a]; });
+    this.jointAdr.forEach((a, k) => { f[7 * nb + 3 * nt + na + k] = d.qpos[a]; });
     return f;
   }
+
+  get frameLength() { return 7 * this.model.nbody + 3 * this.targets.length + this.actAdr.length + this.jointAdr.length; }
+
+  // Targets reached in the running episode (they are visited in order).
+  get reached() { return this.current; }
 
   // Fatigued share (MF) per actuator, or null for a task without fatigue.
   get muscleFatigue() { return this.fatigue ? this.MF : null; }

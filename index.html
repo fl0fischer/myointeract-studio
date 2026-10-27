@@ -75,8 +75,8 @@ p { margin: 0; }
 .nav-in { max-width: 1440px; margin: 0 auto; padding: 9px 20px; display: flex; align-items: center; gap: 16px; }
 .brand { font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .brand-mark { width: 24px; height: 24px; flex: none; }
-.nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.92rem; }
-.nav a.link:hover { color: var(--ink); }
+.nav a.link, .nav .link-btn { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.92rem; }
+.nav a.link:hover, .nav .link-btn:hover { color: var(--ink); }
 .spacer { flex: 1; }
 .pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 0.8rem; white-space: nowrap; min-width: 0; }
 #conn-text { overflow: hidden; text-overflow: ellipsis; }
@@ -98,6 +98,20 @@ p { margin: 0; }
 .hero p.lead { font-size: 1.05rem; color: var(--hero-muted); margin-top: 12px; max-width: 48ch; }
 .hero .cta { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .hero .btn { border-color: var(--hero-line); background: transparent; color: var(--hero-ink); }
+/* walkthrough: a ring around the explained element, the card beside it */
+.tour-ring { position: fixed; z-index: 60; border: 2px solid var(--accent); border-radius: 14px; box-shadow: 0 0 0 9999px rgba(10, 12, 20, 0.38); pointer-events: none; transition: all 0.25s ease; }
+.tour-card { position: fixed; z-index: 61; width: min(340px, calc(100vw - 16px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px; display: grid; gap: 6px; transition: left 0.25s ease, top 0.25s ease; }
+.tour-card h3 { font-size: 1rem; margin: 0; }
+.tour-card p { font-size: 0.84rem; line-height: 1.45; margin: 0; color: var(--muted); }
+.tour-count { font-size: 0.68rem; color: var(--muted); font-family: var(--font-mono); }
+.tour-actions { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.tour-actions > span { flex: 1; }
+.tour-actions .link-btn { font-size: 0.8rem; color: var(--muted); }
+.hero .paper-ref { font-size: 0.82rem; color: var(--hero-muted); margin-top: 10px; max-width: 60ch; }
+.hero .paper-ref a, .hero .paper-ref .link-btn { color: var(--hero-hi); }
+.link-btn { all: unset; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.link-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#cite-bib { white-space: pre-wrap; overflow-wrap: anywhere; max-height: none; }
 .hero .btn.primary { background: var(--hero-hi); color: var(--hero-a); border-color: var(--hero-hi); }
 .steps-strip { display: grid; gap: 8px; }
 .strip-item { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.9rem; }
@@ -231,6 +245,10 @@ details.json > summary { cursor: pointer; font-size: 0.8rem; color: var(--muted)
 .stat { border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px; background: color-mix(in srgb, var(--tint) 45%, var(--surface)); }
 .stat b { font-family: var(--font-display); font-size: 1.02rem; display: block; font-variant-numeric: tabular-nums; }
 .stat span { color: var(--muted); font-size: 0.7rem; line-height: 1.25; display: block; }
+/* training tiles that pick the curve below */
+.stat-btn { font: inherit; color: inherit; text-align: left; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+.stat-btn:hover { border-color: color-mix(in srgb, var(--ink) 28%, var(--line)); }
+.stat-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .log { font-family: var(--font-mono); font-size: 0.74rem; background: var(--tint); border-radius: 10px; padding: 10px 12px; max-height: 140px; overflow: auto; }
 .demo-banner { font-size: 0.78rem; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; }
 .handoff { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
@@ -264,6 +282,20 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .mgroup-head { font-size: 0.68rem; }
 .mgroup-head > span:nth-child(2) { white-space: nowrap; }
 .mcard-note { font-size: 0.7rem; color: var(--muted); }
+/* evaluation: share of episodes that reached each target */
+.tgt-box { display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+.tgt-box b { font-size: 0.82rem; }
+.tgt-row { display: grid; grid-template-columns: 76px minmax(0, 1fr) 40px; gap: 8px; align-items: center; font-size: 0.76rem; }
+.tgt-row .mono { text-align: right; color: var(--muted); }
+/* joints: the band is a range of angles, the dot the angle now (red at a limit) */
+.mcard-kind { all: unset; cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 0.84rem; padding-right: 14px; background: linear-gradient(45deg, transparent 50%, var(--muted) 50%) right 3px center / 5px 5px no-repeat, linear-gradient(-45deg, transparent 50%, var(--muted) 50%) right 0 center / 5px 5px no-repeat; }
+.mcard-kind:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.jtrack { overflow: visible; }
+.mbar.jrow, .mgroup.jrow { grid-template-columns: minmax(0, 1fr) 64px 34px; }
+.jband { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.jdot, .jdot-key { position: absolute; top: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1.5px var(--surface); }
+.jdot.limit { background: var(--warn); }
+.jdot-key { position: static; display: inline-block; margin: 0 2px 0 0; vertical-align: -1px; width: 8px; height: 8px; }
 
 @media (max-width: 1100px) {
   .nav { position: static; }
@@ -321,6 +353,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     <span class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M8 23 L14 13 L21 16" fill="none" stroke="var(--accent-ink)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="23" r="2.4" fill="var(--accent-ink)"/><circle cx="14" cy="13" r="2.4" fill="var(--accent-ink)"/><circle cx="25" cy="9" r="3.2" fill="none" stroke="var(--logo-target, #14161b)" stroke-width="2.2"/><circle cx="25" cy="9" r="0.9" fill="var(--logo-target, #14161b)"/></svg><span>MyoInteract<span class="wide"> Studio</span></span></span>
     <a class="link" href="#studio">Studio</a>
     <a class="link" href="https://github.com/fl0fischer/myointeract">GitHub</a>
+    <a class="link" href="https://arxiv.org/abs/2602.15245" target="_blank" rel="noopener">Paper</a>
+    <button class="link link-btn" type="button" data-cite>Cite</button>
     <span class="spacer"></span>
     <span class="pill" id="conn-pill"><span class="dot"></span><span id="conn-text">Demo mode</span></span>
     <button class="btn" id="connect-btn" type="button">Connect<span class="wide"> compute</span></button>
@@ -330,10 +364,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 <header class="hero">
   <div class="hero-in">
     <div>
-      <h1>Teach a <em>muscle-driven arm</em> to point, press and type.</h1>
+      <h1>Teach a <em>muscle-driven user model</em> to interact with your interface</h1>
       <p class="lead">Design an interaction task, train it on a GPU, and watch the policy move in your browser.</p>
+      <p class="paper-ref">From the DIS 2026 paper by Ankit Bhattarai, Hannah Selder, Florian Fischer, Arthur Fleig and Per Ola Kristensson. <a href="https://arxiv.org/abs/2602.15245" target="_blank" rel="noopener">Read the paper</a> · <button class="link-btn" type="button" data-cite>Cite it</button></p>
       <div class="cta">
-        <a class="btn primary" href="#studio">Open the studio</a>
+        <button class="btn primary" type="button" id="hero-tour">Walkthrough</button>
         <button class="btn" type="button" id="hero-preset">Try the pointing example</button>
       </div>
     </div>
@@ -346,9 +381,9 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 </header>
 
 <section class="facts" aria-label="Highlights">
-  <div class="fact"><b>5 arm models</b><span>MyoArm and MoBL, with or without hand</span></div>
-  <div class="fact"><b>Any number of targets</b><span>Spheres to point at, buttons to press</span></div>
-  <div class="fact"><b>Runs in your browser</b><span>MuJoCo in WebAssembly, nothing to install</span></div>
+  <div class="fact"><b>Cutting-edge arm and hand models</b><span>MyoArm and MoBL, with or without hand</span></div>
+  <div class="fact"><b>Complex pointing sequences</b><span>Spheres to point at, buttons to press</span></div>
+  <div class="fact"><b>Train and evaluate directly in your browser</b><span>MuJoCo in WebAssembly, nothing to install</span></div>
   <div class="fact"><b>~50 000 steps/s</b><span>4096 environments on one RTX 5090</span></div>
 </section>
 
@@ -363,7 +398,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   <aside class="summary" id="summary" aria-label="Configuration summary">
     <div class="panel">
       <button class="min-btn" type="button" id="summary-toggle" aria-expanded="true" aria-label="Minimise the summary" title="Minimise">&ndash;</button>
-      <div class="group-title"><h3>Your setup</h3><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"></div>
+      <div class="group-title"><h3>My setup</h3><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"></div>
       <div class="summary-body">
         <dl class="kv" id="summary-kv"></dl>
         <div class="summary-sec">
@@ -371,7 +406,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
           <span class="hint" id="est-note"></span>
         </div>
         <div class="summary-sec">
-          <div class="field" id="preset-row" hidden><label for="preset-select">Presets on the backend</label>
+          <div class="field" id="preset-row" hidden><label for="preset-select" title="Task setups stored on the connected backend: the bundled examples and the ones saved here">Saved setups</label>
             <div class="chips"><select id="preset-select" style="flex:1; width:auto"></select><button class="chip" type="button" id="preset-load">Load</button><button class="chip" type="button" id="preset-save">Save as…</button></div>
             <span class="err" id="preset-msg"></span></div>
           <div class="chips"><button class="btn small primary" type="button" data-save-cfg>Save configuration</button><label class="btn small" for="import-cfg" style="cursor:pointer">Upload</label><button class="chip" type="button" id="reset-setup" title="Back to the default setup (the browser keeps your setup otherwise)">Reset</button></div>
@@ -387,6 +422,24 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   </aside>
   </div>
 </main>
+
+<dialog id="cite-dialog" aria-labelledby="cite-title">
+  <form method="dialog" style="display:grid; gap:12px">
+    <button class="min-btn dialog-close" value="cancel" type="submit" aria-label="Close" title="Close">&times;</button>
+    <h3 id="cite-title">Cite MyoInteract</h3>
+    <p style="font-size:0.88rem; margin:0">Ankit Bhattarai, Hannah Selder, Florian Fischer, Arthur Fleig and Per Ola Kristensson. <b>MyoInteract: A Framework for Fast Prototyping of Biomechanical HCI Tasks using Reinforcement Learning.</b> Designing Interactive Systems (DIS) 2026. <a href="https://arxiv.org/abs/2602.15245" target="_blank" rel="noopener">arXiv:2602.15245</a></p>
+    <pre class="code" id="cite-bib">@misc{bhattarai2026myointeractframeworkfastprototyping,
+  title={MyoInteract: A Framework for Fast Prototyping of Biomechanical HCI Tasks using Reinforcement Learning},
+  author={Ankit Bhattarai and Hannah Selder and Florian Fischer and Arthur Fleig and Per Ola Kristensson},
+  year={2026},
+  eprint={2602.15245},
+  archivePrefix={arXiv},
+  primaryClass={cs.HC},
+  url={https://arxiv.org/abs/2602.15245},
+}</pre>
+    <div class="foot" style="justify-content:flex-end"><button class="btn primary" type="button" id="cite-copy">Copy BibTeX</button></div>
+  </form>
+</dialog>
 
 <dialog id="wandb-dialog" aria-labelledby="wandb-title">
   <form method="dialog" style="display:grid; gap:14px">
@@ -413,7 +466,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     <div class="foot" style="justify-content:flex-end"><button class="btn primary" type="button" id="conn-go">Connect</button></div>
     <span class="muted" id="conn-status" role="status"></span>
     <div class="handoff" id="handoff" hidden>
-      <h4>Or continue on your machine</h4>
+      <h4>Or continue on my machine</h4>
       <p class="muted">A page hosted on another website may not be allowed to reach a server on your computer. Start <span class="mono">myo_studio serve</span>, then open your local Studio with everything you set here.</p>
       <div class="chips"><a class="btn primary" id="handoff-link" href="http://localhost:8000/" target="_blank" rel="noopener">Open local Studio with this setup</a><button class="btn" type="button" id="handoff-copy">Copy setup</button></div>
       <span class="hint">The setup travels in the link after the "#", which browsers never send to a server. If the link does not open, save the configuration here and upload it in the local Studio.</span>
@@ -461,14 +514,15 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   const EXTRA_REWARDS = REWARDS.filter((r) => r[6]).map((r) => r[0]);
   const TARGETS = {
     "Google Colab": { key: "colab", speed: 9000, note: "Free T4 GPU, about 5x slower than an RTX 5090. Studio runs inside the Colab session.", cmd: "# open in Colab and run the two cells:\n# https://colab.research.google.com/github/fl0fischer/myointeract/blob/main/tutorials/myointeract/studio_colab.ipynb\nfrom myoInteract.studio.colab import launch\nlaunch()  # prints the link that opens Studio" },
-    "This machine": { key: "local", speed: 48000, note: "Your own NVIDIA GPU.", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages" },
-    "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Space in your Hugging Face account, on the GPU you pick there.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
+    "This machine": { key: "local", speed: 48000, note: "My own NVIDIA GPU.", cmd: "pip install \"myoInteract[all] @ git+https://github.com/fl0fischer/myointeract.git@v1.0.0a1\"\nmyo_studio serve               # opens http://localhost:8000; prints the pairing code for hosted pages" },
+    "Hugging Face Space": { key: "hf", speed: 9000, note: "A private Space in my Hugging Face account, on the GPU you pick there.", cmd: "# New Space -> Docker -> Blank, private; then upload the template:\nhf upload <user>/myointeract-studio hf_space_studio . --repo-type space\n# pick GPU hardware in the Space's settings and open the Space" },
     "Lab server": { key: "remote", speed: 30000, note: "Any machine with an NVIDIA GPU, reached through SSH.", cmd: "ssh -L 8000:localhost:8000 you@gpu-server\nmyo_studio serve --no-browser  # then open http://localhost:8000" },
   };
   const COLORS = ["#d9432a", "#3b4250", "#c98a2b", "#7a4a8c", "#2f7d6d", "#8a8f98"];
 
   /* ---------------------------------------------------------------- state */
   const S = {
+    runMetric: "success",  // the curve the Train step plots
     step: 0, done: new Set(), preset: "untitled", target: "This machine", backend: null,
     bm: { bm_model: "MyoArm_nohand", ctrl_dt: 0.05, reset_type: "epsilon_uniform", sigdepnoise_enabled: false, constantnoise_enabled: false, fatigue_enabled: false, mj_impl_type: "mjlab" },
     task: { max_duration: 4, reject_unreachable: true },
@@ -1018,7 +1072,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       act += `<span class="live-pill ${state[0]}" role="status">${esc(state[1])}</span>`;
       act += v.kind === "viser" ? `<button class="chip" type="button" data-live="back">Back to this view</button>` : `<button class="chip" type="button" data-live="stop">Stop</button>`;
     }
-    if (simWanted()) act += `<span class="live-pill ${S.sim.error ? "err" : S.sim.hello ? "on" : ""}" role="status">${esc(S.sim.error ? "The simulation could not start: " + S.sim.error : S.sim.hello ? `Simulated in your browser · ${S.sim.title} · ${S.sim.wins}/${S.sim.episodes} solved` : "Loading MuJoCo and the policy…")}</span>${S.sim.step === 1 ? `<button class="chip" type="button" data-sim-stop>Stop</button>` : ""}`;
+    if (simWanted()) act += `<span class="live-pill ${S.sim.error ? "err" : S.sim.hello ? "on" : ""}" role="status">${esc(S.sim.error ? "The simulation could not start: " + S.sim.error : S.sim.hello ? `Simulated in my browser · ${S.sim.title} · ${S.sim.wins}/${S.sim.episodes} solved` : "Loading MuJoCo and the policy…")}</span>${S.sim.step === 1 ? `<button class="chip" type="button" data-sim-stop>Stop</button>` : ""}`;
     else if (S.step === 1 && simExample()) act += `<button class="chip" type="button" data-sim-play title="Runs the ${esc(simExample().title)} example policy in your browser on the target ranges set here">Play example policy</button>`;
     else if (replayWanted()) act += `<span class="live-pill ${S.replay.error ? "err" : S.replay.hello ? "on" : ""}" role="status">${esc(S.replay.error ? "The recorded rollout could not load: " + S.replay.error : S.replay.hello ? "Recorded rollout · " + S.replay.title : "Loading the recorded rollout…")}</span>`;
     // Pages hosted as claude.ai artifacts (window.claude) cannot hand out .glb files.
@@ -1125,42 +1179,62 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   // Every live frame ends with the muscles' activations (page simulation, backend live view, and
   // recordings made since): the 3D muscles take their colour, the card shows the busiest ones live
   // and the muscle groups' means per episode. Feeds without episode ends are cut into windows.
-  let MM = null;  // static/muscles.js, once loaded
+  let MM = null, JM = null;  // static/muscles.js and static/joints.js, once loaded
   import("./static/muscles.js").then((m) => { MM = m; }).catch(() => {});
+  import("./static/joints.js").then((m) => { JM = m; }).catch(() => {});
   const MUSCLE_WINDOW_S = 4;
   // Minimised at first on narrow screens, where it would cover much of the scene.
-  const mcardDefault = { view: "live", open: !matchMedia("(max-width: 1100px)").matches };
+  const mcardDefault = { view: "live", kind: "muscles", open: !matchMedia("(max-width: 1100px)").matches };
   try { S.mcard = { ...mcardDefault, ...JSON.parse(localStorage.getItem("studio-mcard") || "{}") }; } catch (e) { S.mcard = mcardDefault; }
   function showFrame(f, hello, windowed) {
     SC.applyFrame(f);
-    const names = hello && hello.muscles;
-    if (!MM || !names || !names.length) return;
+    const names = (hello && hello.muscles) || [], joints = (hello && hello.joints) || [];
+    if (!MM || !JM || (!names.length && !joints.length)) return;
     const at = 7 * hello.bodies.length + 3 * hello.targets.length;
-    if (f.length < at + names.length) return;
-    if (!S.mus || S.mus.hello !== hello) { S.mus = { hello, meter: new MM.MuscleMeter(names), windowed, n: 0 }; renderMuscleCard(true); }
-    const act = f.subarray(at, at + names.length);
-    S.mus.meter.push(act);
-    SC.setMuscleActivity(act, names);
+    if (f.length < at + names.length + joints.length) return;
+    if (!S.mus || S.mus.hello !== hello) {
+      S.mus = { hello, meter: names.length ? new MM.MuscleMeter(names) : null, jmeter: joints.length ? new JM.JointMeter(joints) : null, windowed, n: 0 };
+      renderMuscleCard(true);
+    }
+    if (S.mus.meter) {
+      const act = f.subarray(at, at + names.length);
+      S.mus.meter.push(act);
+      SC.setMuscleActivity(act, names);
+    }
+    if (S.mus.jmeter) S.mus.jmeter.push(f.subarray(at + names.length, at + names.length + joints.length));
     const ends = windowed && ++S.mus.n % Math.max(1, Math.round(MUSCLE_WINDOW_S / hello.ctrl_dt)) === 0;
-    if (ends) S.mus.meter.endEpisode();
+    if (ends) endMeterEpisode();
     renderMuscleCard(ends);
   }
-  // The card: built when a feed starts or the view changes; afterwards only the live bars are redrawn
-  // every frame, and the group table when an episode (or window) ends.
+  // Close an episode (or a window of a feed without episodes) on both meters.
+  function endMeterEpisode(fatigue = null) {
+    if (!S.mus) return;
+    if (S.mus.meter) S.mus.meter.endEpisode(fatigue);
+    if (S.mus.jmeter) S.mus.jmeter.endEpisode();
+  }
+  // The card: muscles or joints, live or per episode. Built when a feed starts or the view changes;
+  // afterwards only the live rows are redrawn every frame, and the table when an episode (or window) ends.
   function renderMuscleCard(full = false) {
     const card = $("mcard");
-    if (!S.mus || !MM) { card.hidden = true; card.innerHTML = ""; return; }
+    if (!S.mus || !MM || !JM) { card.hidden = true; card.innerHTML = ""; return; }
+    const kinds = [["muscles", "Muscles", S.mus.meter], ["joints", "Joints", S.mus.jmeter]].filter((k) => k[2]);
+    const kind = kinds.some((k) => k[0] === S.mcard.kind) ? S.mcard.kind : kinds[0][0];
     const unit = S.mus.windowed ? `${MUSCLE_WINDOW_S} s` : "episode";
+    const n = matchMedia("(max-width: 1100px)").matches ? 5 : 8;
     if (full || card.hidden || !card.firstChild) {
       card.hidden = false;
       card.classList.toggle("closed", !S.mcard.open);
-      card.innerHTML = `<div class="mcard-head"><b>Muscles</b><span class="seg" role="group" aria-label="Muscle view"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn" type="button" data-mcard-min aria-label="${S.mcard.open ? "Minimise" : "Show"} the muscle activity" title="${S.mcard.open ? "Minimise" : "Show"}">${S.mcard.open ? "&ndash;" : "+"}</button></div><div class="mcard-body"></div>`;
-      if (S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = MM.groupsHtml(S.mus.meter, unit);
+      const title = kinds.length > 1
+        ? `<select class="mcard-kind" aria-label="Show muscles or joints">${kinds.map(([k, l]) => `<option value="${k}" ${k === kind ? "selected" : ""}>${l}</option>`).join("")}</select>`
+        : `<b>${kinds[0][1]}</b>`;
+      card.innerHTML = `<div class="mcard-head">${title}<span class="seg" role="group" aria-label="View"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn" type="button" data-mcard-min aria-label="${S.mcard.open ? "Minimise" : "Show"} the card" title="${S.mcard.open ? "Minimise" : "Show"}">${S.mcard.open ? "&ndash;" : "+"}</button></div><div class="mcard-body"></div>`;
+      if (S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = kind === "joints" ? JM.jointRangesHtml(S.mus.jmeter, n, unit) : MM.groupsHtml(S.mus.meter, unit);
       sceneFocus();
     }
     if (S.mcard.view === "live" && S.mcard.open) {
-      const n = matchMedia("(max-width: 1100px)").matches ? 5 : 8;
-      card.querySelector(".mcard-body").innerHTML = MM.barsHtml(S.mus.meter, n) + `<span class="mcard-note">Bar: activation now · <span class="tick-key"></span> mean so far · busiest first</span>`;
+      card.querySelector(".mcard-body").innerHTML = kind === "joints"
+        ? JM.jointBarsHtml(S.mus.jmeter, n) + `<span class="mcard-note"><span class="jdot-key"></span> angle now · band: range used · <span class="tick-key"></span> mean · within the joint's limits</span>`
+        : MM.barsHtml(S.mus.meter, n) + `<span class="mcard-note">Bar: activation now · <span class="tick-key"></span> mean so far · busiest first</span>`;
     }
   }
   $("mcard").addEventListener("click", (ev) => {
@@ -1168,6 +1242,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (v) S.mcard.view = v.dataset.mview;
     else if (ev.target.closest("[data-mcard-min]")) S.mcard.open = !S.mcard.open;
     else return;
+    try { localStorage.setItem("studio-mcard", JSON.stringify(S.mcard)); } catch (e) {}
+    renderMuscleCard(true);
+  });
+  $("mcard").addEventListener("change", (ev) => {
+    if (!ev.target.matches(".mcard-kind")) return;
+    S.mcard.kind = ev.target.value;
     try { localStorage.setItem("studio-mcard", JSON.stringify(S.mcard)); } catch (e) {}
     renderMuscleCard(true);
   });
@@ -1193,14 +1273,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   async function startSim(ex, step) {
     if (S.sim && S.sim.name === ex.name && S.sim.step === step) return;
     stopSim();
-    const mine = (S.sim = { name: ex.name, title: ex.title, step, hello: null, wins: 0, episodes: 0, wait: 0 });
+    const mine = (S.sim = { name: ex.name, title: ex.title, step, hello: null, wins: 0, episodes: 0, wait: 0, reached: ex.replay.hello.targets.map(() => 0) });
     try {
       const { TaskSim } = await import("./static/sim.js");
       const engine = await TaskSim.load(`examples/${ex.name}`);
       if (S.sim !== mine || !simWanted()) { engine.dispose(); if (S.sim === mine) stopSim(); return; }
       mine.engine = engine;
-      mine.frame = new Float32Array(7 * engine.model.nbody + 3 * engine.targets.length + engine.actAdr.length);
-      mine.hello = { model: ex.replay.hello.model, bodies: engine.info.bodies.map((n) => n.split("/").pop()), targets: ex.replay.hello.targets.map((t) => ({ ...t })), muscles: engine.muscleNames, ctrl_dt: engine.task.ctrl_dt };
+      mine.frame = new Float32Array(engine.frameLength);
+      mine.hello = { model: ex.replay.hello.model, bodies: engine.info.bodies.map((n) => n.split("/").pop()), targets: ex.replay.hello.targets.map((t) => ({ ...t })), muscles: engine.muscleNames, joints: engine.jointInfo, ctrl_dt: engine.task.ctrl_dt };
       simReset(mine);
       mine.timer = setInterval(() => simTick(mine), 1000 * engine.task.ctrl_dt);
     } catch (e) { mine.error = e.message; }
@@ -1222,13 +1302,16 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     sim.radii.forEach((r, k) => { if (sim.hello.targets[k].shape !== "box") SC.setLiveTargetRadius(k, r); });
     showFrame(sim.engine.frame(sim.frame), sim.hello, false);
     if (done || sim.engine.timedOut) {
-      if (S.mus && S.mus.hello === sim.hello) { S.mus.meter.endEpisode(sim.engine.muscleFatigue); renderMuscleCard(true); }
+      if (S.mus && S.mus.hello === sim.hello) { endMeterEpisode(sim.engine.muscleFatigue); renderMuscleCard(true); }
       sim.episodes++;
       sim.wins += done ? 1 : 0;
+      for (let k = 0; k < Math.min(sim.engine.reached, sim.reached.length); k++) sim.reached[k]++;
       sim.wait = 8;  // hold the final pose for a moment
       renderSceneBar();
       const stat = $("sim-stats");
       if (stat) stat.textContent = simStats(sim);
+      const box = $("tgt-box"), ex = S.examples.find((e) => e.name === sim.name);
+      if (box && ex && sim.step === 6) box.outerHTML = exampleTargets(ex);
     }
   }
   fetch("examples/index.json").then((r) => (r.ok ? r.json() : [])).then((list) => { S.examples = list; if (S.step === 6) render(); }).catch(() => {});
@@ -1443,16 +1526,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function renderRun(ws) {
     const connected = !!S.backend;
     ws.append(h(`${head("Train")}
-      ${connected ? `<p class="muted">Backend: <span class="mono">${esc(S.backend)}</span></p>` : `<p class="demo-banner">Demo mode: no backend is connected, so this run is simulated. Use "Connect compute" to train for real, or start <span class="mono">myo_studio serve</span> and <a href="${esc(handoffUrl())}" target="_blank" rel="noopener">continue on your machine with this setup</a>.</p>`}
+      ${connected ? `<p class="muted">Backend: <span class="mono">${esc(S.backend)}</span></p>` : `<p class="demo-banner">Demo mode: no backend is connected, so this run is simulated. Use "Connect compute" to train for real, or start <span class="mono">myo_studio serve</span> and <a href="${esc(handoffUrl())}" target="_blank" rel="noopener">continue on my machine with this setup</a>.</p>`}
       <div class="chips"><button class="btn primary" type="button" id="start-run" ${S.run?.active ? "disabled" : ""}>${S.run?.active ? S.run.status === "stopping" || S.run.stopRequested ? "Stopping…" : "Running…" : "Start training"}</button><button class="btn" type="button" id="stop-run" ${S.run?.active && !S.run.stopRequested && S.run.status !== "stopping" && (!S.backend || S.run.id) ? "" : "disabled"}>${S.run?.status === "stopping" || S.run?.stopRequested ? "Stopping…" : "Stop"}</button>${S.run && S.run.id ? `<span class="muted mono" style="font-size:0.82rem">${esc(S.run.id)} · ${esc(S.run.status || "")}</span>` : ""}</div>
       ${S.run && S.run.error ? `<p class="err">${esc(S.run.error)}</p>` : ""}
       ${S.run && S.run.wandb_url ? `<p class="hint"><span class="wb-mark">W&amp;B</span><a href="${esc(S.run.wandb_url)}" target="_blank" rel="noopener">Open this run in Weights &amp; Biases</a></p>` : wandbOn() ? `<p class="hint"><span class="wb-mark">W&amp;B</span>Logs to W&amp;B as well: <span class="mono">${esc(wandbTarget())}</span> (<a href="#" data-go-step="4">change</a>)</p>` : ""}
       ${gradioWarning() ? `<p class="demo-banner" id="run-warn">${gradioWarning()}</p>` : ""}
       <div class="stat-row">
         <div class="stat"><b id="st-steps">0</b><span>steps</span></div>
-        <div class="stat"><b id="st-success">–</b><span>success rate</span></div>
-        <div class="stat"><b id="st-reward">–</b><span>mean episode reward</span></div>
-        <div class="stat"><b id="st-time">–</b><span>${S.backend ? "episode length (s)" : "time to target (s)"}</span></div>
+        ${RUN_METRICS.map(([k, label]) => `<button class="stat stat-btn" type="button" data-metric="${k}" aria-pressed="${S.runMetric === k}" title="Show its training curve"><b id="st-${k}">–</b><span>${label()}</span></button>`).join("")}
       </div>
       <svg class="chart" id="run-chart" viewBox="0 0 640 220" role="img" aria-label="Training curves"></svg>
       <div class="log" id="run-log" aria-live="polite">No run yet.</div>
@@ -1461,6 +1542,11 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     ws.querySelector("#start-run").addEventListener("click", () => (S.backend ? startBackendRun() : startRun()));
     ws.querySelectorAll("[data-go-step]").forEach((el) => el.addEventListener("click", (e) => { e.preventDefault(); go(+el.dataset.goStep); }));
     ws.querySelector("#stop-run").addEventListener("click", stopRun);
+    ws.querySelectorAll("[data-metric]").forEach((b) => b.addEventListener("click", () => {
+      S.runMetric = b.dataset.metric;
+      ws.querySelectorAll("[data-metric]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      drawRun();
+    }));
     drawRun();
   }
   async function stopRun() {
@@ -1546,27 +1632,45 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       await sleep(3000);
     }
   }
+  // The training tiles that pick the curve: key, label, value of a point [steps, success, reward, episode s], format.
+  const RUN_METRICS = [
+    ["success", () => "success rate", (p) => p[1], (v, axis) => Math.round(v * 100) + "%"],
+    ["reward", () => "mean episode reward", (p) => p[2], (v, axis) => v.toFixed(axis && Math.abs(v) >= 10 ? 0 : 1)],
+    ["time", () => (S.backend ? "episode length (s)" : "time to target (s)"), (p) => (S.backend ? p[3] ?? null : 2.6 - 1.4 * p[1]), (v) => v.toFixed(2)],
+  ];
   function drawRun() {
     const svg = $("run-chart");
     if (!svg) return;
     const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
     const W = 640, H = 220, L = 44, R = 12, T = 12, B = 28;
-    let out = "";
-    for (let v = 0; v <= 1.0001; v += 0.25) { const y = T + (1 - v) * (H - T - B); out += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`; }
-    out += `<text x="${L}" y="${H - 8}">0</text><text x="${W - R}" y="${H - 8}" text-anchor="end">${fmt(S.rl.steps)} steps</text>`;
     const pts = (S.run && S.run.pts) || [];
-    if (pts.length) {
-      const xs = (s) => L + (s / S.rl.steps) * (W - L - R), ys = (v) => T + (1 - v) * (H - T - B);
-      const d = pts.map((p, i) => `${i ? "L" : "M"}${xs(p[0]).toFixed(1)},${ys(p[1]).toFixed(1)}`).join("");
-      out += `<path d="${d}L${xs(pts[pts.length - 1][0])},${ys(0)}L${xs(pts[0][0])},${ys(0)}Z" fill="${css("--accent")}" opacity="0.12"/>`;
+    const metric = RUN_METRICS.find(([k]) => k === S.runMetric) || RUN_METRICS[0];
+    const [key, label, value, show] = metric;
+    const vals = pts.map((p) => [p[0], value(p)]).filter(([, v]) => v != null && Number.isFinite(v));
+    // y range: 0..100 % for the success rate, the data's own range (padded) otherwise
+    let lo = 0, hi = 1;
+    if (key !== "success" && vals.length) {
+      lo = Math.min(...vals.map((q) => q[1])); hi = Math.max(...vals.map((q) => q[1]));
+      const pad = (hi - lo) * 0.08 || Math.abs(hi) * 0.1 || 1;
+      lo -= pad; hi += pad;
+    }
+    const ys = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B), xs = (s) => L + (s / S.rl.steps) * (W - L - R);
+    let out = "";
+    for (let k = 0; k <= 4; k++) { const v = lo + (k / 4) * (hi - lo), y = ys(v); out += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text x="${L - 6}" y="${y + 4}" text-anchor="end">${show(v, true)}</text>`; }
+    out += `<text x="${L}" y="${H - 8}">0</text><text x="${W - R}" y="${H - 8}" text-anchor="end">${fmt(S.rl.steps)} steps</text>`;
+    if (vals.length) {
+      const d = vals.map(([s, v], i) => `${i ? "L" : "M"}${xs(s).toFixed(1)},${ys(v).toFixed(1)}`).join("");
+      const base = H - B;
+      out += `<path d="${d}L${xs(vals[vals.length - 1][0])},${base}L${xs(vals[0][0])},${base}Z" fill="${css("--accent")}" opacity="0.12"/>`;
       out += `<path d="${d}" fill="none" stroke="${css("--accent")}" stroke-width="2"/>`;
+      const end = vals[vals.length - 1];
+      out += `<circle cx="${xs(end[0])}" cy="${ys(end[1])}" r="4" fill="${css("--accent")}"/>`;
+    } else out += `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">${pts.length ? "No values for this curve yet" : label()[0].toUpperCase() + label().slice(1) + " appears here while training runs"}</text>`;
+    if (pts.length) {
       const last = pts[pts.length - 1];
-      out += `<circle cx="${xs(last[0])}" cy="${ys(last[1])}" r="4" fill="${css("--accent")}"/>`;
       $("st-steps").textContent = fmt(Math.round(last[0]));
-      $("st-success").textContent = Math.round(last[1] * 100) + "%";
-      $("st-reward").textContent = last[2].toFixed(1);
-      $("st-time").textContent = S.backend ? (last[3] != null ? last[3].toFixed(2) : "–") : (2.6 - 1.4 * last[1]).toFixed(2);
-    } else out += `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Success rate appears here while training runs</text>`;
+      for (const [k, , v, f] of RUN_METRICS) { const x = v(last); $("st-" + k).textContent = x == null ? "–" : f(x); }
+    }
     svg.innerHTML = out;
     const log = $("run-log");
     if (log && S.run) { log.textContent = S.run.log.join("\n"); log.scrollTop = log.scrollHeight; log.style.whiteSpace = "pre-wrap"; }
@@ -1589,6 +1693,17 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <div class="video-ph">Rollout video of the deterministic policy<br>(rendered by the backend)</div>`));
   }
   const pct = (v) => (v == null ? "–" : Math.round(v * 100) + "%");
+  // Share of episodes that reached each target (visited in order), as bars in the targets' own colours;
+  // `session` (optional) marks this page's own simulation as a tick. Only for tasks with several targets.
+  function targetsHtml(rates, colors = [], session = null, caption = "") {
+    if (!rates || rates.length < 2) return "";
+    const col = (k) => { const c = colors[k]; return c ? `rgb(${c.slice(0, 3).map((x) => Math.round(255 * x)).join(",")})` : "var(--accent)"; };
+    const rows = rates.map((r, k) => `<div class="tgt-row" title="Target ${k + 1}: reached in ${pct(r)} of the episodes${session && session[k] != null ? `, ${pct(session[k])} in this session` : ""}"><span><span class="swatch" style="background:${col(k)}"></span>Target ${k + 1}</span><span class="mbar-track"><span class="mbar-fill" style="width:${(100 * r).toFixed(1)}%;background:${col(k)}"></span>${session && session[k] != null ? `<span class="mbar-tick" style="left:${(100 * session[k]).toFixed(1)}%"></span>` : ""}</span><span class="mono">${pct(r)}</span></div>`).join("");
+    return `<div class="tgt-box" id="tgt-box"><div class="group-title"><b>Targets reached</b><span class="hint">${caption}</span></div>${rows}</div>`;
+  }
+  const simTargetRates = (sim) => (sim && sim.episodes ? sim.reached.map((c) => c / sim.episodes) : null);
+  const exampleTargets = (ex) => targetsHtml(ex.evaluation.targets_reached, ex.replay.hello.targets.map((t) => t.rgba), ex.sim && S.evalMode === "live" ? simTargetRates(S.sim) : null,
+    `share of ${ex.evaluation.episodes} episodes${ex.sim && S.evalMode === "live" ? ' · <span class="tick-key"></span> this session' : ""}`);
   const statRow = (res) => `<div class="stat-row">
         <div class="stat" title="Deterministic policy on fresh episodes"><b>${res ? pct(res.success_rate) : "–"}</b><span>success rate</span></div>
         <div class="stat"><b>${res && res.time_to_success_s != null ? res.time_to_success_s.toFixed(2) + " s" : "–"}</b><span>time to success</span></div>
@@ -1602,17 +1717,18 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       <p class="demo-banner">Example policies, trained and evaluated in advance. Connect compute to evaluate your own runs.</p>
       <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${esc(e.name)}" ${e === ex ? "selected" : ""}>${esc(e.title)}</option>`).join("")}</select>
         <span class="hint">${esc(exampleNote(ex))}</span></div>
-      <div class="chips">${ex.sim ? `<span class="seg" role="group" aria-label="Playback"><button type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in your browser</button><button type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : `<span class="hint">The 3D view replays a recorded rollout.</span>`}<button class="btn small" type="button" id="ex-open">Open the task in the editor</button></div>
+      <div class="chips">${ex.sim ? `<span class="seg" role="group" aria-label="Playback"><button type="button" data-eval-mode="live" aria-pressed="${S.evalMode === "live"}">Live in my browser</button><button type="button" data-eval-mode="replay" aria-pressed="${S.evalMode !== "live"}">Recorded rollout</button></span>` : `<span class="hint">The 3D view replays a recorded rollout.</span>`}<button class="btn small" type="button" id="ex-open">Open the task in the editor</button></div>
       <p class="err" id="ex-msg" hidden></p>
       ${statRow(ex.evaluation)}
+      ${exampleTargets(ex)}
       ${ex.sim && S.evalMode === "live" ? `<p class="hint">Simulated in this page with MuJoCo: a new start pose and new targets every episode${ex.summary && ex.summary.fatigue ? ", from a random fatigue state" : ""}. <span id="sim-stats">${S.sim ? simStats(S.sim) : ""}</span> <a href="#" id="sim-reset" title="Start the count again from a new episode">Reset</a></p><p class="hint">The Muscles card shows the busiest muscles live and the muscle groups per episode. "Play example policy" in the Task step runs it on your own target ranges.</p>` : ""}`));
     if (ws.querySelector("#sim-reset")) ws.querySelector("#sim-reset").addEventListener("click", (e) => {
       e.preventDefault();
       const sim = S.sim;
       if (!sim || !sim.engine) return;
-      Object.assign(sim, { wins: 0, episodes: 0, wait: 0 });
+      Object.assign(sim, { wins: 0, episodes: 0, wait: 0, reached: sim.reached.map(() => 0) });
       simReset(sim);
-      if (S.mus) { S.mus.meter.reset(); renderMuscleCard(true); }
+      if (S.mus) { S.mus.meter?.reset(); S.mus.jmeter?.reset(); renderMuscleCard(true); }
       $("sim-stats").textContent = "0 of 0 episodes solved in this session";
       renderSceneBar();
     });
@@ -1668,6 +1784,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       ${ev.error ? `<p class="err">${esc(ev.error)}</p>` : ""}
       ${stored ? `<p class="muted">Stored result of this example; Evaluate runs it again on this machine.</p>` : res && ev.label ? `<p class="muted">Result for ${esc(ev.label)}</p>` : ""}
       ${statRow(res)}
+      ${res ? targetsHtml(res.targets_reached, (run && run.example ? run.example.replay.hello.targets : S.live ? S.live.targets : []).map((t) => t.rgba), null, `share of ${res.episodes} episodes`) : ""}
       ${res && res.video ? `<video class="media" src="${esc(S.backend)}/api/jobs/${encodeURIComponent(ev.id)}/files/${encodeURIComponent(res.video)}" controls autoplay muted loop playsinline></video>` : ""}`));
     const runSel = ws.querySelector("#ev-run"), ckSel = ws.querySelector("#ev-ckpt");
     runSel.addEventListener("change", () => { S.evalJob = { ...ev, run: runSel.value, checkpoint: null }; S.viewerClosed = false; render(); });
@@ -2005,7 +2122,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     $("pair-field").hidden = sandboxed;
     $("conn-go").hidden = sandboxed;
     $("conn-status").textContent = sandboxed ? "This copy of Studio runs on claude.ai, which does not let pages contact a server on your computer. Start myo_studio serve and continue on your machine with the link below; the hosted Studio page can connect in this window." : "";
-    try { $("pair-code").value = localStorage.getItem(pairKey(($("backend-url").value || $("backend-url").placeholder).replace(/\/$/, ""))) || ""; } catch (e) {}
+    // A pairing code changes with every server start: offer only the one of the server connected now.
+    $("pair-code").value = S.backend && S.backend === ($("backend-url").value || $("backend-url").placeholder).replace(/\/$/, "") ? S.token || "" : "";
     $("conn-go").onclick = async () => {
       const url = ($("backend-url").value || $("backend-url").placeholder).replace(/\/$/, "");
       const code = $("pair-code").value.trim();
@@ -2055,6 +2173,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
   /* ---------------------------------------------------------------- wire up */
   $("connect-btn").addEventListener("click", openConnect);
+  document.querySelectorAll("[data-cite]").forEach((b) => b.addEventListener("click", () => { $("cite-copy").textContent = "Copy BibTeX"; $("cite-dialog").showModal(); }));
+  $("cite-copy").addEventListener("click", () => {
+    navigator.clipboard.writeText($("cite-bib").textContent).then(() => { $("cite-copy").textContent = "Copied"; }, () => { $("cite-copy").textContent = "Select the text to copy it"; });
+  });
   $("handoff-copy").addEventListener("click", (ev) => {
     navigator.clipboard.writeText(JSON.stringify(toPreset(), null, 2)).then(() => { ev.target.textContent = gradioWarning() ? "Copied (not for the Gradio UI)" : "Copied"; setTimeout(() => (ev.target.textContent = "Copy setup"), gradioWarning() ? 4000 : 1500); }).catch(() => { $("conn-status").textContent = "Copying is blocked here: use Copy next to Configuration instead."; });
   });
@@ -2083,16 +2205,110 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     finally { ev.target.value = ""; }
   });
   // Loads the pointing task example (its preset: body, target, sensing, reward, budget) and opens the Task step.
+  /* ---------------------------------------------------------------- walkthrough */
+  // Annotation cards over the studio, one per step and for the panels around it. Each card may open a
+  // step first, then rings the element it explains; Back / Next / Skip (Esc) move through them.
+  const TOUR = [
+    { el: "#stepper", title: "Seven steps", text: "Studio takes a task from the body model to an evaluated policy. Go through the steps in order or jump between them; my setup stays in this browser." },
+    { step: 0, el: "#workspace", title: "1 · Body", text: "Pick the biomechanical user model: MyoArm or MoBL, with or without hand. Muscles, not motors, move every joint." },
+    { step: 1, el: "#workspace", title: "2 · Task", text: "Place targets: spheres to point at, buttons to press. Every episode draws each target's position and size from its ranges; several targets make a sequence. A Figma frame or an image can serve as the screen." },
+    { step: 1, el: "#stage", title: "The 3D view", text: "Drag targets and their regions here, switch the camera, show reach and muscles. \"Play example policy\" runs a trained policy on my target ranges, right in the browser." },
+    { step: 2, el: "#workspace", title: "3 · Sensing", text: "What the agent observes: joint angles and velocities, muscle states, the targets, optionally vision. Fewer signals usually train faster." },
+    { step: 3, el: "#workspace", title: "4 · Reward", text: "The trade-off the agent learns: distance drives learning, bonuses make it finish, effort and other penalties shape how it moves." },
+    { step: 4, el: "#workspace", title: "5 · Training", text: "The training budget and where it runs: my own GPU, Google Colab, a Hugging Face Space or a lab server. Runs can log to Weights & Biases as well." },
+    { el: "#connect-btn", title: "Connect compute", text: "Without a backend, Studio is a demo. Start myo_studio serve on a GPU machine and pair this page with it: training, evaluation and live views then run there." },
+    { step: 5, el: "#workspace", title: "6 · Run", text: "Start training and follow it: click success rate, reward or episode length to plot that curve. The 3D view follows the newest checkpoint while it trains." },
+    { step: 6, el: "#workspace", title: "7 · Evaluate", text: "The deterministic policy on fresh episodes: success, time, effort, fatigue and which targets were reached. The example policies play live in the browser." },
+    { step: 6, el: "#mcard", title: "Muscles and joints", text: "While a policy plays: the busiest muscles, or the joints that move most within their limits, live and per episode. The 3D muscles light up with their activation." },
+    { el: "#summary", title: "My setup", text: "Everything in one JSON file: save it, upload it later, or train from it with myo_train --config, outside Studio." },
+    { title: "That's Studio", text: "Start from the pointing example or design a task from scratch. The paper behind it is linked at the top (Cite for the BibTeX).", end: true },
+  ];
+  let tour = null;
+  function tourShow(i) {
+    if (!tour) {
+      tour = { ring: document.createElement("div"), card: document.createElement("div"), i: 0 };
+      tour.ring.className = "tour-ring";
+      tour.card.className = "tour-card";
+      tour.card.setAttribute("role", "dialog");
+      tour.card.setAttribute("aria-live", "polite");
+      document.body.append(tour.ring, tour.card);
+      tour.card.addEventListener("click", (ev) => {
+        const b = ev.target.closest("[data-tour]");
+        if (!b) return;
+        const a = b.dataset.tour;
+        if (a === "close") tourEnd();
+        else if (a === "try") { tourEnd(); $("hero-preset").click(); }
+        else tourShow(tour.i + (a === "next" ? 1 : -1));
+      });
+      addEventListener("resize", tourPlace);
+      addEventListener("scroll", tourPlace, true);
+      addEventListener("keydown", tourKey);
+    }
+    // skip cards whose element is not on the page (e.g. no muscle card before a policy plays)
+    const dir = i >= tour.i ? 1 : -1;
+    while (i > 0 && i < TOUR.length - 1 && TOUR[i].el === "#mcard" && $("mcard").hidden) i += dir;
+    tour.i = Math.max(0, Math.min(TOUR.length - 1, i));
+    const c = TOUR[tour.i];
+    if (c.step != null) { if (!S.stepOpen) setStepOpen(true); if (S.step !== c.step) go(c.step); }
+    else if (c.el) document.getElementById("studio").scrollIntoView({ block: "start" });
+    // an element outside the screen (e.g. the nav on a phone, which scrolls away) is brought into view
+    const target = c.el && document.querySelector(c.el), tr = target && target.getBoundingClientRect();
+    if (tr && tr.width && (tr.bottom < 0 || tr.top > innerHeight)) target.scrollIntoView({ block: "nearest" });
+    tour.card.innerHTML = `<div class="tour-count">${tour.i + 1} / ${TOUR.length}</div><h3>${c.title}</h3><p>${c.text}</p>
+      <div class="tour-actions">${c.end ? `<button class="btn" type="button" data-tour="close">Close</button><button class="btn primary" type="button" data-tour="try">Try the pointing example</button>`
+        : `<button class="link-btn" type="button" data-tour="close">Skip</button><span></span>${tour.i ? `<button class="btn" type="button" data-tour="back">Back</button>` : ""}<button class="btn primary" type="button" data-tour="next">Next</button>`}</div>`;
+    requestAnimationFrame(tourPlace);
+    tour.card.querySelector(".btn.primary").focus({ preventScroll: true });
+  }
+  // Ring the card's element and put the card beside it: right, left, below, above, else centred.
+  function tourPlace() {
+    if (!tour) return;
+    const c = TOUR[tour.i], el = c.el && document.querySelector(c.el), card = tour.card, pad = 6, gap = 12;
+    const r = el && !el.hidden ? el.getBoundingClientRect() : null;
+    const vw = innerWidth, vh = innerHeight, cw = card.offsetWidth, ch = card.offsetHeight;
+    if (!r || !r.width) {
+      tour.ring.style.cssText = "left:50%;top:50%;width:0;height:0";
+      Object.assign(card.style, { left: `${(vw - cw) / 2}px`, top: `${(vh - ch) / 2}px` });
+      return;
+    }
+    const top = Math.max(r.top, 4), bottom = Math.min(r.bottom, vh - 4);
+    tour.ring.style.cssText = `left:${r.left - pad}px;top:${top - pad}px;width:${r.width + 2 * pad}px;height:${Math.max(0, bottom - top) + 2 * pad}px`;
+    const clampX = (x) => Math.max(8, Math.min(vw - cw - 8, x)), clampY = (y) => Math.max(8, Math.min(vh - ch - 8, y));
+    let x, y;
+    if (vw - r.right >= cw + gap + 8) { x = r.right + gap; y = clampY(top); }
+    else if (r.left >= cw + gap + 8) { x = r.left - cw - gap; y = clampY(top); }
+    else if (vh - bottom >= ch + gap + 8) { x = clampX(r.left); y = bottom + gap; }
+    else if (top >= ch + gap + 8) { x = clampX(r.left); y = top - ch - gap; }
+    else { x = clampX((vw - cw) / 2); y = vh - ch - 8; }
+    Object.assign(card.style, { left: `${clampX(x)}px`, top: `${clampY(y)}px` });
+  }
+  function tourKey(ev) {
+    if (!tour) return;
+    if (ev.key === "Escape") tourEnd();
+    else if (ev.key === "ArrowRight" && !TOUR[tour.i].end) tourShow(tour.i + 1);
+    else if (ev.key === "ArrowLeft" && tour.i) tourShow(tour.i - 1);
+  }
+  function tourEnd() {
+    if (!tour) return;
+    tour.ring.remove(); tour.card.remove();
+    removeEventListener("resize", tourPlace); removeEventListener("scroll", tourPlace, true); removeEventListener("keydown", tourKey);
+    tour = null;
+  }
+  $("hero-tour").addEventListener("click", () => tourShow(0));
   $("hero-preset").addEventListener("click", async (ev) => {
     const label = ev.target.textContent;
     ev.target.disabled = true;
-    try { await openExampleTask("pointing"); }
+    try {
+      await openExampleTask("pointing");
+      const ex = simExample();  // the example policy for these targets, played in the browser
+      if (ex) { startSim(ex, 1); render(); }
+    }
     catch (e) { ev.target.textContent = "The pointing example could not load"; setTimeout(() => { ev.target.textContent = label; }, 4000); }
     ev.target.disabled = false;
   });
   function renderPresetList() {
     $("preset-row").hidden = !S.backend;
-    $("preset-select").innerHTML = S.presets.map((p) => `<option value="${esc(p.name)}">${esc(p.name)}${p.source === "user" ? " (yours)" : ""}</option>`).join("");
+    $("preset-select").innerHTML = S.presets.map((p) => `<option value="${esc(p.name)}">${esc(p.name)}${p.source === "user" ? " (mine)" : ""}</option>`).join("");
   }
   $("preset-load").addEventListener("click", async () => {
     const name = $("preset-select").value;
@@ -2133,6 +2349,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     if (!url || window.claude) return;
     const info = await probeBackend(url, code);
     if (info && info.ok && !info.pairing) { connectTo(url, code, `${S.target} · ${info.device || "connected"}`); render(); }
+    else try { localStorage.removeItem(pairKey(url)); } catch (e) {}  // that server is gone or was restarted with a new code
   })();
 })();
 </script>

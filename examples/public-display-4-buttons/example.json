@@ -13,13 +13,19 @@
   "episodes": 1024,
   "vision": false,
   "success_rate": 1.0,
-  "time_to_success_s": 1.1950194835662842,
-  "mean_excitation": 0.16885852813720703,
-  "final_mf": null
+  "time_to_success_s": 1.1420409679412842,
+  "mean_excitation": 0.1763879656791687,
+  "final_mf": null,
+  "targets_reached": [
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ]
  },
  "replay": {
   "file": "replay.bin",
-  "floats": 517,
+  "floats": 524,
   "frames": 400,
   "hello": {
    "type": "hello",
@@ -228,6 +234,57 @@
     "EPB",
     "FPL",
     "APL"
+   ],
+   "joints": [
+    {
+     "name": "elv_angle",
+     "range": [
+      -1.658,
+      2.269
+     ]
+    },
+    {
+     "name": "shoulder_elv",
+     "range": [
+      0.0,
+      3.142
+     ]
+    },
+    {
+     "name": "shoulder_rot",
+     "range": [
+      -1.571,
+      2.094
+     ]
+    },
+    {
+     "name": "elbow_flexion",
+     "range": [
+      0.0,
+      2.269
+     ]
+    },
+    {
+     "name": "pro_sup",
+     "range": [
+      -1.5708,
+      1.5708
+     ]
+    },
+    {
+     "name": "deviation_r",
+     "range": [
+      -0.174533,
+      0.436332
+     ]
+    },
+    {
+     "name": "flexion_r",
+     "range": [
+      -0.785398,
+      0.785398
+     ]
+    }
    ],
    "ctrl_dt": 0.05
   }
