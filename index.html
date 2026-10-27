@@ -107,6 +107,7 @@ p { margin: 0; }
 .tour-actions { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
 .tour-actions > span { flex: 1; }
 .tour-actions .link-btn { font-size: 0.8rem; color: var(--muted); }
+@media (max-height: 700px) { .tour-card { padding: 10px 12px; gap: 4px; } .tour-card p { font-size: 0.8rem; line-height: 1.38; } .tour-actions { margin-top: 2px; } }
 .hero .paper-ref { font-size: 0.82rem; color: var(--hero-muted); margin-top: 10px; max-width: 60ch; }
 .hero .paper-ref a, .hero .paper-ref .link-btn { color: var(--hero-hi); }
 .link-btn { all: unset; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
@@ -144,6 +145,8 @@ p { margin: 0; }
 .scene-bar { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 28px); padding: 5px; border-radius: 12px; }
 .scene-bar .sep { width: 1px; align-self: stretch; background: var(--line); margin-inline: 2px; }
 .scene-bar > * { flex: none; }
+.scene-bar .toggles { display: inline-flex; gap: 6px; }
+.scene-bar .seg button { padding: 4px 8px; }
 .scene-bar .act { display: flex; gap: 6px; align-items: center; justify-content: center; flex: 1 1 100%; }
 .live-pill { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--tint); flex: none; }
@@ -236,6 +239,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 /* the small grey hyphen that minimises a panel */
 .min-btn { border: 0; background: none; color: var(--muted); font: inherit; font-size: 1.25rem; line-height: 1; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; opacity: 0.7; }
 .min-btn:hover, .min-btn:focus-visible { opacity: 1; background: rgba(127, 127, 127, 0.15); }
+.fold-btn { display: inline-grid; place-items: center; border: 1px solid var(--line); background: var(--surface); opacity: 0.85; }
+.fold-btn svg { display: block; }
 #workspace { position: relative; }
 #workspace > .min-btn, #summary-toggle, .dialog-close { position: absolute; top: 8px; right: 8px; z-index: 1; }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.8rem; margin: 0; }
@@ -274,7 +279,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .mcard-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .mcard-head b { font-family: var(--font-display); font-size: 0.84rem; white-space: nowrap; }
 .mcard.closed .seg { display: none; }
-.mcard .min-btn { width: 22px; height: 22px; font-size: 1rem; flex: none; }
+.mcard .min-btn { width: 24px; height: 24px; font-size: 1rem; flex: none; }
 .mcard .seg button { padding: 3px 8px; font-size: 0.76rem; }
 .mcard.closed .mcard-body { display: none; }
 .mcard-body { display: grid; gap: 7px; }
@@ -306,8 +311,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 .jdot-key { position: static; display: inline-block; margin: 0 2px 0 0; vertical-align: -1px; width: 8px; height: 8px; }
 
 @media (max-width: 1100px) {
-  .nav { position: static; }
-  .studio { scroll-margin-top: 0; }
+  /* the nav stays pinned: the 3D view fills the screen below it and would otherwise trap scrolling */
+  .studio { scroll-margin-top: 46px; }
   .nav-in { padding: 8px 12px; gap: 8px; }
   .nav a.link, #connect-btn .wide { display: none; }
   .brand { font-size: 0.95rem; gap: 7px; }
@@ -325,15 +330,16 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   .fact b { font-size: 0.84rem; }
   .fact span { display: none; }
   /* the scene keeps the top of the screen; the steps live in a sheet below it */
-  .studio { height: 100svh; min-height: 480px; display: flex; flex-direction: column; }
+  .studio { height: calc(100svh - 46px); min-height: 440px; display: flex; flex-direction: column; }
   #stage { position: relative; inset: auto; flex: 1 1 0; min-height: 30svh; }
   .scene-bar { position: relative; left: auto !important; bottom: auto; transform: none; max-width: none !important; margin: 0; border-radius: 0; border-width: 1px 0 0; box-shadow: none; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 6px 10px; scrollbar-width: none; flex: none; }
   .scene-bar::-webkit-scrollbar, .stepper::-webkit-scrollbar { display: none; }
-  .overlay { position: relative; inset: auto; display: flex; flex-direction: column; gap: 0; flex: 0 1 auto; max-height: 50svh; overflow-y: auto; padding: 0; background: var(--surface); border-top: 1px solid var(--line); pointer-events: auto; overscroll-behavior: contain; }
+  .overlay { position: relative; inset: auto; display: flex; flex-direction: column; align-items: stretch; overflow-x: hidden; gap: 0; flex: 0 1 auto; max-height: 50svh; overflow-y: auto; padding: 0; background: var(--surface); border-top: 1px solid var(--line); pointer-events: auto; overscroll-behavior: contain; }
   .overlay > * { max-height: none; overflow: visible; flex: none; }
   .overlay > .gap { display: none; }
   .overlay .panel, .stepper { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--surface); box-shadow: none; }
-  .stepper { position: sticky; top: 0; z-index: 2; display: flex; gap: 2px; overflow-x: auto; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 6px 8px; scrollbar-width: none; }
+  /* the step row scrolls sideways on its own, within the screen's width */
+  .stepper { position: sticky; top: 0; z-index: 2; display: flex; width: 100%; min-width: 0; touch-action: pan-x; overscroll-behavior-x: contain; gap: 2px; overflow-x: auto; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 6px 8px; scrollbar-width: none; }
   .stepper button { grid-template-columns: auto auto; gap: 6px; padding: 5px 9px; font-size: 0.82rem; white-space: nowrap; }
   .stepper button .n { width: 20px; height: 20px; font-size: 0.66rem; border-radius: 6px; }
   #workspace { border: 0; border-radius: 0; padding: 12px 14px 16px; gap: 12px; }
@@ -406,8 +412,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   <div class="gap"></div>
   <aside class="summary" id="summary" aria-label="Configuration summary">
     <div class="panel">
-      <button class="min-btn" type="button" id="summary-toggle" aria-expanded="true" aria-label="Minimise the summary" title="Minimise">&ndash;</button>
-      <div class="group-title"><h3>My setup</h3><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"></div>
+      <button class="min-btn fold-btn" type="button" id="summary-toggle" aria-expanded="true" aria-label="Fold the config overview" title="Fold"></button>
+      <div class="group-title"><h3>Config overview</h3><input class="name-edit mono" id="preset-name" value="untitled" aria-label="Name of this setup" title="Click to rename this setup" spellcheck="false"></div>
       <div class="summary-body">
         <dl class="kv" id="summary-kv"></dl>
         <div class="summary-sec">
@@ -622,13 +628,15 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     f.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(+b.dataset.go)));
     ws.append(f);
   }
+  // Fold buttons: a triangle pointing down while a panel is open, to the right while folded.
+  const foldIcon = (open) => `<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="${open ? "M2 4h8L6 9z" : "M4 2v8l5-4z"}" fill="currentColor"/></svg>`;
   function render() {
     renderStepper();
     const ws = $("workspace");
     ws.innerHTML = "";
     STEPS[S.step][1](ws);
     footer(ws);
-    const min = h(`<button class="min-btn" type="button" aria-label="Minimise this panel" title="Minimise (click a step on the left to open it again)">&ndash;</button>`).firstElementChild;
+    const min = h(`<button class="min-btn fold-btn" type="button" aria-expanded="true" aria-label="Fold this panel" title="Fold (tap a step to open it again)">${foldIcon(true)}</button>`).firstElementChild;
     min.addEventListener("click", () => setStepOpen(false));
     ws.prepend(min);
     renderSummary();
@@ -1067,9 +1075,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const v = S.viewer;
     const views = [["perspective", "Default"], ["top", "Top"], ["side", "Side"], ["user", "User View"]];
     let html = `<span class="seg" role="group" aria-label="Camera">${views.map(([k, l]) => `<button type="button" data-view="${k}" aria-pressed="${S.view === k}">${l}</button>`).join("")}</span>`;
-    html += `<button class="chip tog" type="button" data-reach aria-pressed="${S.showReach}" title="The reach used by out-of-reach rejection">Reach</button>`;
+    html += `<span class="toggles"><button class="chip tog" type="button" data-reach aria-pressed="${S.showReach}" title="The reach envelope used by out-of-reach rejection">Reach envelope</button>`;
     html += `<button class="chip tog" type="button" data-muscles aria-pressed="${S.showMuscles}" title="Show or hide the muscles and tendons">Muscles</button>`;
     if (SC.hasSkin) html += `<button class="chip tog" type="button" data-skin aria-pressed="${S.showSkin}" title="Show or hide the skin (the body volumes around the bones)">Skin</button>`;
+    html += `</span>`;
     if (S.step === 1 && S.sel != null) {
       const button = typeof S.sel === "number" && S.targets[S.sel] && S.targets[S.sel].type === "Button";
       const key = (k) => (touch ? "" : ` (${k})`);
@@ -1260,7 +1269,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
       const title = kinds.length > 1
         ? `<select class="mcard-kind" aria-label="Show muscles or joints">${kinds.map(([k, l]) => `<option value="${k}" ${k === kind ? "selected" : ""}>${l}</option>`).join("")}</select>`
         : `<b>${kinds[0][1]}</b>`;
-      card.innerHTML = `<div class="mcard-head">${title}<span class="seg" role="group" aria-label="View"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn" type="button" data-mcard-min aria-label="${S.mcard.open ? "Minimise" : "Show"} the card" title="${S.mcard.open ? "Minimise" : "Show"}">${S.mcard.open ? "&ndash;" : "+"}</button></div><div class="mcard-body"></div>`;
+      card.innerHTML = `<div class="mcard-head">${title}<span class="seg" role="group" aria-label="View"><button type="button" data-mview="live" aria-pressed="${S.mcard.view === "live"}">Live</button><button type="button" data-mview="groups" aria-pressed="${S.mcard.view === "groups"}">Per ${unit === "episode" ? "episode" : unit}</button></span><button class="min-btn fold-btn" type="button" data-mcard-min aria-expanded="${S.mcard.open}" aria-label="${S.mcard.open ? "Fold" : "Unfold"} the card" title="${S.mcard.open ? "Fold" : "Unfold"}">${foldIcon(S.mcard.open)}</button></div><div class="mcard-body"></div>`;
       if (S.mcard.view === "groups") card.querySelector(".mcard-body").innerHTML = kind === "joints" ? JM.jointRangesHtml(S.mus.jmeter, n, unit) : MM.groupsHtml(S.mus.meter, unit);
       sceneFocus();
     }
@@ -1509,7 +1518,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function wandbHtml() {
     const st = S.wandb, wb = S.wb;
     let body;
-    if (!S.backend) body = `<span class="hint">Connect compute first: the backend that trains also logs to W&amp;B.</span>`;
+    if (!S.backend) body = `<span class="hint"><button class="link-btn" type="button" data-connect>Connect compute</button> first: the backend that trains also logs to W&amp;B.</span>`;
     else if (!st) body = `<span class="hint">Checking the backend's W&amp;B login…</span>`;
     else if (st.error) body = `<span class="err">${esc(st.error)}</span>`;
     else if (!st.installed) body = `<span class="hint">wandb is not installed on the backend: <span class="mono">pip install wandb</span>.</span>`;
@@ -1560,7 +1569,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   function renderRun(ws) {
     const connected = !!S.backend;
     ws.append(h(`${head("Train")}
-      ${connected ? `<p class="muted">Backend: <span class="mono">${esc(S.backend)}</span></p>` : `<p class="demo-banner">Demo mode: no backend is connected, so this run is simulated. Use "Connect compute" to train for real, or start <span class="mono">myo_studio serve</span> and <a href="${esc(handoffUrl())}" target="_blank" rel="noopener">continue on my machine with this setup</a>.</p>`}
+      ${connected ? `<p class="muted">Backend: <span class="mono">${esc(S.backend)}</span></p>` : `<p class="demo-banner">Demo mode: no backend is connected, so this run is simulated. <button class="link-btn" type="button" data-connect>Connect compute</button> to train for real, or start <span class="mono">myo_studio serve</span> and <a href="${esc(handoffUrl())}" target="_blank" rel="noopener">continue on my machine with this setup</a>.</p>`}
       <div class="chips"><button class="btn primary" type="button" id="start-run" ${S.run?.active ? "disabled" : ""}>${S.run?.active ? S.run.status === "stopping" || S.run.stopRequested ? "Stopping…" : "Running…" : "Start training"}</button><button class="btn" type="button" id="stop-run" ${S.run?.active && !S.run.stopRequested && S.run.status !== "stopping" && (!S.backend || S.run.id) ? "" : "disabled"}>${S.run?.status === "stopping" || S.run?.stopRequested ? "Stopping…" : "Stop"}</button>${S.run && S.run.id ? `<span class="muted mono" style="font-size:0.82rem">${esc(S.run.id)} · ${esc(S.run.status || "")}</span>` : ""}</div>
       ${S.run && S.run.error ? `<p class="err">${esc(S.run.error)}</p>` : ""}
       ${S.run && S.run.wandb_url ? `<p class="hint"><span class="wb-mark">W&amp;B</span><a href="${esc(S.run.wandb_url)}" target="_blank" rel="noopener">Open this run in Weights &amp; Biases</a></p>` : wandbOn() ? `<p class="hint"><span class="wb-mark">W&amp;B</span>Logs to W&amp;B as well: <span class="mono">${esc(wandbTarget())}</span> (<a href="#" data-go-step="4">change</a>)</p>` : ""}
@@ -1750,7 +1759,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const ex = S.examples.find((e) => e.name === S.exampleSel) || S.examples.find((e) => e.name === S.preset) || S.examples[0];
     const mine = ex.name === S.preset;
     ws.append(h(`${head("Evaluate", "The deterministic policy on fresh episodes: success, time, effort and muscle activity.")}
-      <p class="demo-banner">Example policies, trained and evaluated in advance. Connect compute to evaluate your own runs.</p>
+      <p class="demo-banner">Example policies, trained and evaluated in advance. <button class="link-btn" type="button" data-connect>Connect compute</button> to evaluate your own runs.</p>
       <p class="mode-note"><span class="mode-badge eval">Evaluation</span>${mine ? `The policy trained on my task (${esc(ex.title)}), on the task as it was trained.` : `The ${esc(ex.title)} example on <b>its own task</b>, not my setup. <a href="#" id="ex-open-note">Open its task in the editor</a> to work on it.`}</p>
       <div class="field"><label for="ex-sel">Example policy</label><select id="ex-sel">${S.examples.map((e) => `<option value="${esc(e.name)}" ${e === ex ? "selected" : ""}>${esc(e.title)}</option>`).join("")}</select>
         <span class="hint">${esc(exampleNote(ex))}</span></div>
@@ -2211,6 +2220,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
 
   /* ---------------------------------------------------------------- wire up */
   $("connect-btn").addEventListener("click", openConnect);
+  // "Connect compute" in the step panels opens the same dialog
+  document.addEventListener("click", (ev) => { if (ev.target.closest("[data-connect]")) { ev.preventDefault(); openConnect(); } });
   document.querySelectorAll("[data-cite]").forEach((b) => b.addEventListener("click", () => { $("cite-copy").textContent = "Copy BibTeX"; $("cite-dialog").showModal(); }));
   $("cite-copy").addEventListener("click", () => {
     navigator.clipboard.writeText($("cite-bib").textContent).then(() => { $("cite-copy").textContent = "Copied"; }, () => { $("cite-copy").textContent = "Select the text to copy it"; });
@@ -2218,11 +2229,12 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
   $("handoff-copy").addEventListener("click", (ev) => {
     navigator.clipboard.writeText(JSON.stringify(toPreset(), null, 2)).then(() => { ev.target.textContent = gradioWarning() ? "Copied (not for the Gradio UI)" : "Copied"; setTimeout(() => (ev.target.textContent = "Copy setup"), gradioWarning() ? 4000 : 1500); }).catch(() => { $("conn-status").textContent = "Copying is blocked here: use Copy next to Configuration instead."; });
   });
+  $("summary-toggle").innerHTML = foldIcon(true);
   $("summary-toggle").addEventListener("click", (ev) => {
-    const closed = $("summary").classList.toggle("closed");
-    ev.target.textContent = closed ? "+" : "\u2013";
-    ev.target.title = closed ? "Show" : "Minimise";
-    ev.target.setAttribute("aria-expanded", String(!closed));
+    const closed = $("summary").classList.toggle("closed"), b = ev.currentTarget;
+    b.innerHTML = foldIcon(!closed);
+    b.title = closed ? "Unfold" : "Fold";
+    b.setAttribute("aria-expanded", String(!closed));
     sceneFocus();
     try { localStorage.setItem("studio-summary-closed", closed ? "1" : ""); } catch (e) {}
   });
@@ -2259,13 +2271,13 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     { step: 5, el: "#workspace", title: "6 · Run", text: "Start training and follow it: click success rate, reward or episode length to plot that curve. The 3D view follows the newest checkpoint while it trains." },
     { step: 6, el: "#workspace", title: "7 · Evaluate", text: "The deterministic policy on fresh episodes: success, time, effort, fatigue and which targets were reached. The example policies play live in the browser." },
     { step: 6, el: "#mcard", title: "Muscles and joints", text: "While a policy plays: the busiest muscles, or the joints that move most within their limits, live and per episode. The 3D muscles light up with their activation." },
-    { el: "#summary", title: "My setup", text: "Everything in one JSON file: save it, upload it later, or train from it with myo_train --config, outside Studio." },
+    { el: "#summary", title: "Config overview", text: "Everything in one JSON file: save it, upload it later, or train from it with myo_train --config, outside Studio." },
     { title: "That's Studio", text: "Start from the pointing example or design a task from scratch. The paper behind it is linked at the top (Cite for the BibTeX).", end: true },
   ];
   let tour = null;
   function tourShow(i) {
     if (!tour) {
-      tour = { ring: document.createElement("div"), card: document.createElement("div"), i: 0 };
+      tour = { ring: document.createElement("div"), card: document.createElement("div"), i: 0, from: S.step };
       tour.ring.className = "tour-ring";
       tour.card.className = "tour-card";
       tour.card.setAttribute("role", "dialog");
@@ -2276,7 +2288,7 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
         if (!b) return;
         const a = b.dataset.tour;
         if (a === "close") tourEnd();
-        else if (a === "try") { tourEnd(); $("hero-preset").click(); }
+        else if (a === "try") { tourEnd(false); $("hero-preset").click(); }
         else tourShow(tour.i + (a === "next" ? 1 : -1));
       });
       addEventListener("resize", tourPlace);
@@ -2290,6 +2302,10 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     const c = TOUR[tour.i];
     if (c.step != null) { if (!S.stepOpen) setStepOpen(true); if (S.step !== c.step) go(c.step); }
     else if (c.el) document.getElementById("studio").scrollIntoView({ block: "start" });
+    // the example plays on the evaluation cards only
+    const playing = c.step === 6;
+    if (!playing && (S.sim || S.replay) && !S.paused) { S.paused = true; renderSceneBar(); }
+    else if (playing && S.paused) { S.paused = false; renderSceneBar(); }
     // an element outside the screen (e.g. the nav on a phone, which scrolls away) is brought into view
     const target = c.el && document.querySelector(c.el), tr = target && target.getBoundingClientRect();
     if (tr && tr.width && (tr.bottom < 0 || tr.top > innerHeight)) target.scrollIntoView({ block: "nearest" });
@@ -2299,27 +2315,40 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     requestAnimationFrame(tourPlace);
     tour.card.querySelector(".btn.primary").focus({ preventScroll: true });
   }
-  // Ring the card's element and put the card beside it: right, left, below, above, else centred.
+  // Ring the card's element and place the card where it hides the least: never over the element it
+  // explains, the nav, the step buttons or the 3D view's bar if any spot avoids them, always on screen.
   function tourPlace() {
     if (!tour) return;
-    const c = TOUR[tour.i], el = c.el && document.querySelector(c.el), card = tour.card, pad = 6, gap = 12;
+    const c = TOUR[tour.i], el = c.el && document.querySelector(c.el), card = tour.card, pad = 6, gap = 12, m = 8;
     const r = el && !el.hidden ? el.getBoundingClientRect() : null;
     const vw = innerWidth, vh = innerHeight, cw = card.offsetWidth, ch = card.offsetHeight;
-    if (!r || !r.width) {
-      tour.ring.style.cssText = "left:50%;top:50%;width:0;height:0";
-      Object.assign(card.style, { left: `${(vw - cw) / 2}px`, top: `${(vh - ch) / 2}px` });
-      return;
+    // a card without an element (the last one) is placed like the others, around the screen's centre
+    const has = !!(r && r.width);
+    const top = has ? Math.max(r.top, 0) : vh / 2, bottom = has ? Math.min(r.bottom, vh) : vh / 2;
+    const left = has ? Math.max(r.left, 0) : vw / 2, right = has ? Math.min(r.right, vw) : vw / 2;
+    tour.ring.style.cssText = has ? `left:${left - pad}px;top:${top - pad}px;width:${right - left + 2 * pad}px;height:${Math.max(0, bottom - top) + 2 * pad}px` : "left:50%;top:50%;width:0;height:0;border-width:0";
+    const box = (e) => { const b = e.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom }; };
+    const area = (a, b) => Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t));
+    // what the card must not hide: the controls a user needs next, then the explained element; panels count least
+    const target = { l: left - pad, t: top - pad, r: right + pad, b: bottom + pad };
+    const avoid = [[".nav", 50], ["#stepper", 50], ["#scene-bar", 50], ["#connect-btn", 50], ["#workspace", 2], ["#summary", 2], ["#mcard", 2]]
+      .flatMap(([q, w]) => { const e = document.querySelector(q); return e && !e.hidden && e !== el && !e.contains(el) && e.offsetParent !== null ? [[box(e), w]] : []; });
+    const navB = document.querySelector(".nav")?.getBoundingClientRect().bottom || 0;
+    const cx = (left + right) / 2 - cw / 2, cy = (top + bottom) / 2 - ch / 2;
+    const spots = [
+      [right + gap, top], [right + gap, cy], [left - cw - gap, top], [left - cw - gap, cy],
+      [left, bottom + gap], [cx, bottom + gap], [left, top - ch - gap], [cx, top - ch - gap],
+      [m, navB + m], [vw - cw - m, navB + m], [(vw - cw) / 2, navB + m], [m, vh - ch - m], [vw - cw - m, vh - ch - m], [(vw - cw) / 2, vh - ch - m],
+    ].map(([x, y]) => [Math.max(m, Math.min(vw - cw - m, x)), Math.max(navB + m, Math.min(vh - ch - m, y))]);
+    let best = null;
+    for (const [x, y] of spots) {
+      const b = { l: x, t: y, r: x + cw, b: y + ch };
+      // covering the explained element costs less than covering the controls (a big panel on a small phone)
+      const score = (has ? 20 * area(b, target) : 0) + avoid.reduce((sum, [a, w]) => sum + w * area(b, a), 0)
+        + Math.hypot(x + cw / 2 - (left + right) / 2, y + ch / 2 - (top + bottom) / 2) * 0.01;  // nearer is better
+      if (!best || score < best[0]) best = [score, x, y];
     }
-    const top = Math.max(r.top, 4), bottom = Math.min(r.bottom, vh - 4);
-    tour.ring.style.cssText = `left:${r.left - pad}px;top:${top - pad}px;width:${r.width + 2 * pad}px;height:${Math.max(0, bottom - top) + 2 * pad}px`;
-    const clampX = (x) => Math.max(8, Math.min(vw - cw - 8, x)), clampY = (y) => Math.max(8, Math.min(vh - ch - 8, y));
-    let x, y;
-    if (vw - r.right >= cw + gap + 8) { x = r.right + gap; y = clampY(top); }
-    else if (r.left >= cw + gap + 8) { x = r.left - cw - gap; y = clampY(top); }
-    else if (vh - bottom >= ch + gap + 8) { x = clampX(r.left); y = bottom + gap; }
-    else if (top >= ch + gap + 8) { x = clampX(r.left); y = top - ch - gap; }
-    else { x = clampX((vw - cw) / 2); y = vh - ch - 8; }
-    Object.assign(card.style, { left: `${clampX(x)}px`, top: `${clampY(y)}px` });
+    Object.assign(card.style, { left: `${best[1]}px`, top: `${best[2]}px` });
   }
   function tourKey(ev) {
     if (!tour) return;
@@ -2327,11 +2356,14 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     else if (ev.key === "ArrowRight" && !TOUR[tour.i].end) tourShow(tour.i + 1);
     else if (ev.key === "ArrowLeft" && tour.i) tourShow(tour.i - 1);
   }
-  function tourEnd() {
+  // back = return to the step the walkthrough started from (not when it hands over to the pointing example)
+  function tourEnd(back = true) {
     if (!tour) return;
+    const from = tour.from;
     tour.ring.remove(); tour.card.remove();
     removeEventListener("resize", tourPlace); removeEventListener("scroll", tourPlace, true); removeEventListener("keydown", tourKey);
     tour = null;
+    if (back && S.step !== from) go(from);
   }
   $("hero-tour").addEventListener("click", () => tourShow(0));
   $("hero-preset").addEventListener("click", async (ev) => {
