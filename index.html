@@ -554,7 +554,8 @@ dialog::backdrop { background: rgba(10, 12, 20, 0.5); }
     examples: [], exampleSel: null, replay: null, sim: null, evalMode: "live", paused: false,
   };
   const DEFAULTS = structuredClone({ bm: S.bm, task: S.task, obs: S.obs, reward: S.reward, rl: S.rl, targets: S.targets });
-  try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
+  // Wide screens remember a folded step panel; phones always start with it open (1 Body unfolded).
+  try { const t = localStorage.getItem("studio-target"); if (t && TARGETS[t]) S.target = t; S.stepOpen = matchMedia("(max-width: 1100px)").matches || localStorage.getItem("studio-step-open") !== "0"; } catch (e) {}
 
   const EXPORT_3D = false;  // the "Export 3D (glTF)" chip in the scene bar
   const STEPS = [
